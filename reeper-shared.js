@@ -458,11 +458,12 @@
   function communeFromText(text) {
     if (!text) return null;
     var t = text.toLowerCase();
-    if (t.indexOf("rolle") >= 0) return "Rolle";
-    if (t.indexOf("nyon") >= 0) return "Nyon";
     for (var name in COMMUNES) {
-      var zips = COMMUNES[name].zip;
-      for (var i = 0; i < zips.length; i++) if (t.indexOf(zips[i]) >= 0) return name;
+      if (t.indexOf(name.toLowerCase()) >= 0) return name;
+    }
+    for (var name2 in COMMUNES) {
+      var zips = COMMUNES[name2].zip;
+      for (var i = 0; i < zips.length; i++) if (t.indexOf(zips[i]) >= 0) return name2;
     }
     return null;
   }
