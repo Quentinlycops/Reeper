@@ -63,7 +63,7 @@ input,textarea,select{font-family:inherit}
 
   <div class="rp-shell rp-banner" style="max-width:100%">
     <div style="display:flex;align-items:baseline;gap:10px">
-      <span style="font-family:Georgia,Cambria,serif;font-size:29px;font-weight:700;letter-spacing:-.5px">Reeper</span><span style="width:8px;height:8px;border-radius:50%;background:#D62839;display:inline-block"></span>
+      <span style="font-family:Georgia,Cambria,serif;font-size:29px;font-weight:700;letter-spacing:-.5px;color:#1B2A41">Reeper</span><span style="width:8px;height:8px;border-radius:50%;background:#D62839;display:inline-block"></span>
       <span style="font-family:Georgia,serif;font-size:14.5px;color:#5A6B7E;font-style:italic">Vue web — même parcours que l'application mobile</span>
     </div>
     <p style="margin:11px 0 0;font-size:13.5px;line-height:1.6;color:#48566B;max-width:96ch;text-wrap:pretty">Signaler et suivre depuis un navigateur, sans installer l'application. Les mêmes étapes, les mêmes statuts, les mêmes textes. Une connexion avec un compte d'agent ouvre directement l'espace commune.</p>
@@ -74,10 +74,10 @@ input,textarea,select{font-family:inherit}
       <div class="rp-header" style="flex:none;background:#fff;border-bottom:1px solid rgba(27,42,65,.1);display:flex;align-items:center;position:relative;z-index:5">
         <button onClick="{{ goHome }}" style="border:none;background:none;padding:6px 2px;display:flex;align-items:flex-end;gap:8px" style-hover="opacity:.72">
           <span style="display:flex;align-items:flex-end;gap:3px">
-            <span style="font-family:Georgia,Cambria,serif;font-size:25px;font-weight:700;line-height:1">R</span>
+            <span style="font-family:Georgia,Cambria,serif;font-size:25px;font-weight:700;line-height:1;color:#1B2A41">R</span>
             <span style="width:7px;height:7px;border-radius:50%;background:#D62839;margin-bottom:3px"></span>
           </span>
-          <span class="rp-wordmark-text" style="font-family:Georgia,Cambria,serif;font-size:20px;font-weight:700;letter-spacing:-.3px;line-height:1">Reeper</span>
+          <span class="rp-wordmark-text" style="font-family:Georgia,Cambria,serif;font-size:20px;font-weight:700;letter-spacing:-.3px;line-height:1;color:#1B2A41">Reeper</span>
         </button>
         <div class="rp-nav">
           <sc-for list="{{ nav }}" as="n" hint-placeholder-count="4">
@@ -1001,8 +1001,15 @@ class Component extends DCLogic {
               this.setState({ addrText: lat.toFixed(5) + ", " + lon.toFixed(5) });
             });
           },
-          () => this.setState({ geoLoading: false, geoError: "Position refusée ou indisponible — saisissez l'adresse manuellement." }),
-          { enableHighAccuracy: true, timeout: 8000 }
+          (err) => {
+            const msg = err && err.code === 1
+              ? "Localisation bloquée pour ce site. Sur iPhone : réglages Safari (icône \"aA\" dans la barre d'adresse) → Réglages du site web → Position → Autoriser, puis réessayez."
+              : err && err.code === 3
+              ? "La localisation prend trop de temps (signal GPS faible). Réessayez, ou saisissez l'adresse manuellement."
+              : "Position indisponible — saisissez l'adresse manuellement.";
+            this.setState({ geoLoading: false, geoError: msg });
+          },
+          { enableHighAccuracy: true, timeout: 15000, maximumAge: 30000 }
         );
       },
 
