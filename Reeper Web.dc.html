@@ -35,15 +35,24 @@ input,textarea,select{font-family:inherit}
 .rp-center-page{padding:52px 40px 60px}
 .rp-card-pad{padding:26px 28px}
 @media (max-width: 900px) {
-  .rp-page{padding:16px 12px 32px}
+  .rp-page{padding:0 !important;gap:0}
   .rp-banner{display:none}
-  .rp-header{padding:0 14px;gap:12px;height:60px}
+  .rp-shell{border-radius:0 !important;box-shadow:none !important;border:none !important;border-top:1px solid rgba(27,42,65,.08) !important;width:100% !important}
+  .rp-header{padding:0 14px;gap:12px;height:56px}
   .rp-wordmark-text{display:none}
   .rp-nav{display:none}
   .rp-mobile-nav{display:flex}
   .rp-hero{grid-template-columns:minmax(0,1fr)}
-  .rp-hero-intro{padding:32px 22px 30px !important}
-  .rp-hero-title{font-size:32px !important}
+  .rp-hero-intro{padding:26px 18px 26px !important}
+  .rp-hero-title{font-size:25px !important;margin-top:8px !important;letter-spacing:-.6px !important}
+  .rp-hero-sub{font-size:14px !important;margin-top:10px !important}
+  .rp-cta-row{flex-direction:column !important;align-items:stretch !important;gap:0 !important;margin-top:20px !important}
+  .rp-cta-btn{width:100% !important;justify-content:center !important;padding:16px 20px !important;font-size:16px !important;border-radius:13px !important}
+  .rp-tagline{display:none !important}
+  .rp-hero-note{font-size:11.5px !important;margin-top:12px !important;text-align:center}
+  .rp-steps3{margin-top:26px !important;padding-top:18px !important;gap:12px !important}
+  .rp-steps3 .step-title{font-size:13.5px !important}
+  .rp-steps3 .step-body{font-size:12px !important}
   .rp-grid3{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
   .rp-report{padding:16px 14px 30px;grid-template-columns:minmax(0,1fr);gap:16px}
   .rp-report .rp-wizard-nav{position:static;order:2}
@@ -120,21 +129,21 @@ input,textarea,select{font-family:inherit}
           <div class="rp-hero">
             <div class="rp-hero-intro" style="padding:56px 44px 48px;background:#fff">
               <h1 class="rp-hero-title" style="margin:16px 0 0;font-family:Georgia,Cambria,serif;font-size:52px;line-height:1.1;font-weight:700;letter-spacing:-1.2px;text-wrap:pretty">La commune<br>dans votre navigateur.</h1>
-              <p style="margin:18px 0 0;font-size:16px;line-height:1.65;color:#48566B;max-width:46ch;text-wrap:pretty">Un lampadaire éteint, un dépôt sauvage, un nid-de-poule ? Signalez-le en moins d'une minute. Le bon service de votre commune le reçoit directement.</p>
-              <div style="margin-top:30px;display:flex;align-items:center;gap:16px">
-                <button onClick="{{ startReport }}" style="border:none;background:#D62839;color:#fff;border-radius:12px;padding:19px 30px;font-size:17px;font-weight:600;display:flex;align-items:center;gap:12px;box-shadow:0 10px 24px rgba(214,40,57,.28)">
+              <p class="rp-hero-sub" style="margin:18px 0 0;font-size:16px;line-height:1.65;color:#48566B;max-width:46ch;text-wrap:pretty">Un lampadaire éteint, un dépôt sauvage, un nid-de-poule ? Signalez-le en moins d'une minute. Le bon service de votre commune le reçoit directement.</p>
+              <div class="rp-cta-row" style="margin-top:30px;display:flex;align-items:center;gap:16px">
+                <button class="rp-cta-btn" onClick="{{ startReport }}" style="border:none;background:#D62839;color:#fff;border-radius:12px;padding:19px 30px;font-size:17px;font-weight:600;display:flex;align-items:center;gap:12px;box-shadow:0 10px 24px rgba(214,40,57,.28)">
                   <span style="font-size:21px;line-height:1">+</span><span>Signaler</span>
                 </button>
-                <span style="font-family:Georgia,serif;font-style:italic;font-size:15px;color:#5A6B7E">Reep'it</span>
+                <span class="rp-tagline" style="font-family:Georgia,serif;font-style:italic;font-size:15px;color:#5A6B7E">Reep'it</span>
               </div>
-              <p style="margin:18px 0 0;font-size:13px;color:#8A98A8">Aucun compte nécessaire pour signaler. Un compte est requis pour suivre vos Reeps.</p>
+              <p class="rp-hero-note" style="margin:18px 0 0;font-size:13px;color:#8A98A8">Aucun compte nécessaire pour signaler. Un compte est requis pour suivre vos Reeps.</p>
 
-              <div class="rp-grid3" style="margin-top:40px;border-top:1px solid rgba(27,42,65,.1);padding-top:26px;gap:22px">
+              <div class="rp-grid3 rp-steps3" style="margin-top:40px;border-top:1px solid rgba(27,42,65,.1);padding-top:26px;gap:22px">
                 <sc-for list="{{ steps3 }}" as="s" hint-placeholder-count="3">
                   <div>
                     <div style="font-family:Georgia,Cambria,serif;font-size:15px;font-weight:700;color:#D62839">{{ s.num }}</div>
-                    <div style="font-size:14.5px;font-weight:600;margin-top:7px">{{ s.title }}</div>
-                    <p style="margin:6px 0 0;font-size:13px;line-height:1.55;color:#5A6B7E;text-wrap:pretty">{{ s.body }}</p>
+                    <div class="step-title" style="font-size:14.5px;font-weight:600;margin-top:7px">{{ s.title }}</div>
+                    <p class="step-body" style="margin:6px 0 0;font-size:13px;line-height:1.55;color:#5A6B7E;text-wrap:pretty">{{ s.body }}</p>
                   </div>
                 </sc-for>
               </div>
