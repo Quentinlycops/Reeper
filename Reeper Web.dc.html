@@ -268,6 +268,12 @@ input,textarea,select{font-family:inherit}
                       </div>
                       <input value="{{ addrNum }}" onChange="{{ onAddrNum }}" placeholder="N°" style="width:90px;flex:none;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:11px;padding:15px 14px;font-size:14.5px;color:#1B2A41;outline:none">
                     </div>
+                    <sc-if value="{{ hasCommuneGuess }}" hint-placeholder-val="{{ false }}">
+                      <div style="margin-top:9px;font-size:12.5px;color:#5A6B7E">Commune détectée : <strong style="color:#1B2A41">{{ communeGuess }}</strong></div>
+                    </sc-if>
+                    <sc-if value="{{ noCommuneGuess }}" hint-placeholder-val="{{ false }}">
+                      <div style="margin-top:9px;font-size:12.5px;color:#8A98A8">Commune non détectée — elle sera déduite de l'adresse saisie.</div>
+                    </sc-if>
                     <div style="margin-top:20px;display:flex;gap:12px">
                       <button onClick="{{ toCat }}" style="border:none;background:{{ locBtnBg }};color:#fff;border-radius:11px;padding:15px 26px;font-size:14.5px;font-weight:600">Continuer</button>
                       <button onClick="{{ toPhoto }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;border-radius:11px;padding:15px 22px;font-size:14.5px;font-weight:600">Retour</button>
@@ -992,6 +998,7 @@ class Component extends DCLogic {
         }
       })),
       locBtnBg: s.geo ? "#1B2A41" : "#93A2B1",
+      hasCommuneGuess: !!s.communeGuess, noCommuneGuess: !s.communeGuess && s.geo,
       detectLabel: s.geoLoading ? "Localisation…" : "Me localiser",
       hasGeoError: !!s.geoError, geoError: s.geoError,
       hasPhotoStepError: !!s.photoStepError, photoStepError: s.photoStepError,
