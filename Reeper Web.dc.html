@@ -59,6 +59,8 @@ input,textarea,select{font-family:inherit}
   .rp-track{padding:16px 14px 30px;grid-template-columns:minmax(0,1fr);gap:16px}
   .rp-2col{grid-template-columns:minmax(0,1fr)}
   .rp-center-page{padding:20px 12px 40px}
+  .rp-auth-page{gap:0 !important}
+  .rp-auth-panel{display:none !important}
   .rp-card-pad{padding:18px 16px}
   .photo-grid{grid-template-columns:repeat(3,minmax(0,1fr)) !important}
   .rp-hero, .rp-hero > *, .rp-grid3 > *, .rp-report > *, .rp-track > *, .rp-2col > *{min-width:0}
@@ -358,7 +360,7 @@ input,textarea,select{font-family:inherit}
         </sc-if>
 
         <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}">
-          <div class="rp-center-page" style="display:flex;justify-content:center">
+          <div class="rp-center-page rp-auth-page" style="display:flex;justify-content:center;gap:60px;align-items:flex-start">
             <div style="width:520px;max-width:100%;background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:16px;padding:34px 36px 30px">
               <div style="font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#8A98A8;font-weight:700">Compte</div>
               <h2 style="margin:12px 0 0;font-family:Georgia,Cambria,serif;font-size:28px;font-weight:700">{{ authTitle }}</h2>
@@ -466,6 +468,23 @@ input,textarea,select{font-family:inherit}
                   </div>
                 </sc-if>
               </sc-if>
+            </div>
+
+            <div class="rp-auth-panel" style="width:380px;max-width:100%;padding-top:10px">
+              <span style="font-family:Georgia,serif;font-style:italic;font-size:15px;color:#5A6B7E">Reep'it</span>
+              <h3 style="margin:14px 0 0;font-family:Georgia,Cambria,serif;font-size:22px;font-weight:700">Comment ça marche</h3>
+              <div style="display:flex;flex-direction:column;gap:24px;margin-top:24px">
+                <sc-for list="{{ steps3 }}" as="s" hint-placeholder-count="3">
+                  <div style="display:flex;gap:14px;align-items:flex-start">
+                    <span style="font-family:Georgia,Cambria,serif;font-size:15px;font-weight:700;color:#D62839;flex:none;width:26px">{{ s.num }}</span>
+                    <div style="min-width:0">
+                      <div style="font-size:14.5px;font-weight:600">{{ s.title }}</div>
+                      <p style="margin:5px 0 0;font-size:13px;line-height:1.55;color:#5A6B7E;text-wrap:pretty">{{ s.body }}</p>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="margin-top:30px;padding-top:22px;border-top:1px solid rgba(27,42,65,.1);font-size:12.5px;line-height:1.55;color:#8A98A8">Aucun compte nécessaire pour signaler une anomalie. Un compte permet de suivre l'avancement de vos Reeps et de collecter des points.</div>
             </div>
           </div>
         </sc-if>
