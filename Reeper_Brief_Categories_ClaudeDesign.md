@@ -1,0 +1,184 @@
+# Reeper — Brief : Arborescence complète des catégories de signalement
+
+## Échelle de l'arbre
+- **8 catégories principales** : Voirie, Propreté publique, Plantation, Signalisation, Éclairage, Mobilier urbain, Monument, Véhicule abandonné
+- **~140-160 sous-catégories** réparties sur 3 niveaux de profondeur en dessous
+- C'est cette profondeur qui justifie le système de **drill-down + recherche** déjà validé (navigation par listes empilées façon réglages de téléphone, avec une barre de recherche qui affiche des résultats plats avec fil d'Ariane pour sauter directement à un niveau profond)
+
+## ⚠️ Point à clarifier avec le client avant implémentation finale
+Dans la branche **Voirie > Chaussée**, deux entrées apparaissent séparément dans le fichier source : "Béton/ciment" et "endommagée". Il est probable que ce soit **un seul item** ("Béton/ciment endommagée") scindé par erreur sur deux lignes dans le fichier Excel d'origine, plutôt que deux sous-catégories distinctes — "endommagée" seul comme nom de catégorie n'a pas de sens isolément. À confirmer avant de figer la structure définitive.
+
+## Arborescence complète (structure exacte à implémenter)
+
+```
+- Voirie
+  - Avaloir
+    - Avaloir bétonné
+    - Avaloir bouché
+    - Grille manquante
+  - Chaussée
+    - Béton/ciment
+    - endommagée
+    - Glissante
+      - Autre
+      - Neige/verglas
+    - Huile sur la chaussée
+    - Marquage
+  - Passage piéton
+    - Avaloir gênant
+    - Bordure à modifier
+    - Dalles pododactiles
+      - endommagées
+      - mal placées
+      - non contrastées
+      - obstacle gênant
+    - Marquage
+  - Piste cyclable
+    - Bordure à modifier
+    - endommagées
+    - Glissante
+      - Autre
+      - Neige/verglas
+    - Marquage
+    - Verre sur piste cyclable
+  - taque égout
+    - bruyante
+    - cassée
+  - Trottoir
+    - Endommagé
+    - Escaliers a sécuriser
+    - Glissant
+      - Autre
+      - Neige/verglas
+    - Obstacle gênant
+- Propreté publique
+  - Bulle à verre
+    - Débordante
+      - Blanc
+      - Verre
+      - Brun
+    - Déchets aux abords
+    - sale
+  - Bulle à vêtements
+    - Débordante
+    - Déchets aux abords
+    - Sale
+  - Poubelle publique
+    - Débordante
+    - Sale
+  - Dépôt clandestin
+    - Déchets verts/branches
+    - encombrants
+      - + 1m³
+      - - 1m³
+    - Spécial
+      - Huile
+      - Peinture
+  - Matérieux abandonnés
+    - Déchets de chantier
+    - Signalisation
+  - Sac poubelle
+    - Eventré
+    - Non collecté
+  - Tags
+    - Façade
+      - privé
+      - Publique
+    - Mobilier urbain
+    - Monument
+- Plantation
+  - Arbre
+  - Branche
+  - Déchets verts
+  - Désherbage/tonte
+  - Elagage
+  - Gazon
+  - Protection métallique
+  - Tuteur en bois
+  - Végétation gênante
+  - Bacs à fleur 
+- Signalisation
+  - Chantier mal balisé
+  - Feu tricolore
+    - Bouton poussoir défecteux
+    - Endommagé
+    - Ne fonctionne pas
+    - Clignote orange
+    - Temps de traversé insuffisant
+  - Marquage
+  - Panneaux
+    - Endommagé
+    - Erroné
+    - Manquant
+  - Panneux LED dynamique
+    - Parking
+      - Endommagé
+      - Ne fonctionne pas
+    - Tunnel
+      - Endommagé
+      - Ne fonctionne pas
+    - Voie publique
+      - Endommagé
+      - Ne fonctionne pas
+  - Poteau 
+    - Endommagé
+    - Manquant
+- Eclairage
+  - Poteau éclairage
+    - Endommagé
+    - Ne fonctionne pas
+    - Reste allumé en continu
+    - Clignote
+- Mobilier urbain
+  - Abribus
+    - Endommagé
+  - Arceau à vélo
+  - Armoire électrique
+  - Ascenseurs
+  - Bacs à fleur
+    - Endommagé
+    - Gênant
+    - Déplacé
+  - Banc
+  - Barrière
+    - Endommagé
+    - Manquante
+  - Bloc de béton
+    - Déplacé
+    - Endommagé
+    - Gênant
+  - Borne de recharge électrique
+    - Endommagé
+    - Ne fonctionne pas
+  - Poubelle publique
+    - Endommagé
+  - Dispositif publicitaire
+    - Endommagé
+    - Gênant
+    - Ne fonctionne pas
+  - Horodateur
+    - Endommagé
+    - Ne fonctionne pas
+  - Place de jeux
+  - Potelet
+    - Endommagé
+    - Manquant
+- Monument
+  - Fontaine
+    - Borne à eau potable
+    - Déborde
+    - Hors service
+    - Mousse
+    - Endommagée
+  - Vandalisme
+- Véhicule abandonné
+  - Moto/scooter
+  - Trotinette
+    - Partagée
+    - Privée
+  - Vélo
+    - Partagé
+    - Privé
+  - Voiture
+    - Partagée
+    - Privée```

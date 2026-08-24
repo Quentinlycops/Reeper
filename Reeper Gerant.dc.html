@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="only light">
+<meta name="theme-color" content="#1B2A41">
+<script src="./reeper-shared.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+:root{color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:#E7ECF0;font-family:"Helvetica Neue",Helvetica,Arial,sans-serif}
+button{font-family:inherit;cursor:pointer}
+select,textarea,input{font-family:inherit}
+.rg-page{padding:40px}
+.rg-header{padding:0 28px;gap:18px;height:70px}
+.rg-nav{gap:4px}
+.rg-nav button{padding:10px 15px}
+.rg-content{padding:32px 36px 50px}
+.rg-grid3{display:grid;grid-template-columns:repeat(3,1fr)}
+.rg-2col{display:grid;grid-template-columns:1fr 1fr}
+.rg-reeps-split{display:grid;grid-template-columns:1fr 380px}
+.rg-msg-split{display:grid;grid-template-columns:320px 1fr}
+.rg-nav{display:flex}
+.rg-mobile-nav{display:none}
+@media (max-width: 900px) {
+  .rg-page{padding:12px}
+  .rg-header{padding:0 14px;gap:10px;height:60px}
+  .rg-title{display:none}
+  .rg-nav{display:none}
+  .rg-mobile-nav{display:flex}
+  .rg-content{padding:14px 12px 30px}
+  .rg-grid3{grid-template-columns:minmax(0,1fr);gap:12px}
+  .rg-2col{grid-template-columns:minmax(0,1fr)}
+  .rg-reeps-split{grid-template-columns:minmax(0,1fr)}
+  .rg-msg-split{grid-template-columns:minmax(0,1fr);height:auto !important}
+  .rg-accts-split{grid-template-columns:minmax(0,1fr) !important}
+  .rg-table-scroll{overflow-x:auto}
+  .rg-table-scroll > div, .rg-table-scroll > button{min-width:640px}
+  [style*="grid-template-columns"] > *{min-width:0}
+}
+</style>
+</helmet>
+
+<div class="rg-page" style="min-height:100vh;box-sizing:border-box;background:#E7ECF0;background-image:repeating-radial-gradient(circle at 20% 30%, rgba(27,42,65,.05) 0 1px, transparent 1px 28px);display:flex;justify-content:center">
+
+  <div data-role="shell" style="width:1360px;max-width:100%;background:#F3F6F8;border:1px solid rgba(27,42,65,.14);border-radius:14px;overflow:hidden;box-shadow:0 18px 44px rgba(27,42,65,.14);display:flex;flex-direction:column;height:{{ shellH }}">
+
+    <div class="rg-header" style="background:#fff;border-bottom:1px solid rgba(27,42,65,.1);display:flex;align-items:center;position:relative;z-index:5">
+      <button onClick="{{ goSite }}" title="Retour à l'accueil du site" style="border:none;background:none;padding:6px 4px;display:flex;align-items:flex-end;gap:8px;min-height:44px" style-hover="opacity:.72">
+        <span style="display:flex;align-items:flex-end;gap:3px">
+          <span style="font-family:Georgia,Cambria,serif;font-size:25px;font-weight:700;line-height:1;color:#1B2A41">R</span>
+          <span style="width:7px;height:7px;border-radius:50%;background:#D62839;margin-bottom:3px"></span>
+        </span>
+        <span class="rg-title" style="font-family:Georgia,Cambria,serif;font-size:20px;font-weight:700;color:#1B2A41;letter-spacing:-.3px;line-height:1">Reeper</span>
+      </button>
+      <div class="rg-title" style="width:1px;height:28px;background:rgba(27,42,65,.12)"></div>
+      <div class="rg-title" style="font-size:14px;font-weight:600;color:#1B2A41">Direction générale · toutes communes</div>
+      <div style="flex:1"></div>
+
+      <div class="rg-nav">
+        <sc-for list="{{ nav }}" as="n" hint-placeholder-count="3">
+          <button onClick="{{ n.onClick }}" style="border:none;background:{{ n.bg }};color:{{ n.fg }};border-radius:9px;font-size:13.5px;font-weight:{{ n.weight }};white-space:nowrap">{{ n.label }}</button>
+        </sc-for>
+      </div>
+
+      <div style="position:relative">
+        <button onClick="{{ toggleProfile }}" style="border:1px solid {{ profileBorder }};background:#fff;border-radius:999px;padding:5px 12px 5px 5px;display:flex;align-items:center;gap:8px">
+          <span style="width:28px;height:28px;border-radius:50%;background:{{ meAvBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700">{{ meInitials }}</span>
+          <span style="font-size:13px;font-weight:600;color:#1B2A41">{{ meFirstName }}</span>
+          <span style="font-size:10px;color:#8A98A8">▾</span>
+        </button>
+        <sc-if value="{{ profileOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;top:48px;right:0;width:280px;background:#fff;border:1px solid rgba(27,42,65,.14);border-radius:12px;box-shadow:0 16px 38px rgba(27,42,65,.2);overflow:hidden;z-index:20">
+            <div style="padding:14px 17px;border-bottom:1px solid rgba(27,42,65,.08)">
+              <div style="font-size:13.5px;font-weight:600;color:#1B2A41">{{ meName }}</div>
+              <div style="font-size:11.5px;color:#8A98A8;margin-top:2px">{{ meRole }}</div>
+            </div>
+            <button onClick="{{ togglePwdPanel }}" style="width:100%;text-align:left;padding:13px 17px;border:none;background:#fff;font-size:13.5px;color:#1B2A41;font-weight:600;border-bottom:1px solid rgba(27,42,65,.08)" style-hover="background:#FAFBFC">Modifier le mot de passe</button>
+            <sc-if value="{{ pwdPanelOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:14px 17px;border-bottom:1px solid rgba(27,42,65,.08);display:flex;flex-direction:column;gap:10px">
+                <input type="password" value="{{ pwdOld }}" onChange="{{ onPwdOld }}" placeholder="Mot de passe actuel" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:10px 12px;font-size:13px;outline:none" />
+                <input type="password" value="{{ pwdNew1 }}" onChange="{{ onPwdNew1 }}" placeholder="Nouveau mot de passe" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:10px 12px;font-size:13px;outline:none" />
+                <input type="password" value="{{ pwdNew2 }}" onChange="{{ onPwdNew2 }}" placeholder="Confirmer le nouveau mot de passe" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:10px 12px;font-size:13px;outline:none" />
+                <sc-if value="{{ hasPwdMsg }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-size:12px;color:{{ pwdMsgColor }}">{{ pwdMsg }}</div>
+                </sc-if>
+                <button onClick="{{ doChangePwd }}" style="width:100%;padding:10px;border:none;border-radius:8px;background:#1B2A41;color:#fff;font-size:12.5px;font-weight:600">Mettre à jour</button>
+              </div>
+            </sc-if>
+            <button onClick="{{ doLogout }}" style="width:100%;text-align:left;padding:13px 17px;border:none;background:#fff;font-size:13.5px;color:#D62839;font-weight:600" style-hover="background:#FAFBFC">Se déconnecter</button>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+
+    <div style="flex:1;overflow:auto">
+
+      <sc-if value="{{ isDash }}" hint-placeholder-val="{{ true }}">
+        <div class="rg-content" style="display:flex;flex-direction:column;gap:20px">
+          <div>
+            <h1 style="margin:0;font-family:Georgia,Cambria,serif;font-size:24px;font-weight:700;letter-spacing:-.3px">Vue d'ensemble</h1>
+            <div style="font-size:12.5px;color:#8A98A8;margin-top:3px">Tous les Reeps créés sur le territoire romand couvert par Reeper</div>
+          </div>
+
+          <div class="rg-grid3" style="gap:16px">
+            <sc-for list="{{ statCards }}" as="k" hint-placeholder-count="3">
+              <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;padding:18px 20px">
+                <span style="font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:#8A98A8;font-weight:700">{{ k.label }}</span>
+                <div style="display:flex;align-items:baseline;gap:10px;margin-top:10px">
+                  <span style="font-family:Georgia,serif;font-size:32px;font-weight:700;line-height:1">{{ k.value }}</span>
+                  <span style="font-size:12px;color:#8A98A8">{{ k.note }}</span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div class="rg-2col" style="gap:18px;align-items:start">
+            <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:hidden">
+              <div style="padding:16px 20px;border-bottom:1px solid rgba(27,42,65,.08);font-family:Georgia,serif;font-size:16px;font-weight:700">Reeps par commune</div>
+              <div style="padding:6px 0">
+                <sc-for list="{{ byCommuneRows }}" as="c" hint-placeholder-count="3">
+                  <div style="display:flex;align-items:center;gap:12px;padding:11px 20px">
+                    <span style="width:90px;flex:none;font-size:13.5px;font-weight:600;color:#1B2A41">{{ c.name }}</span>
+                    <span style="flex:1;height:8px;border-radius:999px;background:#EEF2F5;overflow:hidden"><span style="display:block;height:100%;width:{{ c.pct }};background:#1B2A41;border-radius:999px"></span></span>
+                    <span style="width:30px;text-align:right;font-size:13px;font-weight:700;color:#48566B">{{ c.count }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:hidden">
+              <div style="padding:16px 20px;border-bottom:1px solid rgba(27,42,65,.08);font-family:Georgia,serif;font-size:16px;font-weight:700">Reeps par statut</div>
+              <div style="padding:6px 0">
+                <sc-for list="{{ byStatusRows }}" as="c" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:center;gap:12px;padding:11px 20px">
+                    <span style="width:9px;height:9px;border-radius:50%;background:{{ c.dot }};flex:none"></span>
+                    <span style="width:150px;flex:none;font-size:13.5px;color:#1B2A41">{{ c.name }}</span>
+                    <span style="flex:1;height:8px;border-radius:999px;background:#EEF2F5;overflow:hidden"><span style="display:block;height:100%;width:{{ c.pct }};background:{{ c.dot }};border-radius:999px"></span></span>
+                    <span style="width:30px;text-align:right;font-size:13px;font-weight:700;color:#48566B">{{ c.count }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isReeps }}" hint-placeholder-val="{{ false }}">
+        <div class="rg-content" style="display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
+            <div style="flex:1">
+              <h1 style="margin:0;font-family:Georgia,Cambria,serif;font-size:24px;font-weight:700;letter-spacing:-.3px">Reeps — toutes communes</h1>
+              <div style="font-size:12.5px;color:#8A98A8;margin-top:3px">{{ reepRowCount }} Reeps affichés</div>
+            </div>
+            <select value="{{ filterCommune }}" onChange="{{ onFilterCommune }}" style="border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:9px 13px;font-size:13.5px;background:#fff">
+              <sc-for list="{{ communeOptions }}" as="c" hint-placeholder-count="4">
+                <option value="{{ c }}">{{ c }}</option>
+              </sc-for>
+            </select>
+            <select value="{{ filterCat }}" onChange="{{ onFilterCat }}" style="border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:9px 13px;font-size:13.5px;background:#fff">
+              <sc-for list="{{ catOptions }}" as="c" hint-placeholder-count="4">
+                <option value="{{ c }}">{{ c }}</option>
+              </sc-for>
+            </select>
+            <select value="{{ filterStatus }}" onChange="{{ onFilterStatus }}" style="border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:9px 13px;font-size:13.5px;background:#fff">
+              <sc-for list="{{ statusOptions }}" as="c" hint-placeholder-count="4">
+                <option value="{{ c }}">{{ c }}</option>
+              </sc-for>
+            </select>
+          </div>
+
+          <div class="rg-reeps-split" style="gap:18px;align-items:start">
+            <div class="rg-table-scroll" style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:hidden">
+              <div style="display:grid;grid-template-columns:1.6fr .9fr .9fr .9fr;padding:12px 20px;background:#FAFBFC;border-bottom:1px solid rgba(27,42,65,.08);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700">
+                <span>Reep</span><span>Commune</span><span>Service</span><span>Statut</span>
+              </div>
+              <sc-for list="{{ reepRows }}" as="r" hint-placeholder-count="8">
+                <button onClick="{{ r.onClick }}" style="display:grid;grid-template-columns:1.6fr .9fr .9fr .9fr;gap:10px;align-items:center;width:100%;padding:13px 20px;border:none;border-bottom:1px solid rgba(27,42,65,.06);background:{{ r.rowBg }};text-align:left;color:#1B2A41" style-hover="background:#FAFBFC">
+                  <span style="min-width:0">
+                    <span style="display:block;font-size:13.5px;font-weight:600">{{ r.title }}</span>
+                    <span style="display:block;font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:#8A98A8;margin-top:3px">{{ r.id }}</span>
+                  </span>
+                  <span style="font-size:13px;color:#48566B">{{ r.commune }}</span>
+                  <span style="font-size:12.5px;color:#48566B">{{ r.service }}</span>
+                  <span style="font-size:11px;font-weight:700;padding:5px 10px;border-radius:999px;background:{{ r.bg }};color:{{ r.fg }};justify-self:start;white-space:nowrap">{{ r.status }}</span>
+                </button>
+              </sc-for>
+              <sc-if value="{{ reepsEmpty }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:30px 20px;text-align:center;font-size:13px;color:#8A98A8">Aucun Reep ne correspond à ces filtres.</div>
+              </sc-if>
+            </div>
+
+            <sc-if value="{{ hasSelReep }}" hint-placeholder-val="{{ false }}">
+              <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:hidden">
+                <div style="padding:18px 20px;border-bottom:1px solid rgba(27,42,65,.08);display:flex;align-items:center;gap:10px">
+                  <span style="flex:1;font-family:Georgia,serif;font-size:16.5px;font-weight:700">{{ selReep.title }}</span>
+                  <button onClick="{{ closeSelReep }}" style="border:none;background:none;font-size:16px;color:#8A98A8">×</button>
+                </div>
+                <div style="padding:16px 20px;display:flex;flex-direction:column;gap:12px">
+                  <div style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:#8A98A8">{{ selReep.id }}</div>
+                  <div style="font-size:13px;color:#48566B">{{ selReep.commune }} · {{ selReep.place }}</div>
+                  <div style="font-size:11px;font-weight:700;padding:5px 10px;border-radius:999px;background:{{ selReep.bg }};color:{{ selReep.fg }};align-self:flex-start">{{ selReep.status }}</div>
+                  <p style="margin:0;font-size:13.5px;line-height:1.6;color:#3E5064">{{ selReep.desc }}</p>
+                  <div style="display:flex;gap:8px;flex-wrap:wrap">
+                    <sc-for list="{{ statusButtons }}" as="b" hint-placeholder-count="4">
+                      <button onClick="{{ b.onClick }}" style="border:1px solid {{ b.border }};background:{{ b.bg }};color:{{ b.fg }};border-radius:8px;padding:8px 12px;font-size:12px;font-weight:600">{{ b.label }}</button>
+                    </sc-for>
+                  </div>
+                  <div style="border-top:1px solid rgba(27,42,65,.08);padding-top:10px;display:flex;flex-direction:column;gap:10px;max-height:220px;overflow:auto">
+                    <sc-for list="{{ selReep.timeline }}" as="t" hint-placeholder-count="3">
+                      <div>
+                        <div style="font-size:12.5px;font-weight:600">{{ t.label }}</div>
+                        <div style="font-size:11px;color:#8A98A8;margin-top:1px">{{ t.who }} · {{ t.when }}</div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isAccounts }}" hint-placeholder-val="{{ false }}">
+        <div class="rg-content" style="display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
+            <div style="flex:1">
+              <h1 style="margin:0;font-family:Georgia,Cambria,serif;font-size:24px;font-weight:700;letter-spacing:-.3px">Comptes</h1>
+              <div style="font-size:12.5px;color:#8A98A8;margin-top:3px">Citoyens, agents et administrateurs de toutes les communes</div>
+            </div>
+            <button onClick="{{ openNewAccount }}" style="border:none;background:#1B2A41;color:#fff;border-radius:9px;padding:11px 16px;font-size:13.5px;font-weight:600">+ Ajouter une personne</button>
+          </div>
+
+          <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+            <input value="{{ acctQuery }}" onChange="{{ onAcctQuery }}" placeholder="Rechercher un nom, un e-mail…" style="flex:1;min-width:220px;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:10px 14px;font-size:13.5px;outline:none" />
+            <select value="{{ acctFilterCommune }}" onChange="{{ onAcctFilterCommune }}" style="border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:9px 13px;font-size:13.5px;background:#fff">
+              <sc-for list="{{ acctCommuneOptions }}" as="c" hint-placeholder-count="4">
+                <option value="{{ c }}">{{ c }}</option>
+              </sc-for>
+            </select>
+            <select value="{{ acctFilterType }}" onChange="{{ onAcctFilterType }}" style="border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:9px 13px;font-size:13.5px;background:#fff">
+              <sc-for list="{{ acctTypeOptions }}" as="c" hint-placeholder-count="3">
+                <option value="{{ c }}">{{ c }}</option>
+              </sc-for>
+            </select>
+          </div>
+
+          <div class="rg-accts-split" style="display:grid;grid-template-columns:{{ acctGridCols }};gap:18px;align-items:start">
+            <div>
+              <sc-if value="{{ acctPromptEmpty }}" hint-placeholder-val="{{ false }}">
+                <div style="background:#fff;border:1px dashed rgba(27,42,65,.18);border-radius:12px;padding:50px 30px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center">
+                  <span style="font-size:26px">🔎</span>
+                  <div style="font-size:14.5px;font-weight:600;color:#1B2A41">Recherchez une personne</div>
+                  <div style="font-size:12.5px;color:#8A98A8;max-width:44ch;line-height:1.6">Tapez un nom ou un e-mail, ou sélectionnez une commune pour afficher ses agents.</div>
+                </div>
+              </sc-if>
+              <sc-if value="{{ acctShowResults }}" hint-placeholder-val="{{ false }}">
+              <div class="rg-table-scroll" style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:hidden">
+                <div style="display:grid;grid-template-columns:1.6fr .7fr .9fr .9fr .8fr;padding:12px 20px;background:#FAFBFC;border-bottom:1px solid rgba(27,42,65,.08);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700">
+                  <span>Personne</span><span>Type</span><span>Commune</span><span>Rôle</span><span></span>
+                </div>
+                <sc-for list="{{ acctRows }}" as="a" hint-placeholder-count="8">
+                  <div style="display:grid;grid-template-columns:1.6fr .7fr .9fr .9fr .8fr;gap:10px;align-items:center;padding:13px 20px;border-bottom:1px solid rgba(27,42,65,.06)">
+                    <span style="display:flex;align-items:center;gap:11px;min-width:0">
+                      <span style="width:32px;height:32px;border-radius:50%;background:{{ a.avBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;flex:none">{{ a.initials }}</span>
+                      <span style="min-width:0">
+                        <span style="display:block;font-size:13.5px;font-weight:600">{{ a.name }}</span>
+                        <span style="display:block;font-size:11.5px;color:#8A98A8;margin-top:1px">{{ a.email }}</span>
+                      </span>
+                    </span>
+                    <span style="font-size:12.5px;color:#48566B">{{ a.typeLabel }}</span>
+                    <span style="font-size:12.5px;color:#48566B">{{ a.commune }}</span>
+                    <span style="font-size:11px;font-weight:700;padding:5px 10px;border-radius:999px;background:{{ a.roleBg }};color:{{ a.roleFg }};justify-self:start;white-space:nowrap">{{ a.roleLabel }}</span>
+                    <span style="display:flex;justify-content:flex-end;gap:6px">
+                      <sc-if value="{{ a.pending }}" hint-placeholder-val="{{ false }}">
+                        <button onClick="{{ a.onApprove }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;border-radius:8px;padding:7px 10px;font-size:11.5px;font-weight:600;color:#1B2A41;white-space:nowrap">Approuver</button>
+                      </sc-if>
+                      <button onClick="{{ a.onDelete }}" style="border:1px solid {{ a.delBorder }};background:{{ a.delBg }};border-radius:8px;padding:7px 10px;font-size:11.5px;font-weight:600;color:{{ a.delFg }};white-space:nowrap">{{ a.delLabel }}</button>
+                    </span>
+                  </div>
+                </sc-for>
+                <sc-if value="{{ acctsEmpty }}" hint-placeholder-val="{{ false }}">
+                  <div style="padding:30px 20px;text-align:center;font-size:13px;color:#8A98A8">Aucun compte ne correspond à ces filtres.</div>
+                </sc-if>
+              </div>
+              </sc-if>
+            </div>
+
+            <sc-if value="{{ sheetOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="background:#fff;border:1px solid rgba(27,42,65,.16);border-radius:12px;box-shadow:0 12px 30px rgba(27,42,65,.14);overflow:hidden">
+                <div style="padding:17px 20px;border-bottom:1px solid rgba(27,42,65,.08);display:flex;align-items:center;gap:12px">
+                  <span style="font-family:Georgia,serif;font-size:16.5px;font-weight:700;flex:1">Ajouter une personne</span>
+                  <button onClick="{{ closeNewAccount }}" style="border:none;background:none;font-size:16px;color:#8A98A8">×</button>
+                </div>
+                <div style="padding:18px 20px;display:flex;flex-direction:column;gap:14px">
+                  <div style="display:flex;background:#EEF2F5;border-radius:10px;padding:3px;gap:2px">
+                    <sc-for list="{{ typeTabs }}" as="t" hint-placeholder-count="2">
+                      <button onClick="{{ t.onClick }}" style="flex:1;border:none;background:{{ t.bg }};color:{{ t.fg }};border-radius:8px;padding:9px;font-size:12.5px;font-weight:700">{{ t.label }}</button>
+                    </sc-for>
+                  </div>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                    <div>
+                      <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Prénom</div>
+                      <input value="{{ newFirst }}" onChange="{{ onNewFirst }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;outline:none" />
+                    </div>
+                    <div>
+                      <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Nom</div>
+                      <input value="{{ newLast }}" onChange="{{ onNewLast }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;outline:none" />
+                    </div>
+                  </div>
+                  <div>
+                    <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Email</div>
+                    <input value="{{ newEmail }}" onChange="{{ onNewEmail }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;outline:none" />
+                  </div>
+                  <sc-if value="{{ isNewAgent }}" hint-placeholder-val="{{ true }}">
+                    <div>
+                      <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Commune</div>
+                      <select value="{{ newCommune }}" onChange="{{ onNewCommune }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;background:#fff">
+                        <sc-for list="{{ communeChoices }}" as="c" hint-placeholder-count="3">
+                          <option value="{{ c }}">{{ c }}</option>
+                        </sc-for>
+                      </select>
+                    </div>
+                    <div>
+                      <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Rôle</div>
+                      <select value="{{ newRole }}" onChange="{{ onNewRole }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;background:#fff">
+                        <option value="agent">Agent</option>
+                        <option value="chef">Chef de service</option>
+                        <option value="admin">Administrateur</option>
+                      </select>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ hasNewError }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-size:12.5px;color:#D62839">{{ newError }}</div>
+                  </sc-if>
+                  <button onClick="{{ saveNewAccount }}" style="width:100%;padding:13px;border:none;border-radius:10px;background:#1B2A41;color:#fff;font-size:14.5px;font-weight:600">Créer le compte</button>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ replaceOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="background:#fff;border:1px solid rgba(214,40,57,.35);border-radius:12px;box-shadow:0 12px 30px rgba(27,42,65,.14);overflow:hidden">
+                <div style="padding:17px 20px;border-bottom:1px solid rgba(214,40,57,.2);background:#FDF7F8">
+                  <span style="font-family:Georgia,serif;font-size:16px;font-weight:700;color:#1B2A41">Nommer un remplaçant</span>
+                  <p style="margin:8px 0 0;font-size:12.5px;line-height:1.6;color:#48566B">{{ replaceMsg }}</p>
+                </div>
+                <div style="padding:18px 20px;display:flex;flex-direction:column;gap:14px">
+                  <div style="display:flex;background:#EEF2F5;border-radius:10px;padding:3px;gap:2px">
+                    <sc-for list="{{ replaceTabs }}" as="t" hint-placeholder-count="2">
+                      <button onClick="{{ t.onClick }}" style="flex:1;border:none;background:{{ t.bg }};color:{{ t.fg }};border-radius:8px;padding:9px;font-size:12.5px;font-weight:700">{{ t.label }}</button>
+                    </sc-for>
+                  </div>
+
+                  <sc-if value="{{ replaceIsSelect }}" hint-placeholder-val="{{ true }}">
+                    <sc-if value="{{ hasReplaceCandidates }}" hint-placeholder-val="{{ true }}">
+                      <div>
+                        <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Agent à promouvoir</div>
+                        <select value="{{ replacementKey }}" onChange="{{ onReplacementKey }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;background:#fff">
+                          <sc-for list="{{ replaceCandidates }}" as="c" hint-placeholder-count="2">
+                            <option value="{{ c.key }}">{{ c.label }}</option>
+                          </sc-for>
+                        </select>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ noReplaceCandidates }}" hint-placeholder-val="{{ false }}">
+                      <div style="font-size:12.5px;color:#8A98A8;line-height:1.5">Aucun autre agent dans cette commune — utilisez "Nouvelle personne".</div>
+                    </sc-if>
+                  </sc-if>
+                  <sc-if value="{{ replaceIsNew }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                      <div>
+                        <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Prénom</div>
+                        <input value="{{ replFirst }}" onChange="{{ onReplFirst }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;outline:none" />
+                      </div>
+                      <div>
+                        <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Nom</div>
+                        <input value="{{ replLast }}" onChange="{{ onReplLast }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;outline:none" />
+                      </div>
+                    </div>
+                    <div>
+                      <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Email</div>
+                      <input value="{{ replEmail }}" onChange="{{ onReplEmail }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;outline:none" />
+                    </div>
+                  </sc-if>
+
+                  <sc-if value="{{ hasReplaceError }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-size:12.5px;color:#D62839">{{ replaceError }}</div>
+                  </sc-if>
+                  <button onClick="{{ confirmReplace }}" style="width:100%;padding:13px;border:none;border-radius:10px;background:#D62839;color:#fff;font-size:14.5px;font-weight:600">Confirmer et supprimer</button>
+                  <button onClick="{{ cancelReplace }}" style="width:100%;padding:11px;border:none;background:none;color:#8A98A8;font-size:13px;font-weight:600">Annuler</button>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isMsg }}" hint-placeholder-val="{{ false }}">
+        <div class="rg-content" style="display:flex;flex-direction:column;gap:16px;height:calc(100vh - 190px)">
+          <div>
+            <h1 style="margin:0;font-family:Georgia,Cambria,serif;font-size:24px;font-weight:700;letter-spacing:-.3px">Messagerie</h1>
+            <div style="font-size:12.5px;color:#8A98A8;margin-top:3px">Messages envoyés par les administrateurs communaux à "Reeper"</div>
+          </div>
+          <div class="rg-msg-split" style="gap:18px;flex:1;min-height:0">
+            <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:auto">
+              <sc-for list="{{ msgConvs }}" as="c" hint-placeholder-count="4">
+                <button onClick="{{ c.onClick }}" style="width:100%;display:flex;align-items:center;gap:11px;padding:13px 16px;border:none;border-bottom:1px solid rgba(27,42,65,.06);background:{{ c.rowBg }};text-align:left" style-hover="background:#FAFBFC">
+                  <span style="width:34px;height:34px;border-radius:50%;background:{{ c.avBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:none">{{ c.initials }}</span>
+                  <span style="flex:1;min-width:0">
+                    <span style="display:flex;align-items:center;gap:6px">
+                      <span style="font-size:13.5px;font-weight:600;color:#1B2A41">{{ c.name }}</span>
+                      <sc-if value="{{ c.unread }}" hint-placeholder-val="{{ false }}">
+                        <span style="width:7px;height:7px;border-radius:50%;background:#D62839;flex:none"></span>
+                      </sc-if>
+                    </span>
+                    <span style="display:block;font-size:11.5px;color:#8A98A8;margin-top:2px">{{ c.role }}</span>
+                  </span>
+                </button>
+              </sc-for>
+              <sc-if value="{{ msgConvsEmpty }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:30px 18px;text-align:center;font-size:12.5px;color:#8A98A8;line-height:1.6">Aucun message pour le moment. Les administrateurs communaux peuvent écrire à "Reeper" depuis leur messagerie.</div>
+              </sc-if>
+            </div>
+
+            <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;display:flex;flex-direction:column;overflow:hidden">
+              <sc-if value="{{ hasCurConv }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:15px 20px;border-bottom:1px solid rgba(27,42,65,.08);display:flex;align-items:center;gap:11px">
+                  <span style="width:32px;height:32px;border-radius:50%;background:{{ curConv.avBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;flex:none">{{ curConv.initials }}</span>
+                  <span>
+                    <span style="display:block;font-size:14px;font-weight:600">{{ curConv.name }}</span>
+                    <span style="display:block;font-size:11.5px;color:#8A98A8">{{ curConv.role }}</span>
+                  </span>
+                </div>
+                <div style="flex:1;overflow:auto;padding:18px 20px;display:flex;flex-direction:column;gap:12px">
+                  <sc-for list="{{ curThread }}" as="m" hint-placeholder-count="3">
+                    <div style="display:flex;justify-content:{{ m.justify }}">
+                      <div style="max-width:70%;background:{{ m.bg }};color:{{ m.fg }};border-radius:12px;padding:10px 14px">
+                        <div style="font-size:13.5px;line-height:1.5;white-space:pre-wrap">{{ m.text }}</div>
+                        <div style="font-size:10.5px;margin-top:5px;opacity:.7">{{ m.when }}</div>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="padding:14px 20px;border-top:1px solid rgba(27,42,65,.08);display:flex;gap:10px">
+                  <input value="{{ draft }}" onChange="{{ onDraft }}" onKeyDown="{{ onDraftKeyDown }}" placeholder="Répondre en tant que Reeper…" style="flex:1;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:10px 14px;font-size:13.5px;outline:none" />
+                  <button onClick="{{ sendDraft }}" style="border:none;background:#1B2A41;color:#fff;border-radius:9px;padding:10px 18px;font-size:13.5px;font-weight:600">Envoyer</button>
+                </div>
+              </sc-if>
+              <sc-if value="{{ noCurConv }}" hint-placeholder-val="{{ true }}">
+                <div style="flex:1;display:flex;align-items:center;justify-content:center;font-size:13px;color:#8A98A8">Sélectionnez une conversation</div>
+              </sc-if>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+    </div>
+
+    <div class="rg-mobile-nav" style="flex:none;background:#fff;border-top:1px solid rgba(27,42,65,.1);padding:8px 4px 12px">
+      <sc-for list="{{ nav }}" as="n" hint-placeholder-count="4">
+        <button onClick="{{ n.onClick }}" style="border:none;background:none;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 2px;min-height:44px;color:{{ n.fg }};flex:1;min-width:0">
+          <span style="width:16px;height:16px;border-radius:5px;background:{{ n.fg }};opacity:.85"></span>
+          <span style="font-size:9.5px;font-weight:{{ n.weight }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%">{{ n.label }}</span>
+        </button>
+      </sc-for>
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1060}}">
+const Store = window.ReeperStore;
+
+const STATUS = {
+  Nouveau: { bg: "#E7EDF3", fg: "#31506F", dot: "#D62839" },
+  "En cours": { bg: "#FDF0E2", fg: "#A96A16", dot: "#E8A33D" },
+  "Planifié (travaux)": { bg: "#EDE9F5", fg: "#54459B", dot: "#7A6BC4" },
+  Traité: { bg: "#E5F1EA", fg: "#2E6B48", dot: "#3F8F63" }
+};
+const STATUS_ORDER = ["Nouveau", "En cours", "Planifié (travaux)", "Traité"];
+
+const fmtDateTime = (ts) => {
+  const d = new Date(ts);
+  return d.toLocaleDateString("fr-CH", { day: "2-digit", month: "2-digit" }) + " " + d.toLocaleTimeString("fr-CH", { hour: "2-digit", minute: "2-digit" });
+};
+
+const CATS = Object.keys(Store.TREE);
+const COMMUNE_NAMES = Object.keys(Store.COMMUNES);
+
+const FALLBACK_SESSION = { type: "gerant", key: "", displayName: "Gérant", firstName: "", initials: "··", avBg: "#1B2A41", role: "Gérant", username: "" };
+
+function roleTier(roleStr) {
+  const r = (roleStr || "").toLowerCase();
+  if (r.indexOf("administra") >= 0) return "Administrateur";
+  if (r.indexOf("chef") >= 0) return "Chef de service";
+  return "Agent";
+}
+const ROLE_TAG = {
+  Administrateur: { bg: "#E7EDF3", fg: "#31506F" },
+  "Chef de service": { bg: "#EDE9F5", fg: "#54459B" },
+  Agent: { bg: "#F3F6F8", fg: "#48566B" }
+};
+
+function decoReep(r) {
+  const c = STATUS[r.status] || STATUS.Nouveau;
+  return { ...r, bg: c.bg, fg: c.fg, dot: c.dot };
+}
+
+class Component extends DCLogic {
+  state = {
+    screen: "dash",
+    profileOpen: false,
+    selId: null,
+    filterCommune: "Toutes", filterCat: "Toutes", filterStatus: "Tous",
+    acctQuery: "", acctFilterCommune: "Toutes", acctFilterType: "Tous",
+    pendingDeleteKey: null,
+    sheetOpen: false, newType: "agent", newFirst: "", newLast: "", newEmail: "", newCommune: COMMUNE_NAMES[0], newRole: "agent", newError: "",
+    replaceOpen: false, replaceForKey: null, replaceCommune: "", replaceMode: "select", replacementKey: "",
+    replFirst: "", replLast: "", replEmail: "", replaceError: "",
+    msgSel: null, draft: "",
+    pwdPanelOpen: false, pwdOld: "", pwdNew1: "", pwdNew2: "", pwdMsg: "", pwdMsgIsError: false,
+    shellFitH: null
+  };
+
+  componentDidMount() {
+    this._syncShellHeight();
+    window.addEventListener("resize", this._onResize = () => this._syncShellHeight());
+    Store.startAutoSync();
+    window.addEventListener("reeper:sync", this._onSync = () => this.forceUpdate());
+  }
+  componentDidUpdate() { this._syncShellHeight(); }
+  componentWillUnmount() {
+    if (this._onResize) window.removeEventListener("resize", this._onResize);
+    if (this._onSync) window.removeEventListener("reeper:sync", this._onSync);
+  }
+  _syncShellHeight() {
+    const shell = document.querySelector('[data-role="shell"]');
+    if (!shell) return;
+    const top = shell.getBoundingClientRect().top;
+    const bottomPad = window.innerWidth <= 900 ? 12 : 40;
+    const h = Math.max(400, Math.round(window.innerHeight - top - bottomPad));
+    const px = h + "px";
+    if (px !== this.state.shellFitH) this.setState({ shellFitH: px });
+  }
+
+  renderVals() {
+    const s = this.state;
+    const session = Store.getSession() || FALLBACK_SESSION;
+
+    const goSite = () => { window.location.href = "./Reeper Web.dc.html"; };
+    const doLogout = () => { Store.logout(); window.location.href = "./Reeper Web.dc.html"; };
+
+    const navDef = [["Tableau de bord", "dash"], ["Reeps", "reeps"], ["Comptes", "accounts"], ["Messagerie", "msg"]];
+
+    const startDelete = (key) => {
+      if (s.pendingDeleteKey === key) {
+        const res = Store.removeAccount(key);
+        if (!res.ok && res.needsReplacement) {
+          const hasCandidates = Store.agentsForCommune(res.commune).some((a) => a.key !== key);
+          this.setState({ pendingDeleteKey: null, replaceOpen: true, replaceForKey: key, replaceCommune: res.commune, replaceMode: hasCandidates ? "select" : "new", replacementKey: "", replFirst: "", replLast: "", replEmail: "", replaceError: "" });
+          return;
+        }
+        this.setState({ pendingDeleteKey: null });
+        return;
+      }
+      this.setState({ pendingDeleteKey: key });
+    };
+
+    const allReeps = Store.getReeps({}).map(decoReep);
+    const reepFiltered = allReeps.filter((r) => {
+      if (s.filterCommune !== "Toutes" && r.commune !== s.filterCommune) return false;
+      if (s.filterCat !== "Toutes" && (r.path || [])[0] !== s.filterCat) return false;
+      if (s.filterStatus !== "Tous" && r.status !== s.filterStatus) return false;
+      return true;
+    });
+    const selReepRaw = s.selId ? allReeps.find((r) => r.id === s.selId) : null;
+
+    const allAccounts = Store.listAccounts({}).filter((a) => a.type !== "gerant");
+    const query = (s.acctQuery || "").trim().toLowerCase();
+    const acctActive = !!query || s.acctFilterCommune !== "Toutes";
+    const acctFiltered = !acctActive ? [] : allAccounts.filter((a) => {
+      if (s.acctFilterCommune !== "Toutes" && (a.commune || "—") !== s.acctFilterCommune) return false;
+      if (s.acctFilterType === "Citoyens" && a.type !== "citizen") return false;
+      if (s.acctFilterType === "Agents" && a.type !== "agent") return false;
+      if (query) {
+        const hay = ((a.displayName || "") + " " + (a.email || "") + " " + (a.username || "")).toLowerCase();
+        if (hay.indexOf(query) === -1) return false;
+      }
+      return true;
+    });
+
+    const replaceCandidates = s.replaceForKey
+      ? Store.agentsForCommune(s.replaceCommune).filter((a) => a.key !== s.replaceForKey)
+      : [];
+
+    const rawInboxes = Store.inboxFor(Store.REEPER_SUPPORT_KEY).concat(session.key ? Store.inboxFor(session.key) : []);
+    const inboxByKey = {};
+    rawInboxes.forEach((c) => { if (!inboxByKey[c.withKey] || inboxByKey[c.withKey].lastWhen < c.lastWhen) inboxByKey[c.withKey] = c; });
+    const supportInbox = Object.keys(inboxByKey).map((k) => inboxByKey[k]).sort((a, b) => b.lastWhen - a.lastWhen);
+    const curSupportConv = s.msgSel ? supportInbox.find((c) => c.withKey === s.msgSel) : supportInbox[0];
+    const curSupportThread = curSupportConv
+      ? Store.getThread(Store.REEPER_SUPPORT_KEY, curSupportConv.withKey)
+          .concat(session.key ? Store.getThread(session.key, curSupportConv.withKey) : [])
+          .sort((a, b) => a.when - b.when)
+      : [];
+    const lastIncoming = curSupportThread.slice().reverse().find((m) => curSupportConv && m.from === curSupportConv.withKey);
+    const replyFromKey = (!lastIncoming || lastIncoming.to === Store.REEPER_SUPPORT_KEY) ? Store.REEPER_SUPPORT_KEY : session.key;
+    const sendDraft = () => {
+      if (!curSupportConv || !s.draft.trim()) return;
+      Store.sendMessage({ from: replyFromKey, to: curSupportConv.withKey, text: s.draft.trim() });
+      this.setState({ draft: "" });
+    };
+
+    return {
+      goSite, doLogout,
+      nav: navDef.map(([label, key]) => {
+        const on = s.screen === key;
+        return { label, onClick: () => this.setState({ screen: key, profileOpen: false }), bg: on ? "#1B2A41" : "transparent", fg: on ? "#fff" : "#5A6B7E", weight: on ? 700 : 500 };
+      }),
+
+      profileOpen: s.profileOpen,
+      profileBorder: s.profileOpen ? "#1B2A41" : "rgba(27,42,65,.14)",
+      toggleProfile: () => this.setState({ profileOpen: !s.profileOpen }),
+      meInitials: session.initials, meAvBg: session.avBg,
+      meFirstName: session.firstName || (session.displayName || "").split(" ")[0],
+      meName: session.displayName, meRole: session.role,
+
+      pwdPanelOpen: s.pwdPanelOpen,
+      togglePwdPanel: () => this.setState({ pwdPanelOpen: !s.pwdPanelOpen, pwdMsg: "" }),
+      pwdOld: s.pwdOld, onPwdOld: (e) => this.setState({ pwdOld: e.target.value, pwdMsg: "" }),
+      pwdNew1: s.pwdNew1, onPwdNew1: (e) => this.setState({ pwdNew1: e.target.value, pwdMsg: "" }),
+      pwdNew2: s.pwdNew2, onPwdNew2: (e) => this.setState({ pwdNew2: e.target.value, pwdMsg: "" }),
+      hasPwdMsg: !!s.pwdMsg, pwdMsg: s.pwdMsg,
+      pwdMsgColor: s.pwdMsgIsError ? "#D62839" : "#2E6B48",
+      doChangePwd: () => {
+        if (!session.key) return;
+        if (!s.pwdNew1.trim()) { this.setState({ pwdMsg: "Le nouveau mot de passe ne peut pas être vide.", pwdMsgIsError: true }); return; }
+        if (s.pwdNew1 !== s.pwdNew2) { this.setState({ pwdMsg: "Les deux nouveaux mots de passe ne correspondent pas.", pwdMsgIsError: true }); return; }
+        Store.changePassword(session.key, s.pwdOld, s.pwdNew1).then((res) => {
+          if (!res.ok) { this.setState({ pwdMsg: res.error, pwdMsgIsError: true }); return; }
+          this.setState({ pwdMsg: "Mot de passe mis à jour.", pwdMsgIsError: false, pwdOld: "", pwdNew1: "", pwdNew2: "" });
+        });
+      },
+
+      shellH: s.shellFitH || "900px",
+      isDash: s.screen === "dash", isReeps: s.screen === "reeps", isAccounts: s.screen === "accounts", isMsg: s.screen === "msg",
+
+      statCards: (() => {
+        const g = Store.statsGlobal();
+        return [
+          { label: "Cette semaine", value: String(g.week), note: "Reeps reçus" },
+          { label: "Ce mois-ci", value: String(g.month), note: "Reeps reçus" },
+          { label: "Total", value: String(g.total), note: "depuis le lancement" }
+        ];
+      })(),
+      byCommuneRows: (() => {
+        const g = Store.statsGlobal();
+        const max = Math.max(1, ...Object.values(g.byCommune));
+        return COMMUNE_NAMES.map((name) => ({ name, count: g.byCommune[name] || 0, pct: Math.round(((g.byCommune[name] || 0) / max) * 100) + "%" }));
+      })(),
+      byStatusRows: (() => {
+        const g = Store.statsGlobal();
+        const max = Math.max(1, ...Object.values(g.byStatus));
+        return STATUS_ORDER.map((name) => ({ name, count: g.byStatus[name] || 0, pct: Math.round(((g.byStatus[name] || 0) / max) * 100) + "%", dot: STATUS[name].dot }));
+      })(),
+
+      filterCommune: s.filterCommune, onFilterCommune: (e) => this.setState({ filterCommune: e.target.value }),
+      communeOptions: ["Toutes"].concat(COMMUNE_NAMES),
+      filterCat: s.filterCat, onFilterCat: (e) => this.setState({ filterCat: e.target.value }),
+      catOptions: ["Toutes"].concat(CATS),
+      filterStatus: s.filterStatus, onFilterStatus: (e) => this.setState({ filterStatus: e.target.value }),
+      statusOptions: ["Tous"].concat(STATUS_ORDER),
+
+      reepRowCount: reepFiltered.length,
+      reepsEmpty: reepFiltered.length === 0,
+      reepRows: reepFiltered.map((r) => ({
+        ...r, rowBg: r.id === s.selId ? "#FAFBFC" : "#fff",
+        onClick: () => this.setState({ selId: r.id })
+      })),
+
+      hasSelReep: !!selReepRaw,
+      closeSelReep: () => this.setState({ selId: null }),
+      selReep: selReepRaw ? {
+        ...selReepRaw,
+        timeline: selReepRaw.timeline.slice().reverse().map((t) => ({ label: t.label, who: t.who, when: fmtDateTime(t.when) }))
+      } : { title: "", id: "", commune: "", place: "", desc: "", bg: "", fg: "", status: "", timeline: [] },
+      statusButtons: selReepRaw ? STATUS_ORDER.map((st) => ({
+        label: st, border: selReepRaw.status === st ? "#1B2A41" : "rgba(27,42,65,.16)",
+        bg: selReepRaw.status === st ? "#1B2A41" : "#fff", fg: selReepRaw.status === st ? "#fff" : "#48566B",
+        onClick: () => { Store.updateStatus(selReepRaw.id, st, session.displayName || "Gérant"); this.forceUpdate(); }
+      })) : [],
+
+      acctQuery: s.acctQuery, onAcctQuery: (e) => this.setState({ acctQuery: e.target.value }),
+      acctFilterCommune: s.acctFilterCommune, onAcctFilterCommune: (e) => this.setState({ acctFilterCommune: e.target.value }),
+      acctCommuneOptions: ["Toutes"].concat(COMMUNE_NAMES).concat(["—"]),
+      acctFilterType: s.acctFilterType, onAcctFilterType: (e) => this.setState({ acctFilterType: e.target.value }),
+      acctTypeOptions: ["Tous", "Citoyens", "Agents"],
+      acctGridCols: (s.sheetOpen || s.replaceOpen) ? "1fr 380px" : "1fr",
+      acctPromptEmpty: !acctActive, acctShowResults: acctActive,
+
+      acctsEmpty: acctFiltered.length === 0,
+      acctRows: acctFiltered.map((a) => {
+        const tier = a.type === "citizen" ? "Citoyen" : roleTier(a.role);
+        const pending = a.status === "pending" || (a.type === "citizen" && a.pendingCommune);
+        const deleting = s.pendingDeleteKey === a.key;
+        const tag = ROLE_TAG[tier] || ROLE_TAG.Agent;
+        return {
+          key: a.key, initials: a.initials, avBg: a.avBg, name: a.displayName, email: a.email,
+          typeLabel: a.type === "citizen" ? "Citoyen" : "Agent",
+          commune: a.commune || "—",
+          roleLabel: pending ? "En attente" : tier,
+          roleBg: pending ? "#FDF0E2" : tag.bg,
+          roleFg: pending ? "#A96A16" : tag.fg,
+          pending: !!pending,
+          onApprove: () => { Store.approveAccount(a.key, session.key); this.forceUpdate(); },
+          delLabel: deleting ? "Confirmer ?" : "Supprimer",
+          delBorder: deleting ? "rgba(214,40,57,.5)" : "rgba(27,42,65,.14)",
+          delBg: deleting ? "#FDF7F8" : "#fff",
+          delFg: deleting ? "#D62839" : "#48566B",
+          onDelete: () => startDelete(a.key)
+        };
+      }),
+
+      openNewAccount: () => this.setState({ sheetOpen: true, replaceOpen: false, newType: "agent", newFirst: "", newLast: "", newEmail: "", newCommune: COMMUNE_NAMES[0], newRole: "agent", newError: "" }),
+      closeNewAccount: () => this.setState({ sheetOpen: false }),
+      sheetOpen: s.sheetOpen,
+      typeTabs: [["citizen", "Citoyen"], ["agent", "Agent / commune"]].concat(session.primary ? [["gerant", "Gérant Reeper"]] : []).map(([k, label]) => ({
+        label, onClick: () => this.setState({ newType: k, newError: "" }),
+        bg: s.newType === k ? "#fff" : "transparent", fg: s.newType === k ? "#1B2A41" : "#5A6B7E"
+      })),
+      isNewAgent: s.newType === "agent",
+      isNewGerant: s.newType === "gerant",
+      newFirst: s.newFirst, onNewFirst: (e) => this.setState({ newFirst: e.target.value, newError: "" }),
+      newLast: s.newLast, onNewLast: (e) => this.setState({ newLast: e.target.value, newError: "" }),
+      newEmail: s.newEmail, onNewEmail: (e) => this.setState({ newEmail: e.target.value, newError: "" }),
+      newCommune: s.newCommune, onNewCommune: (e) => this.setState({ newCommune: e.target.value }),
+      communeChoices: COMMUNE_NAMES,
+      newRole: s.newRole, onNewRole: (e) => this.setState({ newRole: e.target.value }),
+      hasNewError: !!s.newError, newError: s.newError,
+      saveNewAccount: () => {
+        if (s.newType === "gerant") {
+          const res = Store.createGerant(session.key, { firstName: s.newFirst, lastName: s.newLast, email: s.newEmail });
+          if (!res.ok) { this.setState({ newError: res.error }); return; }
+          this.setState({ sheetOpen: false, newFirst: "", newLast: "", newEmail: "", newError: "" });
+          return;
+        }
+        const o = { firstName: s.newFirst, lastName: s.newLast, email: s.newEmail, role: s.newType === "citizen" ? "citizen" : s.newRole, commune: s.newType === "agent" ? s.newCommune : undefined };
+        Store.createAccount(o).then((res) => {
+          if (!res.ok) { this.setState({ newError: res.error }); return; }
+          this.setState({ sheetOpen: false, newFirst: "", newLast: "", newEmail: "", newError: "" });
+        });
+      },
+
+      replaceOpen: s.replaceOpen,
+      replaceMsg: "Cette personne est l'unique administrateur·rice de la commune de " + s.replaceCommune + ". Choisissez qui la remplace avant de continuer la suppression.",
+      replaceTabs: [["select", "Agent existant"], ["new", "Nouvelle personne"]].map(([k, label]) => ({
+        label, onClick: () => this.setState({ replaceMode: k, replaceError: "" }),
+        bg: s.replaceMode === k ? "#fff" : "transparent", fg: s.replaceMode === k ? "#1B2A41" : "#5A6B7E"
+      })),
+      replaceIsSelect: s.replaceMode === "select", replaceIsNew: s.replaceMode === "new",
+      hasReplaceCandidates: replaceCandidates.length > 0, noReplaceCandidates: replaceCandidates.length === 0,
+      replaceCandidates: replaceCandidates.map((a) => ({ key: a.key, label: a.displayName })),
+      replacementKey: s.replacementKey, onReplacementKey: (e) => this.setState({ replacementKey: e.target.value }),
+      replFirst: s.replFirst, onReplFirst: (e) => this.setState({ replFirst: e.target.value }),
+      replLast: s.replLast, onReplLast: (e) => this.setState({ replLast: e.target.value }),
+      replEmail: s.replEmail, onReplEmail: (e) => this.setState({ replEmail: e.target.value }),
+      hasReplaceError: !!s.replaceError, replaceError: s.replaceError,
+      cancelReplace: () => this.setState({ replaceOpen: false, replaceForKey: null }),
+      confirmReplace: () => {
+        if (!s.replaceForKey) return;
+        const opts = s.replaceMode === "select"
+          ? { replacementKey: s.replacementKey || (replaceCandidates[0] || {}).key }
+          : { newAdmin: { first: s.replFirst, last: s.replLast, email: s.replEmail } };
+        const res = Store.removeAccount(s.replaceForKey, opts);
+        if (!res.ok) { this.setState({ replaceError: res.error }); return; }
+        this.setState({ replaceOpen: false, replaceForKey: null, replaceError: "" });
+      },
+
+      msgConvs: supportInbox.map((c) => ({
+        name: c.withName, role: c.withRole, initials: c.withInitials, avBg: c.withAvBg, unread: c.unread,
+        rowBg: c.withKey === (curSupportConv || {}).withKey ? "#FAFBFC" : "#fff",
+        onClick: () => {
+          Store.markThreadRead(Store.REEPER_SUPPORT_KEY, c.withKey);
+          if (session.key) Store.markThreadRead(session.key, c.withKey);
+          this.setState({ msgSel: c.withKey });
+        }
+      })),
+      msgConvsEmpty: supportInbox.length === 0,
+      hasCurConv: !!curSupportConv, noCurConv: !curSupportConv,
+      curConv: curSupportConv ? { name: curSupportConv.withName, role: curSupportConv.withRole, initials: curSupportConv.withInitials, avBg: curSupportConv.withAvBg } : { name: "", role: "", initials: "", avBg: "" },
+      curThread: curSupportThread.map((m) => {
+        const mine = m.from === Store.REEPER_SUPPORT_KEY || m.from === session.key;
+        return {
+          text: m.text, when: fmtDateTime(m.when),
+          justify: mine ? "flex-end" : "flex-start",
+          bg: mine ? "#1B2A41" : "#F3F6F8",
+          fg: mine ? "#fff" : "#1B2A41"
+        };
+      }),
+      draft: s.draft, onDraft: (e) => this.setState({ draft: e.target.value }),
+      onDraftKeyDown: (e) => { if (e.key === "Enter") sendDraft(); },
+      sendDraft
+    };
+  }
+}
+</script>
+</body>
+</html>

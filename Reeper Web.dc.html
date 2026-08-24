@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="only light">
+<meta name="theme-color" content="#1B2A41">
+<script src="./reeper-shared.js"></script>
+<script src="./reeper-map.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<script src="./image-slot.js"></script>
+<style>
+:root{color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:#E7ECF0;font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;color:#1B2A41}
+a{color:#1B2A41}a:hover{color:#D62839}
+button{font-family:inherit;cursor:pointer}
+input,textarea,select{font-family:inherit}
+.rp-page{padding:38px 34px 56px}
+.rp-shell{width:1240px}
+.rp-header{padding:0 28px;gap:26px;height:70px}
+.rp-nav{display:flex;gap:2px}
+.rp-nav button{padding:10px 13px}
+.rp-mobile-nav{display:none}
+.rp-hero{display:grid;grid-template-columns:1.15fr .85fr}
+.rp-grid3{display:grid;grid-template-columns:repeat(3,1fr)}
+.rp-report{padding:34px 40px 46px;display:grid;grid-template-columns:250px 1fr;gap:34px}
+.rp-track{padding:34px 40px 46px;display:grid;grid-template-columns:400px 1fr;gap:28px}
+.rp-2col{display:grid;grid-template-columns:1fr 1fr}
+.rp-wizard-nav{position:sticky;top:0}
+.rp-center-page{padding:52px 40px 60px}
+.rp-card-pad{padding:26px 28px}
+@media (max-width: 900px) {
+  .rp-page{padding:16px 12px 32px}
+  .rp-banner{display:none}
+  .rp-header{padding:0 14px;gap:12px;height:60px}
+  .rp-wordmark-text{display:none}
+  .rp-nav{display:none}
+  .rp-mobile-nav{display:flex}
+  .rp-hero{grid-template-columns:minmax(0,1fr)}
+  .rp-hero-intro{padding:32px 22px 30px !important}
+  .rp-hero-title{font-size:32px !important}
+  .rp-grid3{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+  .rp-report{padding:16px 14px 30px;grid-template-columns:minmax(0,1fr);gap:16px}
+  .rp-report .rp-wizard-nav{position:static;order:2}
+  .rp-track{padding:16px 14px 30px;grid-template-columns:minmax(0,1fr);gap:16px}
+  .rp-2col{grid-template-columns:minmax(0,1fr)}
+  .rp-center-page{padding:20px 12px 40px}
+  .rp-card-pad{padding:18px 16px}
+  .photo-grid{grid-template-columns:repeat(3,minmax(0,1fr)) !important}
+  .rp-hero, .rp-hero > *, .rp-grid3 > *, .rp-report > *, .rp-track > *, .rp-2col > *{min-width:0}
+  h1, h2, p{overflow-wrap:break-word;word-break:break-word}
+  [style*="grid-template-columns"] > *{min-width:0}
+}
+</style>
+</helmet>
+
+<div class="rp-page" style="min-height:100vh;box-sizing:border-box;background:#E7ECF0;background-image:repeating-radial-gradient(circle at 22% 28%, rgba(27,42,65,.05) 0 1px, transparent 1px 28px);display:flex;flex-direction:column;align-items:center;gap:22px">
+
+  <div class="rp-shell rp-banner" style="max-width:100%">
+    <div style="display:flex;align-items:baseline;gap:10px">
+      <span style="font-family:Georgia,Cambria,serif;font-size:29px;font-weight:700;letter-spacing:-.5px">Reeper</span><span style="width:8px;height:8px;border-radius:50%;background:#D62839;display:inline-block"></span>
+      <span style="font-family:Georgia,serif;font-size:14.5px;color:#5A6B7E;font-style:italic">Vue web — même parcours que l'application mobile</span>
+    </div>
+    <p style="margin:11px 0 0;font-size:13.5px;line-height:1.6;color:#48566B;max-width:96ch;text-wrap:pretty">Signaler et suivre depuis un navigateur, sans installer l'application. Les mêmes étapes, les mêmes statuts, les mêmes textes. Une connexion avec un compte d'agent ouvre directement l'espace commune.</p>
+  </div>
+
+    <div class="rp-shell" data-role="shell" style="max-width:100%;background:#F3F6F8;border:1px solid rgba(27,42,65,.14);border-radius:14px;overflow:hidden;box-shadow:0 18px 44px rgba(27,42,65,.14);display:flex;flex-direction:column;height:{{ shellH }}">
+
+      <div class="rp-header" style="flex:none;background:#fff;border-bottom:1px solid rgba(27,42,65,.1);display:flex;align-items:center;position:relative;z-index:5">
+        <button onClick="{{ goHome }}" style="border:none;background:none;padding:6px 2px;display:flex;align-items:flex-end;gap:8px" style-hover="opacity:.72">
+          <span style="display:flex;align-items:flex-end;gap:3px">
+            <span style="font-family:Georgia,Cambria,serif;font-size:25px;font-weight:700;line-height:1">R</span>
+            <span style="width:7px;height:7px;border-radius:50%;background:#D62839;margin-bottom:3px"></span>
+          </span>
+          <span class="rp-wordmark-text" style="font-family:Georgia,Cambria,serif;font-size:20px;font-weight:700;letter-spacing:-.3px;line-height:1">Reeper</span>
+        </button>
+        <div class="rp-nav">
+          <sc-for list="{{ nav }}" as="n" hint-placeholder-count="4">
+            <button onClick="{{ n.onClick }}" style="border:none;background:none;font-size:13.5px;font-weight:{{ n.weight }};color:{{ n.fg }};border-bottom:2px solid {{ n.under }};border-radius:0">{{ n.label }}</button>
+          </sc-for>
+        </div>
+        <div style="flex:1"></div>
+
+        <sc-if value="{{ notLoggedIn }}" hint-placeholder-val="{{ true }}">
+          <button onClick="{{ authClick }}" style="border:1px solid #1B2A41;background:#1B2A41;color:#fff;border-radius:10px;padding:10px 16px;font-size:13px;font-weight:600">Se connecter</button>
+        </sc-if>
+
+        <sc-if value="{{ loggedIn }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ toggleProfile }}" style="border:1px solid {{ profileBorder }};background:#fff;border-radius:999px;padding:5px 12px 5px 6px;display:flex;align-items:center;gap:10px;color:#1B2A41">
+            <span style="width:32px;height:32px;border-radius:50%;background:{{ meAvBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">{{ meInitials }}</span>
+            <span style="font-size:13px;font-weight:600">{{ meFirstName }}</span>
+            <span style="font-size:13px;color:#5A6B7E">▾</span>
+          </button>
+          <sc-if value="{{ profileOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;top:64px;right:28px;width:250px;background:#fff;border:1px solid rgba(27,42,65,.14);border-radius:12px;box-shadow:0 16px 38px rgba(27,42,65,.2);overflow:hidden;z-index:20">
+              <div style="padding:15px 17px;border-bottom:1px solid rgba(27,42,65,.08)">
+                <div style="font-size:14.5px;font-weight:600;color:#1B2A41">{{ meName }}</div>
+                <div style="font-size:12.5px;color:#8A98A8;margin-top:2px">{{ meRole }}</div>
+                <button onClick="{{ goRewards }}" style="margin-top:10px;display:flex;align-items:center;gap:6px;border:none;background:#FDF6E9;border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:700;color:#A96A16">
+                  <span>⭐</span><span>{{ mePoints }} points</span>
+                </button>
+              </div>
+              <sc-for list="{{ profileItems }}" as="p" hint-placeholder-count="3">
+                <button onClick="{{ p.onClick }}" style="width:100%;border:none;border-bottom:1px solid rgba(27,42,65,.06);background:#fff;padding:12px 17px;text-align:left;font-size:13.5px;color:#1B2A41" style-hover="background:#FAFBFC">{{ p.label }}</button>
+              </sc-for>
+              <button onClick="{{ authClick }}" style="width:100%;border:none;background:#FDF2F3;padding:13px 17px;text-align:left;font-size:13.5px;font-weight:600;color:#D62839">Se déconnecter</button>
+            </div>
+          </sc-if>
+        </sc-if>
+      </div>
+
+      <div style="flex:1;overflow:auto">
+
+        <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+          <div class="rp-hero">
+            <div class="rp-hero-intro" style="padding:56px 44px 48px;background:#fff">
+              <h1 class="rp-hero-title" style="margin:16px 0 0;font-family:Georgia,Cambria,serif;font-size:52px;line-height:1.1;font-weight:700;letter-spacing:-1.2px;text-wrap:pretty">La commune<br>dans votre navigateur.</h1>
+              <p style="margin:18px 0 0;font-size:16px;line-height:1.65;color:#48566B;max-width:46ch;text-wrap:pretty">Un lampadaire éteint, un dépôt sauvage, un nid-de-poule ? Signalez-le en moins d'une minute. Le bon service de votre commune le reçoit directement.</p>
+              <div style="margin-top:30px;display:flex;align-items:center;gap:16px">
+                <button onClick="{{ startReport }}" style="border:none;background:#D62839;color:#fff;border-radius:12px;padding:19px 30px;font-size:17px;font-weight:600;display:flex;align-items:center;gap:12px;box-shadow:0 10px 24px rgba(214,40,57,.28)">
+                  <span style="font-size:21px;line-height:1">+</span><span>Signaler</span>
+                </button>
+                <span style="font-family:Georgia,serif;font-style:italic;font-size:15px;color:#5A6B7E">Reep'it</span>
+              </div>
+              <p style="margin:18px 0 0;font-size:13px;color:#8A98A8">Aucun compte nécessaire pour signaler. Un compte est requis pour suivre vos Reeps.</p>
+
+              <div class="rp-grid3" style="margin-top:40px;border-top:1px solid rgba(27,42,65,.1);padding-top:26px;gap:22px">
+                <sc-for list="{{ steps3 }}" as="s" hint-placeholder-count="3">
+                  <div>
+                    <div style="font-family:Georgia,Cambria,serif;font-size:15px;font-weight:700;color:#D62839">{{ s.num }}</div>
+                    <div style="font-size:14.5px;font-weight:600;margin-top:7px">{{ s.title }}</div>
+                    <p style="margin:6px 0 0;font-size:13px;line-height:1.55;color:#5A6B7E;text-wrap:pretty">{{ s.body }}</p>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="padding:40px 36px 44px;display:flex;flex-direction:column;gap:20px">
+              <div style="background:#13202F;color:#fff;border-radius:16px;padding:24px 26px">
+                <div style="font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.55);font-weight:700">Urgence en cours</div>
+                <p style="margin:10px 0 16px;font-size:13.5px;line-height:1.6;color:rgba(255,255,255,.72);text-wrap:pretty">Reeper n'est pas un service d'urgence. En cas de danger immédiat, appelez directement :</p>
+                <div class="rp-grid3" style="gap:10px">
+                  <sc-for list="{{ emergency }}" as="e" hint-placeholder-count="3">
+                    <a href="{{ e.tel }}" style="text-decoration:none;color:#fff;border:1px solid rgba(255,255,255,.22);border-radius:11px;padding:13px 12px;display:block">
+                      <span style="display:block;font-family:ui-monospace,Menlo,monospace;font-size:21px;font-weight:700">{{ e.num }}</span>
+                      <span style="display:block;font-size:11.5px;color:rgba(255,255,255,.6);margin-top:3px">{{ e.label }}</span>
+                    </a>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:16px;overflow:hidden">
+                <div style="padding:18px 22px 12px;display:flex;align-items:baseline;gap:10px">
+                  <span style="font-family:Georgia,Cambria,serif;font-size:18px;font-weight:700;flex:1">Les derniers Reeps</span>
+                </div>
+                <sc-for list="{{ publicFeed }}" as="r" hint-placeholder-count="3">
+                  <div style="padding:14px 22px;border-top:1px solid rgba(27,42,65,.07);display:flex;align-items:center;gap:14px">
+                    <span style="width:52px;height:52px;flex:none;display:block">
+                      <image-slot id="{{ r.slot }}" shape="rounded" radius="9" src="{{ r.src }}" placeholder="{{ r.hint }}"></image-slot>
+                    </span>
+                    <span style="flex:1;min-width:0">
+                      <span style="display:block;font-size:14.5px;font-weight:600">{{ r.title }}</span>
+                      <span style="display:block;font-size:12px;color:#8A98A8;margin-top:3px">{{ r.meta }}</span>
+                    </span>
+                    <span style="flex:none;background:{{ r.bg }};color:{{ r.fg }};border-radius:999px;padding:5px 11px;font-size:11.5px;font-weight:700">{{ r.status }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isReport }}" hint-placeholder-val="{{ false }}">
+          <div class="rp-report" style="align-items:start">
+            <div class="rp-wizard-nav" style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:14px;padding:20px 20px 14px">
+              <div style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:14px">Votre signalement</div>
+              <sc-for list="{{ wizSteps }}" as="w" hint-placeholder-count="4">
+                <div style="display:flex;gap:12px;align-items:flex-start;padding-bottom:16px">
+                  <span style="width:26px;height:26px;border-radius:50%;flex:none;background:{{ w.dotBg }};color:{{ w.dotFg }};border:1px solid {{ w.dotBorder }};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">{{ w.mark }}</span>
+                  <span style="flex:1;min-width:0;padding-top:4px">
+                    <span style="display:block;font-size:13.5px;font-weight:{{ w.weight }};color:{{ w.fg }}">{{ w.label }}</span>
+                    <span style="display:block;font-size:11.5px;color:#8A98A8;margin-top:2px">{{ w.value }}</span>
+                  </span>
+                </div>
+              </sc-for>
+              <div style="border-top:1px solid rgba(27,42,65,.08);padding-top:13px;font-size:11.5px;line-height:1.55;color:#8A98A8">Signalement anonyme. Aucune donnée personnelle n'est transmise à la commune.</div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:20px">
+              <sc-if value="{{ stepPhoto }}" hint-placeholder-val="{{ true }}">
+                <div class="rp-card-pad" style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:14px">
+                  <h2 style="margin:0;font-family:Georgia,Cambria,serif;font-size:26px;font-weight:700">Photos de l'anomalie</h2>
+                  <p style="margin:9px 0 20px;font-size:14px;line-height:1.6;color:#5A6B7E;max-width:62ch;text-wrap:pretty">Une photo suffit, mais vous pouvez en ajouter jusqu'à {{ photoMax }}. Cadrez l'anomalie et, si possible, son environnement immédiat pour aider le service à la localiser.</p>
+
+                  <sc-if value="{{ hasPhotos }}" hint-placeholder-val="{{ false }}">
+                    <div class="photo-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px">
+                      <sc-for list="{{ photoThumbs }}" as="p" hint-placeholder-count="2">
+                        <div style="position:relative;height:100px;border-radius:10px;overflow:hidden;border:1px solid rgba(27,42,65,.14)">
+                          <img src="{{ p.url }}" style="width:100%;height:100%;object-fit:cover;display:block" />
+                          <button onClick="{{ p.onRemove }}" title="Retirer" style="position:absolute;top:5px;right:5px;width:24px;height:24px;border-radius:50%;border:none;background:rgba(27,42,65,.75);color:#fff;font-size:13px;line-height:1;display:flex;align-items:center;justify-content:center">×</button>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+
+                  <sc-if value="{{ canAddPhoto }}" hint-placeholder-val="{{ true }}">
+                    <div class="photo-actions" style="display:flex;gap:10px">
+                      <button onClick="{{ onCameraZoneClick }}" style="flex:1;border:1px dashed rgba(27,42,65,.28);background:#FAFBFC;border-radius:10px;padding:13px 14px;display:flex;align-items:center;justify-content:center;gap:8px;color:#1B2A41;font-size:13px;font-weight:600">
+                        <span style="font-size:16px">📷</span>Prendre une photo
+                      </button>
+                      <button onClick="{{ onPhotoZoneClick }}" title="Choisir depuis mes fichiers" style="width:46px;flex:none;border:1px dashed rgba(27,42,65,.28);background:#FAFBFC;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#1B2A41;font-size:22px;font-weight:600;line-height:1">+</button>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ photoLimitReached }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-size:12.5px;color:#8A98A8">Maximum {{ photoMax }} photos atteint.</div>
+                  </sc-if>
+                  <input type="file" accept="image/*" capture="environment" onChange="{{ onPhotoFile }}" id="web-camera-input" style="display:none">
+                  <input type="file" accept="image/png,image/jpeg,image/webp" multiple="{{ true }}" onChange="{{ onPhotoFile }}" id="web-photo-input" style="display:none">
+
+                  <sc-if value="{{ hasPhotoStepError }}" hint-placeholder-val="{{ false }}">
+                    <div style="margin-top:9px;font-size:12px;color:#D62839">{{ photoStepError }}</div>
+                  </sc-if>
+                  <div style="margin-top:20px;display:flex;gap:12px">
+                    <button onClick="{{ toLoc }}" style="border:none;background:#1B2A41;color:#fff;border-radius:11px;padding:15px 26px;font-size:14.5px;font-weight:600">Continuer</button>
+                    <button onClick="{{ goHome }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;border-radius:11px;padding:15px 22px;font-size:14.5px;font-weight:600">Annuler</button>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ stepLoc }}" hint-placeholder-val="{{ false }}">
+                <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:14px;overflow:visible">
+                  <div style="padding:26px 28px 20px">
+                    <h2 style="margin:0;font-family:Georgia,Cambria,serif;font-size:26px;font-weight:700">Où se trouve l'anomalie ?</h2>
+                    <p style="margin:9px 0 0;font-size:14px;line-height:1.6;color:#5A6B7E;max-width:62ch;text-wrap:pretty">Votre navigateur peut détecter la position, ou vous saisissez l'adresse. La commune est déduite de la localisation.</p>
+                  </div>
+                  <div style="height:300px;position:relative;overflow:hidden;border-top:1px solid rgba(27,42,65,.08);border-bottom:1px solid rgba(27,42,65,.08)">
+                    <reeper-map data-role="loc-picker" center="{{ mapCenter }}" zoom="16" draggable-marker click-to-place></reeper-map>
+                  </div>
+                  <div style="padding:22px 28px 26px">
+                    <button onClick="{{ detect }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);background:#fff;border-radius:11px;padding:14px 18px;font-size:13.5px;font-weight:600;color:#1B2A41;display:flex;align-items:center;justify-content:center;gap:8px">📍 {{ detectLabel }}</button>
+                    <sc-if value="{{ hasGeoError }}" hint-placeholder-val="{{ false }}">
+                      <div style="margin-top:9px;font-size:12px;color:#D62839">{{ geoError }}</div>
+                    </sc-if>
+                    <div style="margin-top:14px;display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap">
+                      <div style="position:relative;flex:1;min-width:200px">
+                        <input value="{{ addrText }}" onChange="{{ onAddrText }}" onBlur="{{ onAddrBlur }}" placeholder="Saisir une rue" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:11px;padding:15px 16px;font-size:14.5px;color:#1B2A41;outline:none">
+                        <sc-if value="{{ hasAddrSuggestions }}" hint-placeholder-val="{{ false }}">
+                          <div style="position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid rgba(27,42,65,.16);border-radius:11px;box-shadow:0 10px 26px rgba(27,42,65,.16);overflow:hidden;z-index:10;max-height:220px;overflow-y:auto">
+                            <sc-for list="{{ addrSuggestions }}" as="a" hint-placeholder-count="3">
+                              <button onClick="{{ a.onClick }}" style="width:100%;border:none;border-bottom:1px solid rgba(27,42,65,.07);background:#fff;padding:12px 15px;text-align:left;font-size:13.5px;color:#1B2A41" style-hover="background:#FAFBFC">{{ a.label }}</button>
+                            </sc-for>
+                          </div>
+                        </sc-if>
+                      </div>
+                      <input value="{{ addrNum }}" onChange="{{ onAddrNum }}" placeholder="N°" style="width:90px;flex:none;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:11px;padding:15px 14px;font-size:14.5px;color:#1B2A41;outline:none">
+                    </div>
+                    <div style="margin-top:20px;display:flex;gap:12px">
+                      <button onClick="{{ toCat }}" style="border:none;background:{{ locBtnBg }};color:#fff;border-radius:11px;padding:15px 26px;font-size:14.5px;font-weight:600">Continuer</button>
+                      <button onClick="{{ toPhoto }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;border-radius:11px;padding:15px 22px;font-size:14.5px;font-weight:600">Retour</button>
+                    </div>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ stepCat }}" hint-placeholder-val="{{ false }}">
+                <div class="rp-card-pad" style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:14px">
+                  <h2 style="margin:0;font-family:Georgia,Cambria,serif;font-size:26px;font-weight:700">De quoi s'agit-il ?</h2>
+                  <p style="margin:9px 0 20px;font-size:14px;line-height:1.6;color:#5A6B7E;max-width:62ch;text-wrap:pretty">Choisissez la famille, puis la nature exacte. Le service compétent est déterminé automatiquement.</p>
+                  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+                    <button onClick="{{ catUp }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;border-radius:9px;padding:9px 13px;font-size:13px;font-weight:600;color:{{ catUpFg }}">‹ Retour</button>
+                    <span style="font-size:13.5px;color:#5A6B7E">{{ catCrumb }}</span>
+                  </div>
+                  <div class="rp-2col" style="border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:hidden">
+                    <sc-for list="{{ catItems }}" as="c" hint-placeholder-count="6">
+                      <button onClick="{{ c.onClick }}" style="border:none;border-bottom:1px solid rgba(27,42,65,.07);border-right:1px solid rgba(27,42,65,.07);background:{{ c.bg }};padding:15px 17px;display:flex;align-items:center;gap:10px;text-align:left;color:#1B2A41;font-size:14px;font-weight:{{ c.weight }}" style-hover="background:#FAFBFC">
+                        <span style="flex:1">{{ c.label }}</span><span style="color:#B4C0CB">{{ c.chev }}</span>
+                      </button>
+                    </sc-for>
+                  </div>
+                  <sc-if value="{{ catPicked }}" hint-placeholder-val="{{ false }}">
+                    <div style="margin-top:14px;background:#F3F6F8;border:1px solid rgba(27,42,65,.12);border-radius:11px;padding:13px 16px;font-size:13.5px;color:#1B2A41">Anomalie sélectionnée : <strong>{{ catFull }}</strong> · service {{ catService }}</div>
+                  </sc-if>
+                  <div style="margin-top:20px;display:flex;gap:12px">
+                    <button onClick="{{ toDesc }}" style="border:none;background:{{ catBtnBg }};color:#fff;border-radius:11px;padding:15px 26px;font-size:14.5px;font-weight:600">Continuer</button>
+                    <button onClick="{{ toLoc }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;border-radius:11px;padding:15px 22px;font-size:14.5px;font-weight:600">Retour</button>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ stepDesc }}" hint-placeholder-val="{{ false }}">
+                <div class="rp-card-pad" style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:14px">
+                  <h2 style="margin:0;font-family:Georgia,Cambria,serif;font-size:26px;font-weight:700">Décrivez en quelques mots</h2>
+                  <p style="margin:9px 0 18px;font-size:14px;line-height:1.6;color:#5A6B7E;max-width:62ch;text-wrap:pretty">Facultatif, mais utile : depuis quand, quelle ampleur, quel risque pour les passants.</p>
+                  <textarea value="{{ desc }}" onChange="{{ onDesc }}" rows="5" placeholder="Ex. Le lampadaire est éteint depuis lundi, le trottoir est très sombre le soir." style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:11px;padding:15px 16px;font-size:14.5px;line-height:1.6;color:#1B2A41;outline:none;resize:none"></textarea>
+                  <sc-if value="{{ hasEmergencyWarning }}" hint-placeholder-val="{{ false }}">
+                    <div style="margin-top:14px;background:#FDF2F3;border:1px solid rgba(214,40,57,.3);border-radius:11px;padding:13px 16px;font-size:13px;line-height:1.55;color:#8A2530">En cas de danger immédiat (fuite d'eau importante, incendie, gaz, explosion), n'attendez pas Reeper : appelez directement la Police (117), les Pompiers (118) ou l'Ambulance (144).</div>
+                  </sc-if>
+                  <div style="margin-top:20px;border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:hidden">
+                    <sc-for list="{{ recap }}" as="r" hint-placeholder-count="4">
+                      <div style="padding:13px 17px;border-bottom:1px solid rgba(27,42,65,.07);display:flex;gap:14px;align-items:center">
+                        <span style="flex:none;width:150px;font-size:11.5px;color:#8A98A8;font-weight:600">{{ r.label }}</span>
+                        <span style="flex:1;min-width:0;font-size:14px">{{ r.value }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div style="margin-top:20px;display:flex;gap:12px;align-items:center">
+                    <button onClick="{{ send }}" style="border:none;background:#D62839;color:#fff;border-radius:11px;padding:16px 28px;font-size:15px;font-weight:600;box-shadow:0 8px 20px rgba(214,40,57,.24)">Envoyer mon Reep</button>
+                    <button onClick="{{ toCat }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;border-radius:11px;padding:16px 22px;font-size:14.5px;font-weight:600">Retour</button>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ stepDone }}" hint-placeholder-val="{{ false }}">
+                <div class="rp-card-pad" style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:14px;min-height:260px"></div>
+              </sc-if>
+            </div>
+          </div>
+
+          <sc-if value="{{ stepDone }}" hint-placeholder-val="{{ false }}">
+            <div style="position:fixed;inset:0;background:rgba(27,42,65,.4);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px">
+              <div style="background:#fff;border-radius:18px;padding:44px 32px;text-align:center;max-width:460px;width:100%;max-height:88vh;overflow:auto;box-shadow:0 24px 60px rgba(27,42,65,.32)">
+                <div style="width:64px;height:64px;border-radius:50%;background:#EFF6F1;color:#3F8F63;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:28px">✓</div>
+                <h2 style="margin:20px 0 0;font-family:Georgia,Cambria,serif;font-size:27px;font-weight:700">Merci pour votre signalement !</h2>
+                <p style="margin:10px auto 0;font-size:14.5px;line-height:1.65;color:#5A6B7E;max-width:52ch;text-wrap:pretty">Le service compétent de la commune de {{ createdCommune }} l'a reçu. Conservez ce numéro pour en suivre l'avancement.</p>
+                <div style="margin:20px auto 0;display:inline-block;font-family:ui-monospace,Menlo,monospace;font-size:19px;letter-spacing:.06em;background:#F3F6F8;border:1px solid rgba(27,42,65,.12);border-radius:11px;padding:14px 22px">{{ createdId }}</div>
+                <sc-if value="{{ hasCreatedPoints }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ goRewardsFromDone }}" style="margin:16px auto 0;display:flex;align-items:center;gap:8px;border:none;background:#FDF6E9;border-radius:999px;padding:9px 16px;font-size:13px;font-weight:700;color:#A96A16">
+                    <span>⭐</span><span>+{{ createdPoints }} points — {{ mePoints }} au total</span>
+                  </button>
+                </sc-if>
+                <div style="margin-top:26px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+                  <button onClick="{{ goTrack }}" style="border:none;background:#1B2A41;color:#fff;border-radius:11px;padding:15px 24px;font-size:14.5px;font-weight:600">Suivre mes Reeps</button>
+                  <button onClick="{{ goHome }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;border-radius:11px;padding:15px 22px;font-size:14.5px;font-weight:600">Retour à l'accueil</button>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+        </sc-if>
+
+        <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}">
+          <div class="rp-center-page" style="display:flex;justify-content:center">
+            <div style="width:520px;max-width:100%;background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:16px;padding:34px 36px 30px">
+              <div style="font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#8A98A8;font-weight:700">Compte</div>
+              <h2 style="margin:12px 0 0;font-family:Georgia,Cambria,serif;font-size:28px;font-weight:700">{{ authTitle }}</h2>
+              <p style="margin:10px 0 20px;font-size:14px;line-height:1.65;color:#5A6B7E;text-wrap:pretty">{{ authSubtitle }}</p>
+
+              <div style="display:flex;background:#F3F6F8;border-radius:10px;padding:3px;gap:2px;margin-bottom:22px">
+                <button onClick="{{ authTabLogin }}" style="flex:1;border:none;background:{{ tabLoginBg }};color:{{ tabLoginFg }};border-radius:8px;padding:10px;font-size:13px;font-weight:700">Se connecter</button>
+                <button onClick="{{ authTabSignup }}" style="flex:1;border:none;background:{{ tabSignupBg }};color:{{ tabSignupFg }};border-radius:8px;padding:10px;font-size:13px;font-weight:700">Créer un compte</button>
+              </div>
+
+              <sc-if value="{{ isAuthLogin }}" hint-placeholder-val="{{ true }}">
+                <div>
+                  <div style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Compte</div>
+                  <select value="{{ account }}" onChange="{{ onAccountSelect }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:13px 15px;font-size:14px;background:#fff">
+                    <sc-for list="{{ accountOptions }}" as="a" hint-placeholder-count="4">
+                      <option value="{{ a.key }}">{{ a.label }}</option>
+                    </sc-for>
+                  </select>
+                </div>
+                <div style="margin-top:14px">
+                  <div style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Mot de passe</div>
+                  <div style="position:relative">
+                    <input type="{{ pwdFieldType }}" value="{{ pwd }}" onChange="{{ onPwd }}" onKeyDown="{{ onPwdKeyDown }}" placeholder="Mot de passe" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:13px 44px 13px 15px;font-size:14px;outline:none">
+                    <button onClick="{{ togglePwdVisible }}" type="button" style="position:absolute;top:0;right:0;bottom:0;width:40px;border:none;background:none;color:#8A98A8;font-size:12.5px;font-weight:600">{{ pwdToggleLabel }}</button>
+                  </div>
+                </div>
+                <sc-if value="{{ hasLoginError }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:10px;font-size:12.5px;color:#D62839">{{ loginError }}</div>
+                </sc-if>
+                <button onClick="{{ doLogin }}" style="margin-top:16px;width:100%;border:none;background:#1B2A41;color:#fff;border-radius:11px;padding:16px;font-size:15px;font-weight:600">Se connecter</button>
+              </sc-if>
+
+              <sc-if value="{{ isAuthSignup }}" hint-placeholder-val="{{ false }}">
+                <sc-if value="{{ notSignupDone }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;flex-direction:column;gap:14px">
+                  <div class="rp-2col" style="gap:12px">
+                    <div>
+                      <div style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Prénom</div>
+                      <input value="{{ suFirst }}" onChange="{{ onSuFirst }}" placeholder="Marie" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:13px 15px;font-size:14px;outline:none">
+                    </div>
+                    <div>
+                      <div style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Nom</div>
+                      <input value="{{ suLast }}" onChange="{{ onSuLast }}" placeholder="Dubois" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:13px 15px;font-size:14px;outline:none">
+                    </div>
+                  </div>
+                  <div>
+                    <div style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Adresse e-mail</div>
+                    <input value="{{ suEmail }}" onChange="{{ onSuEmail }}" placeholder="marie.dubois@exemple.ch" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:13px 15px;font-size:14px;outline:none">
+                  </div>
+                  <div>
+                    <div style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Mot de passe</div>
+                    <div style="position:relative">
+                      <input type="{{ suPwdFieldType }}" value="{{ suPwd }}" onChange="{{ onSuPwd }}" onKeyDown="{{ onSuPwdKeyDown }}" placeholder="Mot de passe" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:13px 44px 13px 15px;font-size:14px;outline:none">
+                      <button onClick="{{ toggleSuPwdVisible }}" type="button" style="position:absolute;top:0;right:0;bottom:0;width:40px;border:none;background:none;color:#8A98A8;font-size:12.5px;font-weight:600">{{ suPwdToggleLabel }}</button>
+                    </div>
+                  </div>
+                  <div style="border-top:1px solid rgba(27,42,65,.08);padding-top:14px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700">Facultatif</div>
+                  <div>
+                    <div style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Identifiant</div>
+                    <input value="{{ suUsername }}" onChange="{{ onSuUsername }}" placeholder="Généré depuis l'e-mail si vide" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:13px 15px;font-size:14px;outline:none">
+                  </div>
+                  <div>
+                    <div style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Code commune</div>
+                    <input value="{{ suCode }}" onChange="{{ onSuCode }}" placeholder="Commune de référence ou de résidence" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:13px 15px;font-size:14px;outline:none">
+                    <div style="font-size:11.5px;line-height:1.5;color:#8A98A8;margin-top:6px">Avec un code valide, un profil commune est créé (administrateur d'office si la commune n'a encore personne, sinon en attente de validation). Sans code, un profil citoyen est créé immédiatement.</div>
+                  </div>
+                  <div class="rp-2col" style="gap:12px">
+                    <div>
+                      <div style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Téléphone</div>
+                      <input value="{{ suPhone }}" onChange="{{ onSuPhone }}" placeholder="079 000 00 00" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:13px 15px;font-size:14px;outline:none">
+                    </div>
+                    <div>
+                      <div style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Adresse</div>
+                      <input value="{{ suAddress }}" onChange="{{ onSuAddress }}" placeholder="Rue et numéro" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:13px 15px;font-size:14px;outline:none">
+                    </div>
+                  </div>
+                </div>
+                <sc-if value="{{ hasSignupError }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:10px;font-size:12.5px;color:#D62839">{{ signupError }}</div>
+                </sc-if>
+                <button onClick="{{ doSignup }}" style="margin-top:16px;width:100%;border:none;background:#D62839;color:#fff;border-radius:11px;padding:16px;font-size:15px;font-weight:600">Créer le compte</button>
+                </sc-if>
+
+                <sc-if value="{{ signupDone }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:14px">
+                    <div style="display:flex;align-items:flex-start;gap:12px;background:#EFF7F2;border:1px solid rgba(46,107,72,.25);border-radius:12px;padding:16px 18px">
+                      <span style="font-size:18px;line-height:1">✅</span>
+                      <span style="font-size:13.5px;line-height:1.55;color:#2E6B48">{{ signupMsg }}</span>
+                    </div>
+                    <sc-if value="{{ hasSignupEmail }}" hint-placeholder-val="{{ false }}">
+                      <div style="border:1px solid rgba(27,42,65,.14);border-radius:14px;overflow:hidden">
+                        <div style="background:#F4F6F8;padding:12px 18px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(27,42,65,.1)">
+                          <span style="font-size:14px">📧</span>
+                          <span style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700">E-mail envoyé (aperçu)</span>
+                        </div>
+                        <div style="padding:16px 18px">
+                          <div style="font-size:12px;color:#8A98A8;margin-bottom:2px">De : contact@reeper.ch</div>
+                          <div style="font-size:12px;color:#8A98A8;margin-bottom:10px">À : {{ signupEmailTo }}</div>
+                          <div style="font-size:15px;font-weight:700;margin-bottom:8px">{{ signupEmailSubject }}</div>
+                          <div style="font-size:13.5px;line-height:1.7;color:#3E5064;white-space:pre-wrap">{{ signupEmailBody }}</div>
+                        </div>
+                      </div>
+                    </sc-if>
+                    <button onClick="{{ afterSignupContinue }}" style="width:100%;border:none;background:#1B2A41;color:#fff;border-radius:11px;padding:16px;font-size:15px;font-weight:600">Continuer</button>
+                  </div>
+                </sc-if>
+              </sc-if>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+          <div class="rp-center-page" style="display:flex;justify-content:center">
+            <div style="width:520px;max-width:100%;display:flex;flex-direction:column;gap:20px">
+              <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:16px;padding:34px 36px 30px">
+                <div style="font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#8A98A8;font-weight:700">Paramètres</div>
+                <h2 style="margin:12px 0 0;font-family:Georgia,Cambria,serif;font-size:26px;font-weight:700">Passer côté commune</h2>
+                <p style="margin:10px 0 20px;font-size:14px;line-height:1.65;color:#5A6B7E;text-wrap:pretty">Si vous rejoignez une commune en tant qu'agent, saisissez ici le code qui vous a été communiqué. Votre demande sera soumise à l'administrateur de cette commune.</p>
+                <div style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Code commune</div>
+                <input value="{{ settingsCode }}" onChange="{{ onSettingsCode }}" placeholder="Code commune" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:13px 15px;font-size:14px;outline:none">
+                <sc-if value="{{ hasSettingsMsg }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:10px;font-size:12.5px;color:{{ settingsMsgColor }}">{{ settingsMsg }}</div>
+                </sc-if>
+                <button onClick="{{ doSettingsCode }}" style="margin-top:16px;width:100%;border:none;background:#1B2A41;color:#fff;border-radius:11px;padding:16px;font-size:15px;font-weight:600">Envoyer la demande</button>
+              </div>
+
+              <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:16px;padding:34px 36px 30px">
+                <div style="font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#8A98A8;font-weight:700">Sécurité</div>
+                <h2 style="margin:12px 0 0;font-family:Georgia,Cambria,serif;font-size:26px;font-weight:700">Changer de mot de passe</h2>
+                <p style="margin:10px 0 20px;font-size:14px;line-height:1.65;color:#5A6B7E;text-wrap:pretty">Saisissez votre mot de passe actuel puis le nouveau, deux fois, pour confirmation.</p>
+                <div style="display:flex;flex-direction:column;gap:14px">
+                  <div>
+                    <div style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Mot de passe actuel</div>
+                    <input type="password" value="{{ pwdOld }}" onChange="{{ onPwdOld }}" placeholder="Mot de passe actuel" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:13px 15px;font-size:14px;outline:none">
+                  </div>
+                  <div>
+                    <div style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Nouveau mot de passe</div>
+                    <input type="password" value="{{ pwdNew1 }}" onChange="{{ onPwdNew1 }}" placeholder="Nouveau mot de passe" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:13px 15px;font-size:14px;outline:none">
+                  </div>
+                  <div>
+                    <div style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Confirmer le nouveau mot de passe</div>
+                    <input type="password" value="{{ pwdNew2 }}" onChange="{{ onPwdNew2 }}" placeholder="Confirmer le nouveau mot de passe" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:13px 15px;font-size:14px;outline:none">
+                  </div>
+                </div>
+                <sc-if value="{{ hasPwdMsg }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:10px;font-size:12.5px;color:{{ pwdMsgColor }}">{{ pwdMsg }}</div>
+                </sc-if>
+                <button onClick="{{ doChangePwd }}" style="margin-top:16px;width:100%;border:none;background:#1B2A41;color:#fff;border-radius:11px;padding:16px;font-size:15px;font-weight:600">Mettre à jour le mot de passe</button>
+              </div>
+
+              <button onClick="{{ goHome }}" style="width:100%;border:1px solid rgba(27,42,65,.16);background:#fff;color:#1B2A41;border-radius:11px;padding:14px;font-size:14px;font-weight:600">Retour</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isTrack }}" hint-placeholder-val="{{ false }}">
+          <sc-if value="{{ noReeps }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:70px 40px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px">
+              <span style="font-size:34px">🗂️</span>
+              <h2 style="margin:0;font-family:Georgia,Cambria,serif;font-size:24px;font-weight:700">Vous n'avez pas encore de Reep</h2>
+              <p style="margin:0;font-size:14px;line-height:1.6;color:#5A6B7E;max-width:46ch;text-wrap:pretty">Vos signalements apparaîtront ici dès que vous en aurez envoyé un depuis ce compte.</p>
+              <button onClick="{{ startReport }}" style="margin-top:6px;border:none;background:#D62839;color:#fff;border-radius:11px;padding:14px 24px;font-size:14.5px;font-weight:600">Signaler une anomalie</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{ hasReeps }}" hint-placeholder-val="{{ true }}">
+          <div class="rp-track" style="align-items:start">
+            <div>
+              <h2 style="margin:0 0 16px;font-family:Georgia,Cambria,serif;font-size:26px;font-weight:700">Mes Reeps</h2>
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <sc-for list="{{ rows }}" as="r" hint-placeholder-count="4">
+                  <button onClick="{{ r.onClick }}" style="width:100%;background:#fff;border:{{ r.ring }};border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:13px;text-align:left;color:#1B2A41;box-shadow:{{ r.shadow }}" style-hover="border-color:#1B2A41">
+                    <span style="width:54px;height:54px;flex:none;display:block">
+                      <image-slot id="{{ r.slot }}" shape="rounded" radius="9" src="{{ r.src }}" placeholder="{{ r.hint }}"></image-slot>
+                    </span>
+                    <span style="flex:1;min-width:0">
+                      <span style="display:block;font-size:14.5px;font-weight:600">{{ r.title }}</span>
+                      <span style="display:block;font-size:11.5px;color:#8A98A8;margin-top:3px">{{ r.id }}</span>
+                      <span style="display:block;font-size:11.5px;color:#5A6B7E;margin-top:2px">{{ r.meta }}</span>
+                    </span>
+                    <span style="flex:none;background:{{ r.bg }};color:{{ r.fg }};border-radius:999px;padding:5px 10px;font-size:11px;font-weight:700">{{ r.status }}</span>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:16px;overflow:hidden">
+              <div style="height:300px;position:relative">
+                <image-slot id="{{ cur.slotBig }}" shape="rect" src="{{ cur.src }}" placeholder="{{ cur.hint }}"></image-slot>
+              </div>
+              <sc-if value="{{ cur.hasExtraPhotos }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;gap:8px;padding:14px 28px 0;flex-wrap:wrap">
+                  <sc-for list="{{ cur.extraPhotos }}" as="p" hint-placeholder-count="2">
+                    <img src="{{ p.url }}" style="width:64px;height:64px;object-fit:cover;border-radius:9px;border:1px solid rgba(27,42,65,.14)" />
+                  </sc-for>
+                </div>
+              </sc-if>
+              <div style="padding:26px 28px 30px">
+                <div style="display:flex;align-items:center;gap:12px">
+                  <span style="flex:1;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;color:#5A6B7E">{{ cur.id }}</span>
+                  <span style="background:{{ cur.bg }};color:{{ cur.fg }};border-radius:999px;padding:6px 12px;font-size:11.5px;font-weight:700">{{ cur.status }}</span>
+                </div>
+                <h2 style="margin:12px 0 0;font-family:Georgia,Cambria,serif;font-size:27px;font-weight:700">{{ cur.title }}</h2>
+                <div style="font-size:13px;color:#8A98A8;margin-top:5px">{{ cur.meta }}</div>
+                <p style="margin:16px 0 0;font-size:14.5px;line-height:1.65;color:#3E5064;max-width:66ch;text-wrap:pretty">{{ cur.desc }}</p>
+                <div style="margin-top:24px;border-top:1px solid rgba(27,42,65,.09);padding-top:8px">
+                  <sc-for list="{{ cur.timeline }}" as="t" hint-placeholder-count="3">
+                    <div style="padding:14px 0;border-bottom:1px solid rgba(27,42,65,.07);display:flex;gap:13px;align-items:flex-start">
+                      <span style="width:9px;height:9px;border-radius:50%;background:{{ t.dot }};flex:none;margin-top:6px"></span>
+                      <span style="flex:1;min-width:0">
+                        <span style="display:block;font-size:14px;font-weight:600">{{ t.label }}</span>
+                        <span style="display:block;font-size:12px;color:#8A98A8;margin-top:2px">{{ t.when }}</span>
+                      </span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+          </div>
+          </sc-if>
+        </sc-if>
+
+        <sc-if value="{{ isRewards }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:40px 40px 56px">
+            <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:16px;padding:28px 30px;margin-bottom:26px;display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+              <div style="width:60px;height:60px;border-radius:50%;background:#FDF6E9;color:#A96A16;display:flex;align-items:center;justify-content:center;font-size:26px;flex:none">⭐</div>
+              <div style="flex:1;min-width:200px">
+                <div style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#8A98A8;font-weight:700">Vos points</div>
+                <div style="font-family:Georgia,Cambria,serif;font-size:32px;font-weight:700;margin-top:4px">{{ mePoints }} points</div>
+                <div style="font-size:13px;color:#5A6B7E;margin-top:4px">+{{ pointsPerReep }} points à chaque Reep envoyé.</div>
+              </div>
+            </div>
+            <h2 style="margin:0 0 6px;font-family:Georgia,Cambria,serif;font-size:22px;font-weight:700">Échangez vos points</h2>
+            <p style="margin:0 0 18px;font-size:13.5px;color:#5A6B7E;max-width:64ch;line-height:1.6">Des commerces partenaires de vos communes proposent des avantages contre vos points. Programme en test — susceptible d'évoluer.</p>
+            <sc-if value="{{ hasRedeemMsg }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-bottom:16px;background:#EFF6F1;border:1px solid rgba(63,143,99,.3);border-radius:11px;padding:13px 16px;font-size:13px;color:#2E6B48">{{ redeemMsg }}</div>
+            </sc-if>
+            <div class="rp-grid3" style="gap:14px">
+              <sc-for list="{{ rewards }}" as="rw" hint-placeholder-count="4">
+                <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:14px;padding:20px 20px 18px;display:flex;flex-direction:column;gap:10px">
+                  <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#8A98A8;font-weight:700">{{ rw.partner }} · {{ rw.commune }}</div>
+                  <div style="font-size:15.5px;font-weight:600;flex:1">{{ rw.title }}</div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+                    <span style="font-size:13px;font-weight:700;color:#A96A16">{{ rw.cost }} points</span>
+                    <button onClick="{{ rw.onRedeem }}" style="border:none;background:{{ rw.btnBg }};color:{{ rw.btnFg }};border-radius:9px;padding:9px 14px;font-size:12.5px;font-weight:700;white-space:nowrap">{{ rw.btnLabel }}</button>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isLegal }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:40px 40px 56px;display:flex;justify-content:center">
+            <div style="width:820px;max-width:100%">
+              <h2 style="margin:0;font-family:Georgia,Cambria,serif;font-size:30px;font-weight:700">Mentions légales</h2>
+              <p style="margin:8px 0 22px;font-size:12.5px;color:#8A98A8">Version d'août 2026 · droit suisse</p>
+              <div class="rp-2col" style="gap:14px">
+                <sc-for list="{{ legalSections }}" as="l" hint-placeholder-count="6">
+                  <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:14px;padding:18px 20px">
+                    <div style="font-family:Georgia,Cambria,serif;font-size:16px;font-weight:700;margin-bottom:7px">{{ l.title }}</div>
+                    <p style="margin:0;font-size:13.5px;line-height:1.65;color:#3E5064;text-wrap:pretty">{{ l.body }}</p>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+      </div>
+
+      <div class="rp-mobile-nav" style="flex:none;background:#fff;border-top:1px solid rgba(27,42,65,.1);padding:8px 6px 12px;justify-content:space-around">
+        <sc-for list="{{ nav }}" as="n" hint-placeholder-count="4">
+          <button onClick="{{ n.onClick }}" style="border:none;background:none;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 6px;min-height:44px;color:{{ n.fg }};flex:1;min-width:0">
+            <span style="width:16px;height:16px;border-radius:5px;background:{{ n.fg }};opacity:.85"></span>
+            <span style="font-size:10px;font-weight:{{ n.weight }};white-space:nowrap">{{ n.label }}</span>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;communeName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Nyon&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const Store = window.ReeperStore;
+
+const STATUS = {
+  Nouveau: { bg: "#E7EDF3", fg: "#31506F" },
+  "En cours": { bg: "#FDF1E7", fg: "#9A5A1E" },
+  "Traité": { bg: "#EAF3ED", fg: "#2E6B48" }
+};
+
+const relTime = (ts) => {
+  const min = Math.round((Date.now() - ts) / 60000);
+  if (min < 1) return "à l'instant";
+  if (min < 60) return "il y a " + min + " min";
+  const h = Math.round(min / 60);
+  if (h < 24) return "il y a " + h + " heure" + (h > 1 ? "s" : "");
+  const d = Math.round(h / 24);
+  return "il y a " + d + " jour" + (d > 1 ? "s" : "");
+};
+const fmtDate = (ts) => {
+  const d = new Date(ts);
+  return d.toLocaleDateString("fr-CH", { day: "numeric", month: "long" }) + ", " + d.toLocaleTimeString("fr-CH", { hour: "2-digit", minute: "2-digit" });
+};
+
+const deco = (r) => {
+  const status = Store.citizenStatus(r.status);
+  return {
+    ...r, status, ...STATUS[status],
+    slot: "w-" + r.id, slotBig: "wb-" + r.id,
+    src: r.photoUrl || "", hint: "Photo de l'anomalie",
+    meta: r.place + " · " + (status === "Traité" && r.closedAt ? "clos le " + new Date(r.closedAt).toLocaleDateString("fr-CH", { day: "numeric", month: "long" }) : relTime(r.createdAt)),
+    timeline: r.timeline.filter((t) => !t.internal).map((t, i) => ({ label: t.label, when: fmtDate(t.when), dot: i === 0 ? "#1B2A41" : status === "Traité" ? "#3F8F63" : "#D62839" }))
+  };
+};
+
+class Component extends DCLogic {
+  state = {
+    view: "home", step: "photo", sel: 0, profileOpen: false,
+    account: "citizen_berger", pwd: "", loginError: "", wantTrack: false,
+    authTab: "login",
+    suFirst: "", suLast: "", suEmail: "", suUsername: "", suPwd: "", suCode: "", suPhone: "", suAddress: "",
+    signupError: "", signupMsg: "", signupDone: false, signupEmailSubject: "", signupEmailBody: "", signupEmailTo: "",
+    pwdVisible: false, suPwdVisible: false,
+    settingsCode: "", settingsMsg: "", settingsMsgIsError: false,
+    pwdOld: "", pwdNew1: "", pwdNew2: "", pwdMsg: "", pwdMsgIsError: false,
+    photoUrls: [], photoStepError: "",
+    geo: false, geoLat: null, geoLon: null, addrText: "", addrNum: "", addrSuggestions: [], communeGuess: null, geoLoading: false, geoError: "",
+    cat: null, leaf: null, path: [], desc: "",
+    createdId: null, createdCommune: null, createdPoints: 0,
+    redeemMsg: "",
+    shellFitH: null
+  };
+  go(view) { this._transition(() => this.setState({ view })); }
+  _transition(fn) {
+    if (!document.startViewTransition) { fn(); return; }
+    const t = document.startViewTransition(fn);
+    [t.ready, t.updateCallbackDone, t.finished].forEach((p) => p && p.catch(() => {}));
+  }
+
+  componentDidMount() {
+    this._wireMap();
+    this._syncShellHeight();
+    window.addEventListener("resize", this._onResize = () => this._syncShellHeight());
+    Store.startAutoSync();
+    window.addEventListener("reeper:sync", this._onSync = () => this.forceUpdate());
+  }
+  componentDidUpdate() { this._wireMap(); this._syncShellHeight(); }
+  componentWillUnmount() {
+    if (this._onResize) window.removeEventListener("resize", this._onResize);
+    if (this._onSync) window.removeEventListener("reeper:sync", this._onSync);
+  }
+  _syncShellHeight() {
+    const shell = document.querySelector('[data-role="shell"]');
+    if (!shell) return;
+    const top = shell.getBoundingClientRect().top;
+    const bottomPad = window.innerWidth <= 900 ? 32 : 56;
+    const h = Math.max(400, Math.round(window.innerHeight - top - bottomPad));
+    const px = h + "px";
+    if (px !== this.state.shellFitH) this.setState({ shellFitH: px });
+  }
+
+  _wireMap() {
+    const el = document.querySelector('reeper-map[data-role="loc-picker"]');
+    if (el && !el.dataset.wired) {
+      el.dataset.wired = "1";
+      el.addEventListener("reeper-map:marker-moved", (e) => {
+        const { lat, lon } = e.detail;
+        this.setState({ geoLat: lat, geoLon: lon, geo: true });
+        Store.reverseGeocode(lat, lon).then((res) => {
+          this.setState({ addrText: res.street || res.address, addrNum: res.houseNumber || "", communeGuess: res.commune || this.state.communeGuess });
+        }).catch(() => {});
+      });
+    }
+  }
+
+  _ingestPhoto(file) {
+    const max = 4;
+    if ((this.state.photoUrls || []).length >= max) return;
+    Store.downscaleImage(file, 1000, 0.8).then((url) => {
+      this.setState((st) => {
+        const cur = st.photoUrls || [];
+        return cur.length >= max ? {} : { photoUrls: cur.concat([url]), photoStepError: "" };
+      });
+    }).catch(() => {});
+  }
+
+  _ingestPhotos(fileList) {
+    const files = Array.from(fileList || []);
+    files.forEach((f) => this._ingestPhoto(f));
+  }
+
+  _forwardGeocode(query) {
+    const gen = (this._geoGen = (this._geoGen || 0) + 1);
+    fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=ch&q=" + encodeURIComponent(query))
+      .then((r) => r.json()).then((list) => {
+        if (gen !== this._geoGen || !list || !list[0]) return;
+        const lat = parseFloat(list[0].lat), lon = parseFloat(list[0].lon);
+        this.setState({ geoLat: lat, geoLon: lon, geo: true, communeGuess: Store.communeFromText(list[0].display_name) || this.state.communeGuess });
+        const el = document.querySelector('reeper-map[data-role="loc-picker"]');
+        if (el && el.panTo) el.panTo(lat, lon, 17);
+      }).catch(() => {});
+  }
+
+  _fetchAddrSuggestions(query) {
+    const gen = (this._suggGen = (this._suggGen || 0) + 1);
+    var url = "https://nominatim.openstreetmap.org/search?format=jsonv2&limit=8&countrycodes=ch&addressdetails=1&accept-language=fr&viewbox=6.05,46.62,6.55,46.22&q=" + encodeURIComponent(query);
+    fetch(url)
+      .then((r) => r.json()).then((list) => {
+        if (gen !== this._suggGen) return;
+        const served = Object.keys(Store.COMMUNES);
+        const mapped = (list || []).map((item) => {
+          const a = item.address || {};
+          const street = a.road || a.pedestrian || a.footway || (item.display_name || "").split(",")[0];
+          const town = a.city || a.town || a.village || a.municipality || "";
+          const isServed = served.indexOf(town) !== -1;
+          return { label: street + (town ? ", " + town : ""), street, lat: parseFloat(item.lat), lon: parseFloat(item.lon), display: item.display_name, isServed };
+        });
+        mapped.sort((x, y) => (y.isServed ? 1 : 0) - (x.isServed ? 1 : 0));
+        this.setState({ addrSuggestions: mapped });
+      }).catch(() => {});
+  }
+
+  renderVals() {
+    const s = this.state;
+    const session = Store.getSession();
+    const loggedIn = !!(session && session.type === "citizen");
+    const path = s.path || [];
+    const nyon = Store.COMMUNES.Nyon.center;
+    const fullAddr = s.addrText.trim() + (s.addrNum.trim() ? " " + s.addrNum.trim() : "");
+    const mapCenterLat = s.geoLat != null ? s.geoLat : nyon.lat;
+    const mapCenterLon = s.geoLon != null ? s.geoLon : nyon.lon;
+    const rows = Store.getReeps({}).filter((d) => loggedIn && d.reporterAccount === session.key).map(deco).map((d, i) => ({
+      ...d, onClick: () => this.setState({ sel: i }),
+      ring: "1px solid rgba(27,42,65,.1)",
+      shadow: i === s.sel ? "0 6px 18px rgba(27,42,65,.12)" : "none"
+    }));
+    const navDef = [["Accueil", "home"], ["Signaler", "report"], ["Mes Reeps", "track"], ["Mentions légales", "legal"]];
+
+    const goTrack = () => (loggedIn ? this.go("track") : this.setState({ view: "login", wantTrack: true }));
+    const afterSignupContinue = () => {
+      if (loggedIn) { this.go("track"); return; }
+      this.setState({ authTab: "login", signupDone: false, signupError: "", signupMsg: "" });
+    };
+
+    const doLogin = () => {
+      const acc = Store.getAccount(s.account) || Store.getAccount("citizen_berger");
+      const pwdEl = document.querySelector('input[type="password"]');
+      const pwd = pwdEl ? pwdEl.value : s.pwd;
+      Store.login(acc.username, pwd).then((res) => {
+        if (!res.ok) { this.setState({ loginError: res.error }); return; }
+        if (res.account.type === "agent" || res.account.type === "gerant") {
+          const dest = res.account.type === "agent" ? "./Reeper Commune.dc.html" : "./Reeper Gerant.dc.html";
+          Store.flushPush().then(() => { window.location.href = dest; });
+          return;
+        }
+        this.setState({ wantTrack: false, view: "track", loginError: "", pwd: "" });
+      });
+    };
+    const doSignup = () => {
+      const resetFields = { suFirst: "", suLast: "", suEmail: "", suUsername: "", suPwd: "", suCode: "", suPhone: "", suAddress: "" };
+      const suPwdEl = document.querySelector('input[type="password"]');
+      const suPwd = suPwdEl ? suPwdEl.value : s.suPwd;
+      Store.signup({ firstName: s.suFirst, lastName: s.suLast, email: s.suEmail, username: s.suUsername, password: suPwd, communeCode: s.suCode, phone: s.suPhone, address: s.suAddress }).then((res) => {
+        if (!res.ok) { this.setState({ signupError: res.error, signupMsg: "" }); return; }
+        const emailPreview = res.email ? { signupEmailSubject: res.email.subject, signupEmailBody: res.email.body, signupEmailTo: res.email.to } : { signupEmailSubject: "", signupEmailBody: "", signupEmailTo: "" };
+        if (res.account.type === "agent" && !res.pending) { Store.flushPush().then(() => { window.location.href = "./Reeper Commune.dc.html"; }); return; }
+        const msg = res.pending
+          ? "Compte créé pour la commune de " + res.account.commune + ". Il attend la validation de l'administrateur — vous recevrez l'accès une fois approuvé."
+          : "Compte créé. Un e-mail de bienvenue a été envoyé à " + res.account.email + ".";
+        this.setState({ signupError: "", signupMsg: msg, signupDone: true, ...resetFields, ...emailPreview });
+      });
+    };
+
+    return {
+      shellH: s.shellFitH || "860px",
+      isHome: s.view === "home",
+      isReport: s.view === "report",
+      isTrack: s.view === "track",
+      isLogin: s.view === "login",
+      isSettings: s.view === "settings",
+      goSettings: () => this.setState({ view: "settings", settingsMsg: "" }),
+      settingsCode: s.settingsCode, onSettingsCode: (e) => this.setState({ settingsCode: e.target.value, settingsMsg: "" }),
+      hasSettingsMsg: !!s.settingsMsg, settingsMsg: s.settingsMsg,
+      settingsMsgColor: s.settingsMsgIsError ? "#D62839" : "#2E6B48",
+      doSettingsCode: () => {
+        if (!loggedIn) return;
+        const res = Store.requestCommuneUpgrade(session.key, s.settingsCode);
+        if (!res.ok) { this.setState({ settingsMsg: res.error, settingsMsgIsError: true }); return; }
+        if (res.bootstrap) { Store.flushPush().then(() => { window.location.href = "./Reeper Commune.dc.html"; }); return; }
+        this.setState({ settingsMsg: "Demande envoyée à la commune de " + res.commune + ". Vous serez averti une fois approuvée.", settingsMsgIsError: false, settingsCode: "" });
+      },
+
+      pwdOld: s.pwdOld, onPwdOld: (e) => this.setState({ pwdOld: e.target.value, pwdMsg: "" }),
+      pwdNew1: s.pwdNew1, onPwdNew1: (e) => this.setState({ pwdNew1: e.target.value, pwdMsg: "" }),
+      pwdNew2: s.pwdNew2, onPwdNew2: (e) => this.setState({ pwdNew2: e.target.value, pwdMsg: "" }),
+      hasPwdMsg: !!s.pwdMsg, pwdMsg: s.pwdMsg,
+      pwdMsgColor: s.pwdMsgIsError ? "#D62839" : "#2E6B48",
+      doChangePwd: () => {
+        if (!loggedIn) return;
+        if (!s.pwdNew1.trim()) { this.setState({ pwdMsg: "Le nouveau mot de passe ne peut pas être vide.", pwdMsgIsError: true }); return; }
+        if (s.pwdNew1 !== s.pwdNew2) { this.setState({ pwdMsg: "Les deux nouveaux mots de passe ne correspondent pas.", pwdMsgIsError: true }); return; }
+        Store.changePassword(session.key, s.pwdOld, s.pwdNew1).then((res) => {
+          if (!res.ok) { this.setState({ pwdMsg: res.error, pwdMsgIsError: true }); return; }
+          this.setState({ pwdMsg: "Mot de passe mis à jour.", pwdMsgIsError: false, pwdOld: "", pwdNew1: "", pwdNew2: "" });
+        });
+      },
+      isLegal: s.view === "legal",
+      isRewards: s.view === "rewards",
+      pointsPerReep: Store.POINTS_PER_REEP,
+      hasRedeemMsg: !!s.redeemMsg, redeemMsg: s.redeemMsg,
+      rewards: Store.REWARDS.map((rw) => {
+        const myPts = loggedIn ? (session.points || 0) : 0;
+        const affordable = loggedIn && myPts >= rw.cost;
+        return {
+          ...rw,
+          btnBg: affordable ? "#1B2A41" : "#E7ECF0", btnFg: affordable ? "#fff" : "#9AA6B2",
+          btnLabel: !loggedIn ? "Se connecter" : affordable ? "Échanger" : (rw.cost - myPts) + " pts manquants",
+          onRedeem: () => {
+            if (!loggedIn) { this.setState({ view: "login" }); return; }
+            if (!affordable) return;
+            const res = Store.redeemReward(session.key, rw.id);
+            this.setState({ redeemMsg: res.ok ? "Échangé ! Présentez cet écran chez " + rw.partner + "." : res.error });
+          }
+        };
+      }),
+
+      nav: navDef.map(([label, key]) => {
+        const on = s.view === key;
+        return { label, weight: on ? 600 : 400, fg: on ? "#1B2A41" : "#5A6B7E",
+          under: on ? "#D62839" : "transparent",
+          onClick: key === "track" ? goTrack : () => this.go(key) };
+      }),
+      loggedIn, notLoggedIn: !loggedIn,
+      authClick: () => { if (loggedIn) { Store.logout(); this.setState({ profileOpen: false }); this.go("home"); } else { this.setState({ view: "login" }); } },
+      profileOpen: s.profileOpen,
+      profileBorder: s.profileOpen ? "#1B2A41" : "rgba(27,42,65,.14)",
+      toggleProfile: () => this.setState({ profileOpen: !s.profileOpen }),
+      meInitials: loggedIn ? session.initials : "", meAvBg: loggedIn ? session.avBg : "#1B2A41",
+      meFirstName: loggedIn ? (session.firstName || session.displayName.split(" ")[0]) : "",
+      meName: loggedIn ? session.displayName : "", meRole: loggedIn ? "Espace citoyen" : "",
+      mePoints: loggedIn ? (session.points || 0) : 0,
+      goRewards: () => this.setState({ view: "rewards", profileOpen: false, redeemMsg: "" }),
+      profileItems: [
+        { label: "Mes Reeps", onClick: () => this.setState({ profileOpen: false }, () => this.go("track")) },
+        { label: "Paramètres du compte", onClick: () => this.setState({ view: "settings", settingsMsg: "", profileOpen: false }) },
+        { label: "Mentions légales", onClick: () => this.setState({ profileOpen: false }, () => this.go("legal")) }
+      ],
+
+      goHome: () => this.go("home"),
+      goTrack,
+      startReport: () => this.setState({ view: "report", step: "photo", cat: null, leaf: null, path: [], geo: false, geoLat: null, geoLon: null, addrText: "", addrNum: "", addrSuggestions: [], communeGuess: null, desc: "", photoUrls: [], photoStepError: "", createdPoints: 0 }),
+
+      steps3: [
+        { num: "01", title: "Photographiez", body: "Une photo de l'anomalie, depuis votre ordinateur ou votre téléphone." },
+        { num: "02", title: "Localisez", body: "Position détectée par le navigateur, ou adresse saisie à la main." },
+        { num: "03", title: "Envoyez", body: "Le service compétent reçoit votre Reep et vous en suivez l'avancement." }
+      ],
+      emergency: [
+        { label: "Police", num: "117" },
+        { label: "Pompiers", num: "118" },
+        { label: "Ambulance", num: "144" }
+      ].map((e) => ({ ...e, tel: "tel:" + e.num })),
+      publicFeed: Store.listPublic(3).map(deco),
+
+      stepPhoto: s.step === "photo", stepLoc: s.step === "loc", stepCat: s.step === "cat",
+      stepDesc: s.step === "desc", stepDone: s.step === "done",
+      wizSteps: [
+        ["Photo", "photo", s.photoUrls.length ? s.photoUrls.length + (s.photoUrls.length > 1 ? " photos ajoutées" : " photo ajoutée") : "Une image de l'anomalie"],
+        ["Localisation", "loc", fullAddr || "À préciser"],
+        ["Catégorie", "cat", s.leaf || "À choisir"],
+        ["Description et envoi", "desc", s.desc ? "Renseignée" : "Facultative"]
+      ].map(([label, key, value], i) => {
+        const order = ["photo", "loc", "cat", "desc"];
+        const cur = order.indexOf(s.step);
+        const done = s.step === "done" || i < cur;
+        const active = key === s.step;
+        return { label, value, mark: done ? "✓" : String(i + 1),
+          dotBg: done ? "#3F8F63" : active ? "#1B2A41" : "#fff",
+          dotFg: done || active ? "#fff" : "#8A98A8",
+          dotBorder: done ? "#3F8F63" : active ? "#1B2A41" : "rgba(27,42,65,.18)",
+          weight: active ? 600 : 400, fg: active ? "#1B2A41" : "#5A6B7E" };
+      }),
+      toPhoto: () => this.setState({ step: "photo" }),
+      toLoc: () => {
+        if (!s.photoUrls.length) { this.setState({ photoStepError: "Ajoutez au moins une photo pour continuer." }); return; }
+        this.setState({ step: "loc", photoStepError: "" });
+      },
+      toCat: () => {
+        if (s.geoLat == null || s.geoLon == null) { this.setState({ geoError: "Indiquez une localisation (adresse ou position) pour continuer." }); return; }
+        this.setState({ step: "cat" });
+      },
+      toDesc: () => s.leaf && this.setState({ step: "desc" }),
+      send: () => {
+        const commune = s.communeGuess || Store.communeFromText(s.addrText) || "Nyon";
+        const created = Store.addReep({
+          path, leaf: s.leaf, address: fullAddr || "Adresse non précisée",
+          lat: s.geoLat, lon: s.geoLon, desc: s.desc, photoUrls: s.photoUrls,
+          commune, reporterAccount: loggedIn ? session.key : null
+        });
+        this.setState({ step: "done", createdId: created.id, createdCommune: created.commune, createdPoints: created.pointsAwarded || 0 });
+      },
+
+      photoMax: 4,
+      hasPhotos: s.photoUrls.length > 0,
+      photoThumbs: s.photoUrls.map((url, i) => ({
+        url, onRemove: () => this.setState((st) => ({ photoUrls: st.photoUrls.filter((_, j) => j !== i) }))
+      })),
+      canAddPhoto: s.photoUrls.length < 4,
+      photoLimitReached: s.photoUrls.length >= 4,
+      onPhotoZoneClick: () => { const el = document.getElementById("web-photo-input"); if (el) el.click(); },
+      onCameraZoneClick: () => { const el = document.getElementById("web-camera-input"); if (el) el.click(); },
+      onPhotoFile: (e) => { this._ingestPhotos(e.target.files); e.target.value = ""; },
+
+      mapCenter: mapCenterLat + "," + mapCenterLon,
+      addrText: s.addrText,
+      onAddrText: (e) => {
+        const val = e.target.value;
+        this.setState({ addrText: val, geo: !!val.trim(), communeGuess: Store.communeFromText(val) || s.communeGuess });
+        clearTimeout(this._addrTimer);
+        if (val.trim().length >= 2) this._addrTimer = setTimeout(() => this._fetchAddrSuggestions(val.trim()), 350);
+        else this.setState({ addrSuggestions: [] });
+      },
+      onAddrBlur: () => {
+        setTimeout(() => this.setState({ addrSuggestions: [] }), 150);
+        const q = s.addrText.trim();
+        if (q.length > 4 && !s.geo) this._forwardGeocode(q);
+      },
+      addrNum: s.addrNum,
+      onAddrNum: (e) => this.setState({ addrNum: e.target.value }),
+      hasAddrSuggestions: s.addrSuggestions.length > 0,
+      addrSuggestions: s.addrSuggestions.map((a) => ({
+        label: a.label,
+        onClick: () => {
+          this.setState({ addrText: a.street, geoLat: a.lat, geoLon: a.lon, geo: true, addrSuggestions: [], communeGuess: Store.communeFromText(a.display) || s.communeGuess });
+          const el = document.querySelector('reeper-map[data-role="loc-picker"]');
+          if (el && el.panTo) el.panTo(a.lat, a.lon, 17);
+        }
+      })),
+      locBtnBg: s.geo ? "#1B2A41" : "#93A2B1",
+      detectLabel: s.geoLoading ? "Localisation…" : "Me localiser",
+      hasGeoError: !!s.geoError, geoError: s.geoError,
+      hasPhotoStepError: !!s.photoStepError, photoStepError: s.photoStepError,
+      detect: () => {
+        if (!navigator.geolocation) { this.setState({ geoError: "Géolocalisation indisponible sur cet appareil." }); return; }
+        this.setState({ geoLoading: true, geoError: "" });
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const lat = pos.coords.latitude, lon = pos.coords.longitude;
+            this.setState({ geoLat: lat, geoLon: lon, geo: true, geoLoading: false });
+            const el = document.querySelector('reeper-map[data-role="loc-picker"]');
+            if (el && el.panTo) el.panTo(lat, lon, 17);
+            Store.reverseGeocode(lat, lon).then((res) => {
+              this.setState({ addrText: res.street || res.address, addrNum: res.houseNumber || "", communeGuess: res.commune || s.communeGuess });
+            }).catch(() => {
+              this.setState({ addrText: lat.toFixed(5) + ", " + lon.toFixed(5) });
+            });
+          },
+          () => this.setState({ geoLoading: false, geoError: "Position refusée ou indisponible — saisissez l'adresse manuellement." }),
+          { enableHighAccuracy: true, timeout: 8000 }
+        );
+      },
+
+      catItems: (function (self) {
+        const node = Store.treeAt(path);
+        return Object.keys(node).map((k) => {
+          const child = node[k];
+          const on = !child && s.leaf === k;
+          return { label: k, chev: child ? "›" : "", bg: on ? "#F3F6F8" : "#fff", weight: on ? 600 : 400,
+            onClick: child
+              ? () => self.setState({ path: path.concat([k]), leaf: null })
+              : () => self.setState({ leaf: k, cat: path[0] || k }) };
+        });
+      })(this),
+      catCrumb: path.length ? path.join(" › ") : "Toutes les familles d'anomalies",
+      catUp: () => this.setState({ path: path.slice(0, -1), leaf: null }),
+      catUpFg: path.length ? "#1B2A41" : "#B4C0CB",
+      catPicked: !!s.leaf,
+      catFull: path.concat(s.leaf ? [s.leaf] : []).join(" › "),
+      catService: Store.SERVICE[path[0]] || "—",
+      catBtnBg: s.leaf ? "#1B2A41" : "#93A2B1",
+
+      desc: s.desc, onDesc: (e) => this.setState({ desc: e.target.value }),
+      hasEmergencyWarning: /fuite d.eau importante|inondation|incendie|feu\b|explosion|odeur de gaz|fuite de gaz|électrocution|effondrement/i.test(s.desc || ""),
+      recap: [
+        { label: "Anomalie", value: s.leaf || "—" },
+        { label: "Catégorie", value: path.join(" › ") || "—" },
+        { label: "Service compétent", value: Store.SERVICE[path[0]] || "—" },
+        { label: "Adresse", value: fullAddr || "—" }
+      ],
+
+      createdId: s.createdId, createdCommune: s.createdCommune || "Nyon",
+      hasCreatedPoints: s.createdPoints > 0, createdPoints: s.createdPoints,
+      goRewardsFromDone: () => this.setState({ view: "rewards", redeemMsg: "" }),
+
+      authTitle: s.authTab === "signup" ? "Créer un compte" : "Se connecter",
+      authSubtitle: s.authTab === "signup"
+        ? "Un profil citoyen ou commune, selon que vous renseignez un code commune."
+        : "Le suivi de vos Reeps est réservé aux titulaires d'un compte. Signaler reste possible sans compte, en anonyme.",
+      authTabLogin: () => this.setState({ authTab: "login", signupDone: false }),
+      authTabSignup: () => this.setState({ authTab: "signup", signupDone: false, signupError: "", signupMsg: "" }),
+      isAuthLogin: s.authTab !== "signup", isAuthSignup: s.authTab === "signup",
+      tabLoginBg: s.authTab !== "signup" ? "#fff" : "transparent", tabLoginFg: s.authTab !== "signup" ? "#1B2A41" : "#5A6B7E",
+      tabSignupBg: s.authTab === "signup" ? "#fff" : "transparent", tabSignupFg: s.authTab === "signup" ? "#1B2A41" : "#5A6B7E",
+
+      account: s.account,
+      accountOptions: Store.listAccounts({ activeOnly: true }).map((a) => ({
+        key: a.key, label: a.displayName + (a.type === "citizen" ? " · Citoyen" : a.type === "gerant" ? " · Gérant" : " · " + a.commune)
+      })),
+      onAccountSelect: (e) => this.setState({ account: e.target.value, loginError: "" }),
+      pwd: s.pwd, onPwd: (e) => this.setState({ pwd: e.target.value }),
+      pwdFieldType: s.pwdVisible ? "text" : "password",
+      pwdToggleLabel: s.pwdVisible ? "Masquer" : "Afficher",
+      togglePwdVisible: () => this.setState({ pwdVisible: !s.pwdVisible }),
+      onPwdKeyDown: (e) => { if (e.key === "Enter") doLogin(); },
+      hasLoginError: !!s.loginError, loginError: s.loginError,
+      doLogin,
+
+      suFirst: s.suFirst, onSuFirst: (e) => this.setState({ suFirst: e.target.value, signupError: "", signupMsg: "" }),
+      suLast: s.suLast, onSuLast: (e) => this.setState({ suLast: e.target.value, signupError: "", signupMsg: "" }),
+      suEmail: s.suEmail, onSuEmail: (e) => this.setState({ suEmail: e.target.value, signupError: "", signupMsg: "" }),
+      suUsername: s.suUsername, onSuUsername: (e) => this.setState({ suUsername: e.target.value, signupError: "", signupMsg: "" }),
+      suPwd: s.suPwd, onSuPwd: (e) => this.setState({ suPwd: e.target.value, signupError: "", signupMsg: "" }),
+      suPwdFieldType: s.suPwdVisible ? "text" : "password",
+      suPwdToggleLabel: s.suPwdVisible ? "Masquer" : "Afficher",
+      toggleSuPwdVisible: () => this.setState({ suPwdVisible: !s.suPwdVisible }),
+      onSuPwdKeyDown: (e) => { if (e.key === "Enter") doSignup(); },
+      suCode: s.suCode, onSuCode: (e) => this.setState({ suCode: e.target.value, signupError: "", signupMsg: "" }),
+      suPhone: s.suPhone, onSuPhone: (e) => this.setState({ suPhone: e.target.value, signupError: "", signupMsg: "" }),
+      suAddress: s.suAddress, onSuAddress: (e) => this.setState({ suAddress: e.target.value, signupError: "", signupMsg: "" }),
+      hasSignupError: !!s.signupError, signupError: s.signupError,
+      hasSignupMsg: !!s.signupMsg, signupMsg: s.signupMsg,
+      signupDone: s.signupDone, notSignupDone: !s.signupDone,
+      hasSignupEmail: !!s.signupEmailSubject,
+      signupEmailSubject: s.signupEmailSubject, signupEmailBody: s.signupEmailBody, signupEmailTo: s.signupEmailTo,
+      doSignup, afterSignupContinue,
+
+      rows, cur: (() => {
+        const c = rows[s.sel] || rows[0];
+        if (!c) return c;
+        const extra = (c.photos || []).slice(1);
+        return { ...c, hasExtraPhotos: extra.length > 0, extraPhotos: extra.map((url) => ({ url })) };
+      })(),
+      hasReeps: rows.length > 0, noReeps: rows.length === 0,
+
+      legalSections: [
+        { title: "Éditeur", body: "Reeper est édité et exploité en Suisse. Les données sont hébergées exclusivement sur territoire suisse." },
+        { title: "Données personnelles", body: "Le traitement des données respecte la loi fédérale sur la protection des données du 25 septembre 2020 (LPD, RS 235.1), notamment les principes de licéité, de proportionnalité et d'exactitude (art. 6 LPD) et le devoir d'information lors de la collecte (art. 19 à 21 LPD). Un signalement anonyme n'est associé à aucune donnée personnelle au sens de l'art. 5 let. a LPD." },
+        { title: "Droits des personnes", body: "Toute personne concernée dispose d'un droit d'accès à ses données (art. 25 LPD) et peut adresser une réclamation au Préposé fédéral à la protection des données et à la transparence (art. 49 ss LPD)." },
+        { title: "Propriété intellectuelle", body: "Le contenu, la marque et l'interface Reeper sont protégés par la loi fédérale sur le droit d'auteur (LDA, RS 231.1). Toute reproduction sans autorisation est interdite." },
+        { title: "Responsabilité", body: "Reeper transmet les signalements aux communes partenaires. Le traitement, les délais et la priorisation relèvent de la seule responsabilité de la commune concernée." },
+        { title: "Contact", body: "contact@reeper.ch" }
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>
