@@ -668,7 +668,7 @@ select,textarea,input{font-family:inherit}
           <h1 style="margin:0;font-family:Georgia,Cambria,serif;font-size:23px;font-weight:700;letter-spacing:-.3px">Corbeille</h1>
           <div style="font-size:12.5px;color:#8A98A8;margin-top:3px">{{ trashCount }} Reeps supprimés · commune de {{ communeName }}</div>
         </div>
-        <div style="background:#EAF0F4;border-radius:10px;padding:13px 16px;font-size:12.5px;line-height:1.55;color:#48566B">Un Reep supprimé n'est jamais effacé définitivement : il reste consultable ici et peut être restauré à tout moment.</div>
+        <div style="background:#EAF0F4;border-radius:10px;padding:13px 16px;font-size:12.5px;line-height:1.55;color:#48566B">Un Reep supprimé reste consultable ici et peut être restauré pendant 1 an. Passé ce délai, il est effacé définitivement.</div>
         <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:hidden">
           <sc-for list="{{ trashRows }}" as="r" hint-placeholder-count="3">
             <div style="display:flex;align-items:center;gap:14px;width:100%;padding:14px 20px;border-bottom:1px solid rgba(27,42,65,.06);background:#fff">
@@ -1282,8 +1282,23 @@ select,textarea,input{font-family:inherit}
               <sc-for list="{{ messages }}" as="m" hint-placeholder-count="3">
                 <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;padding:16px 18px;display:flex;gap:16px;align-items:flex-start">
                   <div style="flex:1;min-width:0">
-                    <div style="font-size:14.5px;font-weight:600">{{ m.trigger }}</div>
-                    <div style="margin-top:9px;background:#F3F6F8;border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.55;color:#48566B;text-wrap:pretty">{{ m.preview }}</div>
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <div style="font-size:14.5px;font-weight:600">{{ m.trigger }}</div>
+                      <sc-if value="{{ m.isCustom }}" hint-placeholder-val="{{ false }}">
+                        <span style="font-size:10.5px;font-weight:700;color:#A96A16;background:#FDF6E9;border-radius:999px;padding:2px 8px">Modifié</span>
+                      </sc-if>
+                    </div>
+                    <sc-if value="{{ m.editing }}" hint-placeholder-val="{{ false }}">
+                      <textarea value="{{ m.draft }}" onChange="{{ m.onDraft }}" rows="3" style="width:100%;box-sizing:border-box;margin-top:9px;border:1px solid rgba(27,42,65,.18);border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.55;color:#1B2A41;font-family:inherit;outline:none;resize:none"></textarea>
+                      <div style="display:flex;gap:8px;margin-top:9px">
+                        <button onClick="{{ m.onSave }}" style="border:none;background:#1B2A41;color:#fff;border-radius:8px;padding:9px 14px;font-size:12.5px;font-weight:600">Enregistrer les modifications</button>
+                        <button onClick="{{ m.onCancel }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;color:#48566B;border-radius:8px;padding:9px 14px;font-size:12.5px;font-weight:600">Annuler</button>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ m.notEditing }}" hint-placeholder-val="{{ true }}">
+                      <div style="margin-top:9px;background:#F3F6F8;border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.55;color:#48566B;text-wrap:pretty">{{ m.preview }}</div>
+                      <button onClick="{{ m.onEdit }}" style="margin-top:9px;border:1px solid rgba(27,42,65,.16);background:#fff;color:#1B2A41;border-radius:8px;padding:8px 13px;font-size:12.5px;font-weight:600">✏️ Modifier</button>
+                    </sc-if>
                   </div>
                   <button onClick="{{ m.onToggle }}" style="border:none;background:{{ m.toggleBg }};border-radius:999px;width:46px;height:26px;padding:3px;box-sizing:border-box;display:flex;align-items:center;justify-content:{{ m.toggleJustify }};flex:none;margin-top:2px">
                     <span style="width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25)"></span>
@@ -1601,7 +1616,7 @@ class Component extends DCLogic {
     pickQuery: "", shellFitH: null, syncToast: "",
     extra: {}, xfer: {}, refuseKey: null, refuseMode: "back", refuseNote: "", xferService: "Propreté publique",
     query: "", partner: null, partnerService: "", manualMail: "",
-    catsOff: [], catOverrides: {}, catEdit: null, catEditLabel: "", msgOff: [], sheet: null, sheetMail: true, sheetSaved: false, inviteError: "", newCat: false, newService: false, device: "Bureau",
+    catsOff: [], catOverrides: {}, catEdit: null, catEditLabel: "", msgOff: [], msgOverrides: {}, msgEditing: null, msgDrafts: {}, sheet: null, sheetMail: true, sheetSaved: false, inviteError: "", newCat: false, newService: false, device: "Bureau",
     sheetDeleteConfirm: false, sheetDeleteError: "",
     pwdOld: "", pwdNew1: "", pwdNew2: "", pwdMsg: "", pwdMsgIsError: false,
     replaceOpen: false, replaceForKey: null, replaceCommune: "", replaceMode: "select", replacementKey: "",
@@ -2331,7 +2346,7 @@ class Component extends DCLogic {
       onClosePhotoDrop: (e) => { e.preventDefault(); const f = e.dataTransfer.files && e.dataTransfer.files[0]; if (f) this._ingestClosePhoto(f); },
       onClosePhotoFile: (e) => { const f = e.target.files && e.target.files[0]; if (f) this._ingestClosePhoto(f); e.target.value = ""; },
 
-      dangerHint: cur.deleted ? "Ce Reep est dans la corbeille depuis " + relTime(cur.deletedAt) + "." : "Le Reep est déplacé dans la corbeille. Il n'est jamais effacé définitivement et peut être restauré à tout moment.",
+      dangerHint: cur.deleted ? "Ce Reep est dans la corbeille depuis " + relTime(cur.deletedAt) + ". Il sera effacé définitivement au bout d'un an." : "Le Reep est déplacé dans la corbeille. Il peut être restauré pendant 1 an, puis il est effacé définitivement.",
       notDeleted: !cur.deleted,
       deleteReepConfirm: s.deleteReepConfirm,
       deleteReepLabel: s.deleteReepConfirm ? "Confirmer la suppression ?" : "Supprimer ce Reep",
@@ -2506,7 +2521,16 @@ class Component extends DCLogic {
         { trigger: "Reep clôturé", preview: "L'intervention a été réalisée. Merci de votre Reep." }
       ].map((m) => {
         const on = !s.msgOff.includes(m.trigger);
+        const custom = s.msgOverrides[m.trigger];
+        const editing = s.msgEditing === m.trigger;
+        const draft = s.msgDrafts[m.trigger] != null ? s.msgDrafts[m.trigger] : (custom || m.preview);
         return { ...m,
+          preview: custom || m.preview,
+          isCustom: !!custom, editing, notEditing: !editing, draft,
+          onDraft: (e) => this.setState({ msgDrafts: { ...s.msgDrafts, [m.trigger]: e.target.value } }),
+          onEdit: () => this.setState({ msgEditing: m.trigger, msgDrafts: { ...s.msgDrafts, [m.trigger]: custom || m.preview } }),
+          onSave: () => this.setState({ msgOverrides: { ...s.msgOverrides, [m.trigger]: (s.msgDrafts[m.trigger] || "").trim() || m.preview }, msgEditing: null }),
+          onCancel: () => this.setState({ msgEditing: null }),
           onToggle: () => this.setState((st) => ({ msgOff: on ? [...st.msgOff, m.trigger] : st.msgOff.filter((x) => x !== m.trigger) })),
           toggleBg: on ? "#3F8F63" : "#C6D0D9", toggleJustify: on ? "flex-end" : "flex-start" };
       }),

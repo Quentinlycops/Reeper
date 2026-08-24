@@ -459,6 +459,69 @@ select,textarea,input{font-family:inherit}
         </div>
       </sc-if>
 
+      <sc-if value="{{ isActivity }}" hint-placeholder-val="{{ false }}">
+        <div class="rg-content" style="display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
+            <div style="flex:1">
+              <h1 style="margin:0;font-family:Georgia,Cambria,serif;font-size:24px;font-weight:700;letter-spacing:-.3px">Activité — toutes communes</h1>
+              <div style="font-size:12.5px;color:#8A98A8;margin-top:3px">Suivi de toutes les modifications effectuées par les communes</div>
+            </div>
+            <select value="{{ activityCommune }}" onChange="{{ onActivityCommune }}" style="border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:9px 13px;font-size:13.5px;background:#fff">
+              <sc-for list="{{ communeOptions }}" as="c" hint-placeholder-count="4">
+                <option value="{{ c }}">{{ c }}</option>
+              </sc-for>
+            </select>
+            <div style="display:flex;background:#EEF2F5;border-radius:9px;padding:3px;gap:2px">
+              <button onClick="{{ activityModeJournalClick }}" style="border:none;background:{{ activityModeJournalBg }};color:{{ activityModeJournalFg }};border-radius:7px;padding:9px 15px;font-size:12.5px;font-weight:700">Journal</button>
+              <button onClick="{{ activityModeTrashClick }}" style="border:none;background:{{ activityModeTrashBg }};color:{{ activityModeTrashFg }};border-radius:7px;padding:9px 15px;font-size:12.5px;font-weight:700">Corbeille · {{ activityTrashCount }}</button>
+            </div>
+          </div>
+
+          <sc-if value="{{ isActivityJournal }}" hint-placeholder-val="{{ true }}">
+            <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:hidden">
+              <div style="display:grid;grid-template-columns:1.3fr .8fr 2fr .7fr;padding:12px 20px;background:#FAFBFC;border-bottom:1px solid rgba(27,42,65,.08);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700">
+                <span>Action</span><span>Commune</span><span>Détail</span><span>Quand</span>
+              </div>
+              <sc-for list="{{ activityFeed }}" as="a" hint-placeholder-count="8">
+                <div style="display:grid;grid-template-columns:1.3fr .8fr 2fr .7fr;gap:10px;align-items:start;padding:13px 20px;border-bottom:1px solid rgba(27,42,65,.06)">
+                  <span style="min-width:0">
+                    <span style="display:block;font-size:13.5px;font-weight:600">{{ a.label }}</span>
+                    <span style="display:block;font-size:11.5px;color:#8A98A8;margin-top:2px">{{ a.who }} · {{ a.reepTitle }}</span>
+                  </span>
+                  <span style="font-size:12.5px;color:#48566B">{{ a.commune }}</span>
+                  <span style="font-size:12.5px;color:#48566B;line-height:1.5">{{ a.note }}</span>
+                  <span style="font-size:12px;color:#8A98A8;white-space:nowrap">{{ a.when }}</span>
+                </div>
+              </sc-for>
+              <sc-if value="{{ activityFeedEmpty }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:30px 20px;text-align:center;font-size:13px;color:#8A98A8">Aucune activité pour ces filtres.</div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isActivityTrash }}" hint-placeholder-val="{{ false }}">
+            <div style="background:#EAF0F4;border-radius:10px;padding:13px 16px;font-size:12.5px;line-height:1.55;color:#48566B">Un Reep supprimé reste consultable et restaurable pendant 1 an, quelle que soit la commune. Passé ce délai, il est effacé définitivement.</div>
+            <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:hidden">
+              <sc-for list="{{ activityTrash }}" as="r" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:14px;width:100%;padding:14px 20px;border-bottom:1px solid rgba(27,42,65,.06);background:#fff">
+                  <span style="flex:1;min-width:0">
+                    <span style="display:block;font-size:14px;font-weight:600">{{ r.title }}</span>
+                    <span style="display:block;font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#8A98A8;margin-top:3px">{{ r.id }}</span>
+                  </span>
+                  <span style="font-size:13px;color:#48566B;width:130px;flex:none">{{ r.commune }}</span>
+                  <span style="font-size:13px;color:#48566B;width:200px;flex:none">{{ r.place }}</span>
+                  <span style="font-size:12px;color:#8A98A8;width:150px;flex:none">Supprimé {{ r.deletedWhen }}</span>
+                  <button onClick="{{ r.onRestore }}" style="border:none;background:#1B2A41;color:#fff;border-radius:9px;padding:9px 14px;font-size:12.5px;font-weight:600;flex:none">Restaurer</button>
+                </div>
+              </sc-for>
+              <sc-if value="{{ activityTrashEmpty }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:24px 20px;font-size:13px;color:#8A98A8;text-align:center">La corbeille est vide.</div>
+              </sc-if>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
     </div>
 
     <div class="rg-mobile-nav" style="flex:none;background:#fff;border-top:1px solid rgba(27,42,65,.1);padding:8px 4px 12px">
@@ -524,6 +587,7 @@ class Component extends DCLogic {
     replFirst: "", replLast: "", replEmail: "", replaceError: "",
     msgSel: null, draft: "",
     pwdPanelOpen: false, pwdOld: "", pwdNew1: "", pwdNew2: "", pwdMsg: "", pwdMsgIsError: false,
+    activityMode: "journal", activityCommune: "Toutes",
     shellFitH: null
   };
 
@@ -555,7 +619,7 @@ class Component extends DCLogic {
     const goSite = () => { window.location.href = "./Reeper Web.dc.html"; };
     const doLogout = () => { Store.logout(); window.location.href = "./Reeper Web.dc.html"; };
 
-    const navDef = [["Tableau de bord", "dash"], ["Reeps", "reeps"], ["Comptes", "accounts"], ["Messagerie", "msg"]];
+    const navDef = [["Tableau de bord", "dash"], ["Reeps", "reeps"], ["Comptes", "accounts"], ["Messagerie", "msg"], ["Activité", "activity"]];
 
     const startDelete = (key) => {
       if (s.pendingDeleteKey === key) {
@@ -597,6 +661,11 @@ class Component extends DCLogic {
     const replaceCandidates = s.replaceForKey
       ? Store.agentsForCommune(s.replaceCommune).filter((a) => a.key !== s.replaceForKey)
       : [];
+
+    const activityReeps = Store.getReeps({ includeDeleted: true }).filter((r) => s.activityCommune === "Toutes" || r.commune === s.activityCommune);
+    const activityFeedAll = activityReeps.flatMap((r) => (r.timeline || []).map((t) => ({ ...t, commune: r.commune, reepId: r.id, reepTitle: r.title })))
+      .sort((a, b) => b.when - a.when).slice(0, 300);
+    const activityTrashRaw = Store.getDeleted(s.activityCommune === "Toutes" ? null : s.activityCommune);
 
     const rawInboxes = Store.inboxFor(Store.REEPER_SUPPORT_KEY).concat(session.key ? Store.inboxFor(session.key) : []);
     const inboxByKey = {};
@@ -648,7 +717,23 @@ class Component extends DCLogic {
       },
 
       shellH: s.shellFitH || "900px",
-      isDash: s.screen === "dash", isReeps: s.screen === "reeps", isAccounts: s.screen === "accounts", isMsg: s.screen === "msg",
+      isDash: s.screen === "dash", isReeps: s.screen === "reeps", isAccounts: s.screen === "accounts", isMsg: s.screen === "msg", isActivity: s.screen === "activity",
+
+      activityCommune: s.activityCommune, onActivityCommune: (e) => this.setState({ activityCommune: e.target.value }),
+      isActivityJournal: s.activityMode !== "trash", isActivityTrash: s.activityMode === "trash",
+      activityModeJournalClick: () => this.setState({ activityMode: "journal" }),
+      activityModeTrashClick: () => this.setState({ activityMode: "trash" }),
+      activityModeJournalBg: s.activityMode !== "trash" ? "#1B2A41" : "transparent", activityModeJournalFg: s.activityMode !== "trash" ? "#fff" : "#5A6B7E",
+      activityModeTrashBg: s.activityMode === "trash" ? "#1B2A41" : "transparent", activityModeTrashFg: s.activityMode === "trash" ? "#fff" : "#5A6B7E",
+      activityTrashCount: activityTrashRaw.length,
+      activityFeed: activityFeedAll.map((a) => ({ label: a.label, who: a.who, note: a.note, commune: a.commune, reepTitle: a.reepTitle, when: fmtDateTime(a.when) })),
+      activityFeedEmpty: !activityFeedAll.length,
+      activityTrash: activityTrashRaw.map((r) => ({
+        id: r.id, title: r.title, commune: r.commune, place: r.place || r.address || "—",
+        deletedWhen: fmtDateTime(r.deletedAt),
+        onRestore: () => { Store.restoreReep(r.id, session.displayName); this.forceUpdate(); }
+      })),
+      activityTrashEmpty: !activityTrashRaw.length,
 
       statCards: (() => {
         const g = Store.statsGlobal();

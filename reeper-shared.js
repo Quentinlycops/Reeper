@@ -305,6 +305,10 @@
     data.accounts.forEach(function (a) {
       if (a.type === "citizen" && a.points == null) a.points = 0;
     });
+    var PURGE_AFTER_MS = 365 * 86400000;
+    data.reeps = (data.reeps || []).filter(function (r) {
+      return !(r.deleted && r.deletedAt && (now() - r.deletedAt) > PURGE_AFTER_MS);
+    });
     return data;
   }
 
