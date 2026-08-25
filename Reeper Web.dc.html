@@ -690,8 +690,10 @@ class Component extends DCLogic {
     [t.ready, t.updateCallbackDone, t.finished].forEach((p) => p && p.catch(() => {}));
   }
   _scrollTo(id) {
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 60);
   }
 
   componentDidMount() {
