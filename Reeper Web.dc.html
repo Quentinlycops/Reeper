@@ -20,9 +20,9 @@ body{margin:0;background:#E7ECF0;font-family:"Helvetica Neue",Helvetica,Arial,sa
 a{color:#1B2A41}a:hover{color:#D62839}
 button{font-family:inherit;cursor:pointer}
 input,textarea,select{font-family:inherit}
-.rp-page{padding:38px 34px 56px}
-.rp-shell{width:100%;max-width:1600px}
-.rp-header{padding:0 28px;gap:26px;height:70px}
+.rp-page{padding:0;max-width:1600px;margin:0 auto}
+.rp-shell{width:100%}
+.rp-header{padding:0 34px;gap:26px;height:70px;position:sticky;top:0;z-index:20}
 .rp-nav{display:flex;gap:2px}
 .rp-nav button{padding:10px 13px}
 .rp-mobile-nav{display:none}
@@ -31,17 +31,15 @@ input,textarea,select{font-family:inherit}
 .rp-report{padding:34px 40px 46px;display:grid;grid-template-columns:250px 1fr;gap:34px}
 .rp-track{padding:34px 40px 46px;display:grid;grid-template-columns:400px 1fr;gap:28px}
 .rp-2col{display:grid;grid-template-columns:1fr 1fr}
-.rp-wizard-nav{position:sticky;top:0}
+.rp-wizard-nav{position:sticky;top:86px}
 .rp-center-page{padding:52px 40px 60px}
 .rp-card-pad{padding:26px 28px}
 @media (max-width: 900px) {
-  .rp-page{padding:0 !important;gap:0}
-  .rp-banner{display:none}
-  .rp-shell{border-radius:0 !important;box-shadow:none !important;border:none !important;border-top:1px solid rgba(27,42,65,.08) !important;width:100% !important}
-  .rp-header{padding:0 14px;gap:12px;height:56px}
+  .rp-header{padding:0 14px;gap:12px;height:56px;top:0}
+  .rp-wizard-nav{top:0}
   .rp-wordmark-text{display:none}
   .rp-nav{display:none}
-  .rp-mobile-nav{display:flex}
+  .rp-mobile-nav{display:flex;position:sticky;bottom:0;z-index:20}
   .rp-hero{grid-template-columns:minmax(0,1fr)}
   .rp-hero-intro{padding:26px 18px 26px !important}
   .rp-hero-title{font-size:25px !important;margin-top:8px !important;letter-spacing:-.6px !important}
@@ -70,19 +68,11 @@ input,textarea,select{font-family:inherit}
 </style>
 </helmet>
 
-<div class="rp-page" style="min-height:100vh;box-sizing:border-box;background:#E7ECF0;background-image:repeating-radial-gradient(circle at 22% 28%, rgba(27,42,65,.05) 0 1px, transparent 1px 28px);display:flex;flex-direction:column;align-items:center;gap:22px">
+<div class="rp-page" style="min-height:100vh;box-sizing:border-box;background:#fff">
 
-  <div class="rp-shell rp-banner" style="max-width:100%">
-    <div style="display:flex;align-items:baseline;gap:10px">
-      <span style="font-family:Georgia,Cambria,serif;font-size:29px;font-weight:700;letter-spacing:-.5px;color:#1B2A41">Reeper</span><span style="width:8px;height:8px;border-radius:50%;background:#D62839;display:inline-block"></span>
-      <span style="font-family:Georgia,serif;font-size:14.5px;color:#5A6B7E;font-style:italic">Vue web — même parcours que l'application mobile</span>
-    </div>
-    <p style="margin:11px 0 0;font-size:13.5px;line-height:1.6;color:#48566B;max-width:96ch;text-wrap:pretty">Signaler et suivre depuis un navigateur, sans installer l'application. Les mêmes étapes, les mêmes statuts, les mêmes textes. Une connexion avec un compte d'agent ouvre directement l'espace commune.</p>
-  </div>
+    <div class="rp-shell" style="background:#fff;display:flex;flex-direction:column">
 
-    <div class="rp-shell" data-role="shell" style="max-width:100%;background:#F3F6F8;border:1px solid rgba(27,42,65,.14);border-radius:14px;overflow:hidden;box-shadow:0 18px 44px rgba(27,42,65,.14);display:flex;flex-direction:column;height:{{ shellH }}">
-
-      <div class="rp-header" style="flex:none;background:#fff;border-bottom:1px solid rgba(27,42,65,.1);display:flex;align-items:center;position:relative;z-index:5">
+      <div class="rp-header" style="flex:none;background:#fff;border-bottom:1px solid rgba(27,42,65,.1);display:flex;align-items:center">
         <button onClick="{{ goHome }}" style="border:none;background:none;padding:6px 2px;display:flex;align-items:flex-end;gap:8px" style-hover="opacity:.72">
           <span style="display:flex;align-items:flex-end;gap:3px">
             <span style="font-family:Georgia,Cambria,serif;font-size:25px;font-weight:700;line-height:1;color:#1B2A41">R</span>
@@ -125,7 +115,7 @@ input,textarea,select{font-family:inherit}
         </sc-if>
       </div>
 
-      <div style="flex:1;overflow:auto">
+      <div>
 
         <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
           <div class="rp-hero">
@@ -707,8 +697,7 @@ class Component extends DCLogic {
     geo: false, geoLat: null, geoLon: null, addrText: "", addrNum: "", addrSuggestions: [], communeGuess: null, geoLoading: false, geoError: "",
     cat: null, leaf: null, path: [], desc: "",
     createdId: null, createdCommune: null, createdPoints: 0,
-    redeemMsg: "",
-    shellFitH: null
+    redeemMsg: ""
   };
   go(view) { this._transition(() => this.setState({ view })); }
   _transition(fn) {
@@ -719,24 +708,12 @@ class Component extends DCLogic {
 
   componentDidMount() {
     this._wireMap();
-    this._syncShellHeight();
-    window.addEventListener("resize", this._onResize = () => this._syncShellHeight());
     Store.startAutoSync();
     window.addEventListener("reeper:sync", this._onSync = () => this.forceUpdate());
   }
-  componentDidUpdate() { this._wireMap(); this._syncShellHeight(); }
+  componentDidUpdate() { this._wireMap(); }
   componentWillUnmount() {
-    if (this._onResize) window.removeEventListener("resize", this._onResize);
     if (this._onSync) window.removeEventListener("reeper:sync", this._onSync);
-  }
-  _syncShellHeight() {
-    const shell = document.querySelector('[data-role="shell"]');
-    if (!shell) return;
-    const top = shell.getBoundingClientRect().top;
-    const bottomPad = window.innerWidth <= 900 ? 32 : 56;
-    const h = Math.max(400, Math.round(window.innerHeight - top - bottomPad));
-    const px = h + "px";
-    if (px !== this.state.shellFitH) this.setState({ shellFitH: px });
   }
 
   _wireMap() {
@@ -852,7 +829,6 @@ class Component extends DCLogic {
     };
 
     return {
-      shellH: s.shellFitH || "860px",
       isHome: s.view === "home",
       isReport: s.view === "report",
       isTrack: s.view === "track",
