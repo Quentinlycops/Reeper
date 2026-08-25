@@ -215,10 +215,8 @@ input,textarea,select{font-family:inherit}
 
                 <sc-if value="{{ canAddPhoto }}" hint-placeholder-val="{{ true }}">
                   <div class="photo-actions" style="display:flex;gap:8px">
-                    <button onClick="{{ onCameraZoneClick }}" style="flex:1;border:1px dashed rgba(27,42,65,.28);background:#FAFBFC;border-radius:9px;padding:10px 12px;display:flex;align-items:center;justify-content:center;gap:7px;color:#1B2A41;font-size:12.5px;font-weight:600">
-                      <span style="font-size:14px">📷</span>Prendre une photo
-                    </button>
-                    <button onClick="{{ onPhotoZoneClick }}" title="Choisir depuis mes fichiers" style="width:40px;flex:none;border:1px dashed rgba(27,42,65,.28);background:#FAFBFC;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#1B2A41;font-size:19px;font-weight:600;line-height:1">+</button>
+                    <button onClick="{{ onCameraZoneClick }}" title="Prendre une photo" style="width:44px;height:44px;flex:none;border:none;background:#F3F6F8;border-radius:11px;display:flex;align-items:center;justify-content:center;color:#1B2A41;font-size:18px" style-hover="background:#EAEFF3">📷</button>
+                    <button onClick="{{ onPhotoZoneClick }}" title="Choisir depuis mes fichiers" style="width:44px;height:44px;flex:none;border:none;background:#F3F6F8;border-radius:11px;display:flex;align-items:center;justify-content:center;color:#1B2A41;font-size:21px;font-weight:600;line-height:1" style-hover="background:#EAEFF3">+</button>
                   </div>
                 </sc-if>
                 <sc-if value="{{ photoLimitReached }}" hint-placeholder-val="{{ false }}">
@@ -349,6 +347,7 @@ input,textarea,select{font-family:inherit}
                 <div>
                   <div style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Compte</div>
                   <select value="{{ account }}" onChange="{{ onAccountSelect }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:13px 15px;font-size:14px;background:#fff">
+                    <option value="">Choisir un compte…</option>
                     <sc-for list="{{ accountOptions }}" as="a" hint-placeholder-count="4">
                       <option value="{{ a.key }}">{{ a.label }}</option>
                     </sc-for>
@@ -387,9 +386,13 @@ input,textarea,select{font-family:inherit}
                   <div>
                     <div style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Mot de passe</div>
                     <div style="position:relative">
-                      <input type="{{ suPwdFieldType }}" value="{{ suPwd }}" onChange="{{ onSuPwd }}" onKeyDown="{{ onSuPwdKeyDown }}" placeholder="Mot de passe" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:13px 44px 13px 15px;font-size:14px;outline:none">
+                      <input id="su-pwd" type="{{ suPwdFieldType }}" value="{{ suPwd }}" onChange="{{ onSuPwd }}" onKeyDown="{{ onSuPwdKeyDown }}" placeholder="Mot de passe" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:13px 44px 13px 15px;font-size:14px;outline:none">
                       <button onClick="{{ toggleSuPwdVisible }}" type="button" style="position:absolute;top:0;right:0;bottom:0;width:40px;border:none;background:none;color:#8A98A8;font-size:12.5px;font-weight:600">{{ suPwdToggleLabel }}</button>
                     </div>
+                  </div>
+                  <div>
+                    <div style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Confirmer le mot de passe</div>
+                    <input id="su-pwd2" type="{{ suPwdFieldType }}" value="{{ suPwd2 }}" onChange="{{ onSuPwd2 }}" onKeyDown="{{ onSuPwdKeyDown }}" placeholder="Confirmer le mot de passe" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:13px 15px;font-size:14px;outline:none">
                   </div>
                   <div style="border-top:1px solid rgba(27,42,65,.08);padding-top:14px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700">Facultatif</div>
                   <div>
@@ -670,9 +673,9 @@ const deco = (r) => {
 class Component extends DCLogic {
   state = {
     view: "home", step: "photo", sel: 0, profileOpen: false,
-    account: "citizen_berger", pwd: "", loginError: "", wantTrack: false,
+    account: "", pwd: "", loginError: "", wantTrack: false,
     authTab: "login",
-    suFirst: "", suLast: "", suEmail: "", suUsername: "", suPwd: "", suCode: "", suPhone: "", suAddress: "",
+    suFirst: "", suLast: "", suEmail: "", suUsername: "", suPwd: "", suPwd2: "", suCode: "", suPhone: "", suAddress: "",
     signupError: "", signupMsg: "", signupDone: false, signupEmailSubject: "", signupEmailBody: "", signupEmailTo: "",
     pwdVisible: false, suPwdVisible: false,
     settingsCode: "", settingsMsg: "", settingsMsgIsError: false,
@@ -790,7 +793,9 @@ class Component extends DCLogic {
     };
 
     const doLogin = () => {
-      const acc = Store.getAccount(s.account) || Store.getAccount("citizen_berger");
+      if (!s.account) { this.setState({ loginError: "Choisissez un compte." }); return; }
+      const acc = Store.getAccount(s.account);
+      if (!acc) { this.setState({ loginError: "Compte introuvable." }); return; }
       const pwdEl = document.querySelector('input[type="password"]');
       const pwd = pwdEl ? pwdEl.value : s.pwd;
       Store.login(acc.username, pwd).then((res) => {
@@ -804,9 +809,12 @@ class Component extends DCLogic {
       });
     };
     const doSignup = () => {
-      const resetFields = { suFirst: "", suLast: "", suEmail: "", suUsername: "", suPwd: "", suCode: "", suPhone: "", suAddress: "" };
-      const suPwdEl = document.querySelector('input[type="password"]');
+      const resetFields = { suFirst: "", suLast: "", suEmail: "", suUsername: "", suPwd: "", suPwd2: "", suCode: "", suPhone: "", suAddress: "" };
+      const suPwdEl = document.getElementById("su-pwd");
+      const suPwd2El = document.getElementById("su-pwd2");
       const suPwd = suPwdEl ? suPwdEl.value : s.suPwd;
+      const suPwd2 = suPwd2El ? suPwd2El.value : s.suPwd2;
+      if (suPwd !== suPwd2) { this.setState({ signupError: "Les mots de passe ne correspondent pas.", signupMsg: "" }); return; }
       Store.signup({ firstName: s.suFirst, lastName: s.suLast, email: s.suEmail, username: s.suUsername, password: suPwd, communeCode: s.suCode, phone: s.suPhone, address: s.suAddress }).then((res) => {
         if (!res.ok) { this.setState({ signupError: res.error, signupMsg: "" }); return; }
         const emailPreview = res.email ? { signupEmailSubject: res.email.subject, signupEmailBody: res.email.body, signupEmailTo: res.email.to } : { signupEmailSubject: "", signupEmailBody: "", signupEmailTo: "" };
@@ -1060,6 +1068,7 @@ class Component extends DCLogic {
       suEmail: s.suEmail, onSuEmail: (e) => this.setState({ suEmail: e.target.value, signupError: "", signupMsg: "" }),
       suUsername: s.suUsername, onSuUsername: (e) => this.setState({ suUsername: e.target.value, signupError: "", signupMsg: "" }),
       suPwd: s.suPwd, onSuPwd: (e) => this.setState({ suPwd: e.target.value, signupError: "", signupMsg: "" }),
+      suPwd2: s.suPwd2, onSuPwd2: (e) => this.setState({ suPwd2: e.target.value, signupError: "", signupMsg: "" }),
       suPwdFieldType: s.suPwdVisible ? "text" : "password",
       suPwdToggleLabel: s.suPwdVisible ? "Masquer" : "Afficher",
       toggleSuPwdVisible: () => this.setState({ suPwdVisible: !s.suPwdVisible }),
