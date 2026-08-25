@@ -32,11 +32,13 @@ input,textarea,select{font-family:inherit}
 .rp-track{padding:34px 40px 46px;display:grid;grid-template-columns:400px 1fr;gap:28px}
 .rp-2col{display:grid;grid-template-columns:1fr 1fr}
 .rp-wizard-nav{position:sticky;top:86px}
+.rp-sec{scroll-margin-top:86px}
 .rp-center-page{padding:52px 40px 60px}
 .rp-card-pad{padding:26px 28px}
 @media (max-width: 900px) {
   .rp-header{padding:0 14px;gap:12px;height:56px;top:0}
   .rp-wizard-nav{top:0}
+  .rp-sec{scroll-margin-top:56px}
   .rp-wordmark-text{display:none}
   .rp-nav{display:none}
   .rp-mobile-nav{display:flex;position:sticky;bottom:0;z-index:20}
@@ -181,150 +183,132 @@ input,textarea,select{font-family:inherit}
             <div class="rp-wizard-nav" style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:14px;padding:20px 20px 14px">
               <div style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:14px">Votre signalement</div>
               <sc-for list="{{ wizSteps }}" as="w" hint-placeholder-count="4">
-                <div style="display:flex;gap:12px;align-items:flex-start;padding-bottom:16px">
+                <button onClick="{{ w.onClick }}" style="display:flex;gap:12px;align-items:flex-start;padding-bottom:16px;width:100%;border:none;background:none;text-align:left">
                   <span style="width:26px;height:26px;border-radius:50%;flex:none;background:{{ w.dotBg }};color:{{ w.dotFg }};border:1px solid {{ w.dotBorder }};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">{{ w.mark }}</span>
                   <span style="flex:1;min-width:0;padding-top:4px">
                     <span style="display:block;font-size:13.5px;font-weight:{{ w.weight }};color:{{ w.fg }}">{{ w.label }}</span>
                     <span style="display:block;font-size:11.5px;color:#8A98A8;margin-top:2px">{{ w.value }}</span>
                   </span>
-                </div>
+                </button>
               </sc-for>
               <div style="border-top:1px solid rgba(27,42,65,.08);padding-top:13px;font-size:11.5px;line-height:1.55;color:#8A98A8">Signalement anonyme. Aucune donnée personnelle n'est transmise à la commune.</div>
             </div>
 
-            <div style="display:flex;flex-direction:column;gap:20px">
-              <sc-if value="{{ stepPhoto }}" hint-placeholder-val="{{ true }}">
-                <div class="rp-card-pad" style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:14px">
-                  <h2 style="margin:0;font-family:Georgia,Cambria,serif;font-size:26px;font-weight:700">Photos de l'anomalie</h2>
-                  <p style="margin:9px 0 20px;font-size:14px;line-height:1.6;color:#5A6B7E;max-width:62ch;text-wrap:pretty">Une photo suffit, mais vous pouvez en ajouter jusqu'à {{ photoMax }}. Cadrez l'anomalie et, si possible, son environnement immédiat pour aider le service à la localiser.</p>
+            <div style="display:flex;flex-direction:column;gap:18px">
+              <div id="sec-photo" class="rp-card-pad rp-sec" style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:14px;padding:18px 20px">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <h2 style="margin:0;font-family:Georgia,Cambria,serif;font-size:19px;font-weight:700">Photos de l'anomalie</h2>
+                  <span style="font-size:10px;font-weight:700;letter-spacing:.04em;color:#D62839;background:#FDF2F3;border-radius:999px;padding:2px 8px">Obligatoire</span>
+                </div>
+                <p style="margin:6px 0 12px;font-size:12.5px;line-height:1.5;color:#5A6B7E;max-width:62ch;text-wrap:pretty">Une photo suffit, jusqu'à {{ photoMax }} possibles.</p>
 
-                  <sc-if value="{{ hasPhotos }}" hint-placeholder-val="{{ false }}">
-                    <div class="photo-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px">
-                      <sc-for list="{{ photoThumbs }}" as="p" hint-placeholder-count="2">
-                        <div style="position:relative;height:100px;border-radius:10px;overflow:hidden;border:1px solid rgba(27,42,65,.14)">
-                          <img src="{{ p.url }}" style="width:100%;height:100%;object-fit:cover;display:block" />
-                          <button onClick="{{ p.onRemove }}" title="Retirer" style="position:absolute;top:5px;right:5px;width:24px;height:24px;border-radius:50%;border:none;background:rgba(27,42,65,.75);color:#fff;font-size:13px;line-height:1;display:flex;align-items:center;justify-content:center">×</button>
+                <sc-if value="{{ hasPhotos }}" hint-placeholder-val="{{ false }}">
+                  <div class="photo-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px">
+                    <sc-for list="{{ photoThumbs }}" as="p" hint-placeholder-count="2">
+                      <div style="position:relative;height:72px;border-radius:9px;overflow:hidden;border:1px solid rgba(27,42,65,.14)">
+                        <img src="{{ p.url }}" style="width:100%;height:100%;object-fit:cover;display:block" />
+                        <button onClick="{{ p.onRemove }}" title="Retirer" style="position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;border:none;background:rgba(27,42,65,.75);color:#fff;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center">×</button>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ canAddPhoto }}" hint-placeholder-val="{{ true }}">
+                  <div class="photo-actions" style="display:flex;gap:8px">
+                    <button onClick="{{ onCameraZoneClick }}" style="flex:1;border:1px dashed rgba(27,42,65,.28);background:#FAFBFC;border-radius:9px;padding:10px 12px;display:flex;align-items:center;justify-content:center;gap:7px;color:#1B2A41;font-size:12.5px;font-weight:600">
+                      <span style="font-size:14px">📷</span>Prendre une photo
+                    </button>
+                    <button onClick="{{ onPhotoZoneClick }}" title="Choisir depuis mes fichiers" style="width:40px;flex:none;border:1px dashed rgba(27,42,65,.28);background:#FAFBFC;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#1B2A41;font-size:19px;font-weight:600;line-height:1">+</button>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ photoLimitReached }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-size:12px;color:#8A98A8">Maximum {{ photoMax }} photos atteint.</div>
+                </sc-if>
+                <input type="file" accept="image/*" capture="environment" onChange="{{ onPhotoFile }}" id="web-camera-input" style="display:none">
+                <input type="file" accept="image/png,image/jpeg,image/webp" multiple="{{ true }}" onChange="{{ onPhotoFile }}" id="web-photo-input" style="display:none">
+
+                <sc-if value="{{ hasPhotoStepError }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:8px;font-size:12px;color:#D62839">{{ photoStepError }}</div>
+                </sc-if>
+              </div>
+
+              <div id="sec-loc" class="rp-sec" style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:14px;overflow:visible">
+                <div style="padding:18px 20px 12px">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <h2 style="margin:0;font-family:Georgia,Cambria,serif;font-size:19px;font-weight:700">Où se trouve l'anomalie ?</h2>
+                    <span style="font-size:10px;font-weight:700;letter-spacing:.04em;color:#D62839;background:#FDF2F3;border-radius:999px;padding:2px 8px">Obligatoire</span>
+                  </div>
+                  <p style="margin:6px 0 0;font-size:12.5px;line-height:1.5;color:#5A6B7E;max-width:62ch;text-wrap:pretty">Votre navigateur peut détecter la position, ou vous saisissez l'adresse.</p>
+                </div>
+                <div style="height:260px;position:relative;overflow:hidden;border-top:1px solid rgba(27,42,65,.08);border-bottom:1px solid rgba(27,42,65,.08)">
+                  <reeper-map data-role="loc-picker" center="{{ mapCenter }}" zoom="16" draggable-marker click-to-place></reeper-map>
+                </div>
+                <div style="padding:16px 20px 20px">
+                  <button onClick="{{ detect }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);background:#fff;border-radius:11px;padding:13px 18px;font-size:13.5px;font-weight:600;color:#1B2A41;display:flex;align-items:center;justify-content:center;gap:8px">📍 {{ detectLabel }}</button>
+                  <sc-if value="{{ hasGeoError }}" hint-placeholder-val="{{ false }}">
+                    <div style="margin-top:9px;font-size:12px;color:#D62839">{{ geoError }}</div>
+                  </sc-if>
+                  <div style="margin-top:14px;display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap">
+                    <div style="position:relative;flex:1;min-width:200px">
+                      <input value="{{ addrText }}" onChange="{{ onAddrText }}" onBlur="{{ onAddrBlur }}" placeholder="Saisir une rue" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:11px;padding:15px 16px;font-size:14.5px;color:#1B2A41;outline:none">
+                      <sc-if value="{{ hasAddrSuggestions }}" hint-placeholder-val="{{ false }}">
+                        <div style="position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid rgba(27,42,65,.16);border-radius:11px;box-shadow:0 10px 26px rgba(27,42,65,.16);overflow:hidden;z-index:10;max-height:220px;overflow-y:auto">
+                          <sc-for list="{{ addrSuggestions }}" as="a" hint-placeholder-count="3">
+                            <button onClick="{{ a.onClick }}" style="width:100%;border:none;border-bottom:1px solid rgba(27,42,65,.07);background:#fff;padding:12px 15px;text-align:left;font-size:13.5px;color:#1B2A41" style-hover="background:#FAFBFC">{{ a.label }}</button>
+                          </sc-for>
                         </div>
-                      </sc-for>
+                      </sc-if>
                     </div>
+                    <input value="{{ addrNum }}" onChange="{{ onAddrNum }}" placeholder="N°" style="width:90px;flex:none;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:11px;padding:15px 14px;font-size:14.5px;color:#1B2A41;outline:none">
+                  </div>
+                  <sc-if value="{{ hasCommuneGuess }}" hint-placeholder-val="{{ false }}">
+                    <div style="margin-top:9px;font-size:12.5px;color:#5A6B7E">Commune détectée : <strong style="color:#1B2A41">{{ communeGuess }}</strong></div>
                   </sc-if>
+                  <sc-if value="{{ noCommuneGuess }}" hint-placeholder-val="{{ false }}">
+                    <div style="margin-top:9px;font-size:12.5px;color:#8A98A8">Commune non détectée — elle sera déduite de l'adresse saisie.</div>
+                  </sc-if>
+                </div>
+              </div>
 
-                  <sc-if value="{{ canAddPhoto }}" hint-placeholder-val="{{ true }}">
-                    <div class="photo-actions" style="display:flex;gap:10px">
-                      <button onClick="{{ onCameraZoneClick }}" style="flex:1;border:1px dashed rgba(27,42,65,.28);background:#FAFBFC;border-radius:10px;padding:13px 14px;display:flex;align-items:center;justify-content:center;gap:8px;color:#1B2A41;font-size:13px;font-weight:600">
-                        <span style="font-size:16px">📷</span>Prendre une photo
-                      </button>
-                      <button onClick="{{ onPhotoZoneClick }}" title="Choisir depuis mes fichiers" style="width:46px;flex:none;border:1px dashed rgba(27,42,65,.28);background:#FAFBFC;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#1B2A41;font-size:22px;font-weight:600;line-height:1">+</button>
+              <div id="sec-cat" class="rp-card-pad rp-sec" style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:14px;padding:18px 20px">
+                <h2 style="margin:0;font-family:Georgia,Cambria,serif;font-size:19px;font-weight:700">De quoi s'agit-il ?</h2>
+                <p style="margin:6px 0 12px;font-size:12.5px;line-height:1.5;color:#5A6B7E;max-width:62ch;text-wrap:pretty">Choisissez la famille, puis la nature exacte.</p>
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+                  <button onClick="{{ catUp }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;border-radius:9px;padding:8px 12px;font-size:12.5px;font-weight:600;color:{{ catUpFg }}">‹ Retour</button>
+                  <span style="font-size:13px;color:#5A6B7E">{{ catCrumb }}</span>
+                </div>
+                <div class="rp-2col" style="border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:hidden">
+                  <sc-for list="{{ catItems }}" as="c" hint-placeholder-count="6">
+                    <button onClick="{{ c.onClick }}" style="border:none;border-bottom:1px solid rgba(27,42,65,.07);border-right:1px solid rgba(27,42,65,.07);background:{{ c.bg }};padding:13px 16px;display:flex;align-items:center;gap:10px;text-align:left;color:#1B2A41;font-size:13.5px;font-weight:{{ c.weight }}" style-hover="background:#FAFBFC">
+                      <span style="flex:1">{{ c.label }}</span><span style="color:#B4C0CB">{{ c.chev }}</span>
+                    </button>
+                  </sc-for>
+                </div>
+                <sc-if value="{{ catPicked }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:12px;background:#F3F6F8;border:1px solid rgba(27,42,65,.12);border-radius:11px;padding:12px 15px;font-size:13px;color:#1B2A41">Anomalie sélectionnée : <strong>{{ catFull }}</strong> · service {{ catService }}</div>
+                </sc-if>
+              </div>
+
+              <div id="sec-desc" class="rp-card-pad rp-sec" style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:14px;padding:18px 20px">
+                <h2 style="margin:0;font-family:Georgia,Cambria,serif;font-size:19px;font-weight:700">Décrivez en quelques mots</h2>
+                <p style="margin:6px 0 12px;font-size:12.5px;line-height:1.5;color:#5A6B7E;max-width:62ch;text-wrap:pretty">Facultatif, mais utile : depuis quand, quelle ampleur, quel risque pour les passants.</p>
+                <textarea value="{{ desc }}" onChange="{{ onDesc }}" rows="4" placeholder="Ex. Le lampadaire est éteint depuis lundi, le trottoir est très sombre le soir." style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:11px;padding:14px 15px;font-size:14px;line-height:1.6;color:#1B2A41;outline:none;resize:none"></textarea>
+                <sc-if value="{{ hasEmergencyWarning }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:12px;background:#FDF2F3;border:1px solid rgba(214,40,57,.3);border-radius:11px;padding:13px 16px;font-size:13px;line-height:1.55;color:#8A2530">En cas de danger immédiat (fuite d'eau importante, incendie, gaz, explosion), n'attendez pas Reeper : appelez directement la Police (117), les Pompiers (118) ou l'Ambulance (144).</div>
+                </sc-if>
+                <div style="margin-top:16px;border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:hidden">
+                  <sc-for list="{{ recap }}" as="r" hint-placeholder-count="4">
+                    <div style="padding:12px 16px;border-bottom:1px solid rgba(27,42,65,.07);display:flex;gap:14px;align-items:center">
+                      <span style="flex:none;width:150px;font-size:11.5px;color:#8A98A8;font-weight:600">{{ r.label }}</span>
+                      <span style="flex:1;min-width:0;font-size:13.5px">{{ r.value }}</span>
                     </div>
-                  </sc-if>
-                  <sc-if value="{{ photoLimitReached }}" hint-placeholder-val="{{ false }}">
-                    <div style="font-size:12.5px;color:#8A98A8">Maximum {{ photoMax }} photos atteint.</div>
-                  </sc-if>
-                  <input type="file" accept="image/*" capture="environment" onChange="{{ onPhotoFile }}" id="web-camera-input" style="display:none">
-                  <input type="file" accept="image/png,image/jpeg,image/webp" multiple="{{ true }}" onChange="{{ onPhotoFile }}" id="web-photo-input" style="display:none">
-
-                  <sc-if value="{{ hasPhotoStepError }}" hint-placeholder-val="{{ false }}">
-                    <div style="margin-top:9px;font-size:12px;color:#D62839">{{ photoStepError }}</div>
-                  </sc-if>
-                  <div style="margin-top:20px;display:flex;gap:12px">
-                    <button onClick="{{ toLoc }}" style="border:none;background:#1B2A41;color:#fff;border-radius:11px;padding:15px 26px;font-size:14.5px;font-weight:600">Continuer</button>
-                    <button onClick="{{ goHome }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;border-radius:11px;padding:15px 22px;font-size:14.5px;font-weight:600">Annuler</button>
-                  </div>
+                  </sc-for>
                 </div>
-              </sc-if>
-
-              <sc-if value="{{ stepLoc }}" hint-placeholder-val="{{ false }}">
-                <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:14px;overflow:visible">
-                  <div style="padding:26px 28px 20px">
-                    <h2 style="margin:0;font-family:Georgia,Cambria,serif;font-size:26px;font-weight:700">Où se trouve l'anomalie ?</h2>
-                    <p style="margin:9px 0 0;font-size:14px;line-height:1.6;color:#5A6B7E;max-width:62ch;text-wrap:pretty">Votre navigateur peut détecter la position, ou vous saisissez l'adresse. La commune est déduite de la localisation.</p>
-                  </div>
-                  <div style="height:300px;position:relative;overflow:hidden;border-top:1px solid rgba(27,42,65,.08);border-bottom:1px solid rgba(27,42,65,.08)">
-                    <reeper-map data-role="loc-picker" center="{{ mapCenter }}" zoom="16" draggable-marker click-to-place></reeper-map>
-                  </div>
-                  <div style="padding:22px 28px 26px">
-                    <button onClick="{{ detect }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);background:#fff;border-radius:11px;padding:14px 18px;font-size:13.5px;font-weight:600;color:#1B2A41;display:flex;align-items:center;justify-content:center;gap:8px">📍 {{ detectLabel }}</button>
-                    <sc-if value="{{ hasGeoError }}" hint-placeholder-val="{{ false }}">
-                      <div style="margin-top:9px;font-size:12px;color:#D62839">{{ geoError }}</div>
-                    </sc-if>
-                    <div style="margin-top:14px;display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap">
-                      <div style="position:relative;flex:1;min-width:200px">
-                        <input value="{{ addrText }}" onChange="{{ onAddrText }}" onBlur="{{ onAddrBlur }}" placeholder="Saisir une rue" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:11px;padding:15px 16px;font-size:14.5px;color:#1B2A41;outline:none">
-                        <sc-if value="{{ hasAddrSuggestions }}" hint-placeholder-val="{{ false }}">
-                          <div style="position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid rgba(27,42,65,.16);border-radius:11px;box-shadow:0 10px 26px rgba(27,42,65,.16);overflow:hidden;z-index:10;max-height:220px;overflow-y:auto">
-                            <sc-for list="{{ addrSuggestions }}" as="a" hint-placeholder-count="3">
-                              <button onClick="{{ a.onClick }}" style="width:100%;border:none;border-bottom:1px solid rgba(27,42,65,.07);background:#fff;padding:12px 15px;text-align:left;font-size:13.5px;color:#1B2A41" style-hover="background:#FAFBFC">{{ a.label }}</button>
-                            </sc-for>
-                          </div>
-                        </sc-if>
-                      </div>
-                      <input value="{{ addrNum }}" onChange="{{ onAddrNum }}" placeholder="N°" style="width:90px;flex:none;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:11px;padding:15px 14px;font-size:14.5px;color:#1B2A41;outline:none">
-                    </div>
-                    <sc-if value="{{ hasCommuneGuess }}" hint-placeholder-val="{{ false }}">
-                      <div style="margin-top:9px;font-size:12.5px;color:#5A6B7E">Commune détectée : <strong style="color:#1B2A41">{{ communeGuess }}</strong></div>
-                    </sc-if>
-                    <sc-if value="{{ noCommuneGuess }}" hint-placeholder-val="{{ false }}">
-                      <div style="margin-top:9px;font-size:12.5px;color:#8A98A8">Commune non détectée — elle sera déduite de l'adresse saisie.</div>
-                    </sc-if>
-                    <div style="margin-top:20px;display:flex;gap:12px">
-                      <button onClick="{{ toCat }}" style="border:none;background:{{ locBtnBg }};color:#fff;border-radius:11px;padding:15px 26px;font-size:14.5px;font-weight:600">Continuer</button>
-                      <button onClick="{{ toPhoto }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;border-radius:11px;padding:15px 22px;font-size:14.5px;font-weight:600">Retour</button>
-                    </div>
-                  </div>
+                <div style="margin-top:18px;display:flex;gap:12px;align-items:center">
+                  <button onClick="{{ send }}" style="border:none;background:#D62839;color:#fff;border-radius:11px;padding:16px 28px;font-size:15px;font-weight:600;box-shadow:0 8px 20px rgba(214,40,57,.24)">Envoyer mon Reep</button>
+                  <button onClick="{{ goHome }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;border-radius:11px;padding:16px 22px;font-size:14.5px;font-weight:600">Annuler</button>
                 </div>
-              </sc-if>
-
-              <sc-if value="{{ stepCat }}" hint-placeholder-val="{{ false }}">
-                <div class="rp-card-pad" style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:14px">
-                  <h2 style="margin:0;font-family:Georgia,Cambria,serif;font-size:26px;font-weight:700">De quoi s'agit-il ?</h2>
-                  <p style="margin:9px 0 20px;font-size:14px;line-height:1.6;color:#5A6B7E;max-width:62ch;text-wrap:pretty">Choisissez la famille, puis la nature exacte. Le service compétent est déterminé automatiquement.</p>
-                  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px">
-                    <button onClick="{{ catUp }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;border-radius:9px;padding:9px 13px;font-size:13px;font-weight:600;color:{{ catUpFg }}">‹ Retour</button>
-                    <span style="font-size:13.5px;color:#5A6B7E">{{ catCrumb }}</span>
-                  </div>
-                  <div class="rp-2col" style="border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:hidden">
-                    <sc-for list="{{ catItems }}" as="c" hint-placeholder-count="6">
-                      <button onClick="{{ c.onClick }}" style="border:none;border-bottom:1px solid rgba(27,42,65,.07);border-right:1px solid rgba(27,42,65,.07);background:{{ c.bg }};padding:15px 17px;display:flex;align-items:center;gap:10px;text-align:left;color:#1B2A41;font-size:14px;font-weight:{{ c.weight }}" style-hover="background:#FAFBFC">
-                        <span style="flex:1">{{ c.label }}</span><span style="color:#B4C0CB">{{ c.chev }}</span>
-                      </button>
-                    </sc-for>
-                  </div>
-                  <sc-if value="{{ catPicked }}" hint-placeholder-val="{{ false }}">
-                    <div style="margin-top:14px;background:#F3F6F8;border:1px solid rgba(27,42,65,.12);border-radius:11px;padding:13px 16px;font-size:13.5px;color:#1B2A41">Anomalie sélectionnée : <strong>{{ catFull }}</strong> · service {{ catService }}</div>
-                  </sc-if>
-                  <div style="margin-top:20px;display:flex;gap:12px">
-                    <button onClick="{{ toDesc }}" style="border:none;background:{{ catBtnBg }};color:#fff;border-radius:11px;padding:15px 26px;font-size:14.5px;font-weight:600">Continuer</button>
-                    <button onClick="{{ toLoc }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;border-radius:11px;padding:15px 22px;font-size:14.5px;font-weight:600">Retour</button>
-                  </div>
-                </div>
-              </sc-if>
-
-              <sc-if value="{{ stepDesc }}" hint-placeholder-val="{{ false }}">
-                <div class="rp-card-pad" style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:14px">
-                  <h2 style="margin:0;font-family:Georgia,Cambria,serif;font-size:26px;font-weight:700">Décrivez en quelques mots</h2>
-                  <p style="margin:9px 0 18px;font-size:14px;line-height:1.6;color:#5A6B7E;max-width:62ch;text-wrap:pretty">Facultatif, mais utile : depuis quand, quelle ampleur, quel risque pour les passants.</p>
-                  <textarea value="{{ desc }}" onChange="{{ onDesc }}" rows="5" placeholder="Ex. Le lampadaire est éteint depuis lundi, le trottoir est très sombre le soir." style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:11px;padding:15px 16px;font-size:14.5px;line-height:1.6;color:#1B2A41;outline:none;resize:none"></textarea>
-                  <sc-if value="{{ hasEmergencyWarning }}" hint-placeholder-val="{{ false }}">
-                    <div style="margin-top:14px;background:#FDF2F3;border:1px solid rgba(214,40,57,.3);border-radius:11px;padding:13px 16px;font-size:13px;line-height:1.55;color:#8A2530">En cas de danger immédiat (fuite d'eau importante, incendie, gaz, explosion), n'attendez pas Reeper : appelez directement la Police (117), les Pompiers (118) ou l'Ambulance (144).</div>
-                  </sc-if>
-                  <div style="margin-top:20px;border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:hidden">
-                    <sc-for list="{{ recap }}" as="r" hint-placeholder-count="4">
-                      <div style="padding:13px 17px;border-bottom:1px solid rgba(27,42,65,.07);display:flex;gap:14px;align-items:center">
-                        <span style="flex:none;width:150px;font-size:11.5px;color:#8A98A8;font-weight:600">{{ r.label }}</span>
-                        <span style="flex:1;min-width:0;font-size:14px">{{ r.value }}</span>
-                      </div>
-                    </sc-for>
-                  </div>
-                  <div style="margin-top:20px;display:flex;gap:12px;align-items:center">
-                    <button onClick="{{ send }}" style="border:none;background:#D62839;color:#fff;border-radius:11px;padding:16px 28px;font-size:15px;font-weight:600;box-shadow:0 8px 20px rgba(214,40,57,.24)">Envoyer mon Reep</button>
-                    <button onClick="{{ toCat }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;border-radius:11px;padding:16px 22px;font-size:14.5px;font-weight:600">Retour</button>
-                  </div>
-                </div>
-              </sc-if>
-
-              <sc-if value="{{ stepDone }}" hint-placeholder-val="{{ false }}">
-                <div class="rp-card-pad" style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:14px;min-height:260px"></div>
-              </sc-if>
+              </div>
             </div>
           </div>
 
@@ -705,6 +689,10 @@ class Component extends DCLogic {
     const t = document.startViewTransition(fn);
     [t.ready, t.updateCallbackDone, t.finished].forEach((p) => p && p.catch(() => {}));
   }
+  _scrollTo(id) {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   componentDidMount() {
     this._wireMap();
@@ -918,35 +906,23 @@ class Component extends DCLogic {
       ].map((e) => ({ ...e, tel: "tel:" + e.num })),
       publicFeed: Store.listPublic(3).map(deco),
 
-      stepPhoto: s.step === "photo", stepLoc: s.step === "loc", stepCat: s.step === "cat",
-      stepDesc: s.step === "desc", stepDone: s.step === "done",
+      stepDone: s.step === "done",
       wizSteps: [
-        ["Photo", "photo", s.photoUrls.length ? s.photoUrls.length + (s.photoUrls.length > 1 ? " photos ajoutées" : " photo ajoutée") : "Une image de l'anomalie"],
-        ["Localisation", "loc", fullAddr || "À préciser"],
-        ["Catégorie", "cat", s.leaf || "À choisir"],
-        ["Description et envoi", "desc", s.desc ? "Renseignée" : "Facultative"]
-      ].map(([label, key, value], i) => {
-        const order = ["photo", "loc", "cat", "desc"];
-        const cur = order.indexOf(s.step);
-        const done = s.step === "done" || i < cur;
-        const active = key === s.step;
-        return { label, value, mark: done ? "✓" : String(i + 1),
-          dotBg: done ? "#3F8F63" : active ? "#1B2A41" : "#fff",
-          dotFg: done || active ? "#fff" : "#8A98A8",
-          dotBorder: done ? "#3F8F63" : active ? "#1B2A41" : "rgba(27,42,65,.18)",
-          weight: active ? 600 : 400, fg: active ? "#1B2A41" : "#5A6B7E" };
-      }),
-      toPhoto: () => this.setState({ step: "photo" }),
-      toLoc: () => {
-        if (!s.photoUrls.length) { this.setState({ photoStepError: "Ajoutez au moins une photo pour continuer." }); return; }
-        this.setState({ step: "loc", photoStepError: "" });
-      },
-      toCat: () => {
-        if (s.geoLat == null || s.geoLon == null) { this.setState({ geoError: "Indiquez une localisation (adresse ou position) pour continuer." }); return; }
-        this.setState({ step: "cat" });
-      },
-      toDesc: () => s.leaf && this.setState({ step: "desc" }),
+        ["Photo", "sec-photo", s.photoUrls.length ? s.photoUrls.length + (s.photoUrls.length > 1 ? " photos ajoutées" : " photo ajoutée") : "Une image de l'anomalie", s.photoUrls.length > 0],
+        ["Localisation", "sec-loc", fullAddr || "À préciser", s.geoLat != null && s.geoLon != null],
+        ["Catégorie", "sec-cat", s.leaf || "À choisir", !!s.leaf],
+        ["Description et envoi", "sec-desc", s.desc ? "Renseignée" : "Facultative", true]
+      ].map(([label, id, value, done]) => ({
+        label, value, mark: done ? "✓" : "·",
+        dotBg: done ? "#3F8F63" : "#fff",
+        dotFg: done ? "#fff" : "#8A98A8",
+        dotBorder: done ? "#3F8F63" : "rgba(27,42,65,.18)",
+        weight: done ? 600 : 400, fg: "#1B2A41",
+        onClick: () => this._scrollTo(id)
+      })),
       send: () => {
+        if (!s.photoUrls.length) { this.setState({ photoStepError: "Ajoutez au moins une photo avant d'envoyer." }); this._scrollTo("sec-photo"); return; }
+        if (s.geoLat == null || s.geoLon == null) { this.setState({ geoError: "Indiquez une localisation avant d'envoyer." }); this._scrollTo("sec-loc"); return; }
         const commune = s.communeGuess || Store.communeFromText(s.addrText) || "Nyon";
         const created = Store.addReep({
           path, leaf: s.leaf, address: fullAddr || "Adresse non précisée",
@@ -992,8 +968,7 @@ class Component extends DCLogic {
           if (el && el.panTo) el.panTo(a.lat, a.lon, 17);
         }
       })),
-      locBtnBg: s.geo ? "#1B2A41" : "#93A2B1",
-      hasCommuneGuess: !!s.communeGuess, noCommuneGuess: !s.communeGuess && s.geo,
+      communeGuess: s.communeGuess, hasCommuneGuess: !!s.communeGuess, noCommuneGuess: !s.communeGuess && s.geo,
       detectLabel: s.geoLoading ? "Localisation…" : "Me localiser",
       hasGeoError: !!s.geoError, geoError: s.geoError,
       hasPhotoStepError: !!s.photoStepError, photoStepError: s.photoStepError,
@@ -1031,17 +1006,16 @@ class Component extends DCLogic {
           const on = !child && s.leaf === k;
           return { label: k, chev: child ? "›" : "", bg: on ? "#F3F6F8" : "#fff", weight: on ? 600 : 400,
             onClick: child
-              ? () => self.setState({ path: path.concat([k]), leaf: null })
-              : () => self.setState({ leaf: k, cat: path[0] || k }) };
+              ? () => self._transition(() => self.setState({ path: path.concat([k]), leaf: null }))
+              : () => { self._transition(() => self.setState({ leaf: k, cat: path[0] || k })); self._scrollTo("sec-desc"); } };
         });
       })(this),
       catCrumb: path.length ? path.join(" › ") : "Toutes les familles d'anomalies",
-      catUp: () => this.setState({ path: path.slice(0, -1), leaf: null }),
+      catUp: () => this._transition(() => this.setState({ path: path.slice(0, -1), leaf: null })),
       catUpFg: path.length ? "#1B2A41" : "#B4C0CB",
       catPicked: !!s.leaf,
       catFull: path.concat(s.leaf ? [s.leaf] : []).join(" › "),
       catService: Store.SERVICE[path[0]] || "—",
-      catBtnBg: s.leaf ? "#1B2A41" : "#93A2B1",
 
       desc: s.desc, onDesc: (e) => this.setState({ desc: e.target.value }),
       hasEmergencyWarning: /fuite d.eau importante|inondation|incendie|feu\b|explosion|odeur de gaz|fuite de gaz|électrocution|effondrement/i.test(s.desc || ""),
