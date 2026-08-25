@@ -1007,7 +1007,7 @@ class Component extends DCLogic {
           return { label: k, chev: child ? "›" : "", bg: on ? "#F3F6F8" : "#fff", weight: on ? 600 : 400,
             onClick: child
               ? () => self._transition(() => self.setState({ path: path.concat([k]), leaf: null }))
-              : () => { self._transition(() => self.setState({ leaf: k, cat: path[0] || k })); self._scrollTo("sec-desc"); } };
+              : () => { self.setState({ leaf: k, cat: path[0] || k }); self._scrollTo("sec-desc"); } };
         });
       })(this),
       catCrumb: path.length ? path.join(" › ") : "Toutes les familles d'anomalies",
