@@ -158,6 +158,12 @@ select,textarea,input{font-family:inherit}
               <h1 style="margin:0;font-family:Georgia,Cambria,serif;font-size:24px;font-weight:700;letter-spacing:-.3px">Reeps — toutes communes</h1>
               <div style="font-size:12.5px;color:#8A98A8;margin-top:3px">{{ reepRowCount }} Reeps affichés</div>
             </div>
+            <input value="{{ reepQuery }}" onChange="{{ onReepQuery }}" placeholder="Rechercher un Reep…" style="min-width:200px;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:9px 13px;font-size:13.5px;outline:none" />
+            <select value="{{ reepSort }}" onChange="{{ onReepSort }}" style="border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:9px 13px;font-size:13.5px;background:#fff">
+              <sc-for list="{{ reepSortOptions }}" as="o" hint-placeholder-count="5">
+                <option value="{{ o.value }}">{{ o.label }}</option>
+              </sc-for>
+            </select>
             <select value="{{ filterCommune }}" onChange="{{ onFilterCommune }}" style="border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:9px 13px;font-size:13.5px;background:#fff">
               <sc-for list="{{ communeOptions }}" as="c" hint-placeholder-count="4">
                 <option value="{{ c }}">{{ c }}</option>
@@ -925,7 +931,7 @@ class Component extends DCLogic {
     screen: "dash",
     profileOpen: false,
     selId: null,
-    filterCommune: "Toutes", filterCat: "Toutes", filterStatus: "Tous",
+    filterCommune: "Toutes", filterCat: "Toutes", filterStatus: "Tous", reepQuery: "", reepSort: "date_desc",
     acctQuery: "", acctFilterCommune: "Toutes", acctFilterType: "Tous",
     pendingDeleteKey: null,
     sheetOpen: false, newType: "agent", newFirst: "", newLast: "", newEmail: "", newCommune: COMMUNE_NAMES[0], newRole: "agent", newError: "",
@@ -994,12 +1000,25 @@ class Component extends DCLogic {
     };
 
     const allReeps = Store.getReeps({}).map(decoReep);
+    const reepQueryLc = (s.reepQuery || "").trim().toLowerCase();
     const reepFiltered = allReeps.filter((r) => {
       if (s.filterCommune !== "Toutes" && r.commune !== s.filterCommune) return false;
       if (s.filterCat !== "Toutes" && (r.path || [])[0] !== s.filterCat) return false;
       if (s.filterStatus !== "Tous" && r.status !== s.filterStatus) return false;
+      if (reepQueryLc) {
+        const hay = ((r.title || "") + " " + (r.id || "") + " " + (r.place || "") + " " + (r.desc || "")).toLowerCase();
+        if (hay.indexOf(reepQueryLc) === -1) return false;
+      }
       return true;
     });
+    const REEP_SORTERS = {
+      date_desc: (a, b) => (b.createdAt || 0) - (a.createdAt || 0),
+      date_asc: (a, b) => (a.createdAt || 0) - (b.createdAt || 0),
+      status: (a, b) => STATUS_ORDER.indexOf(a.status) - STATUS_ORDER.indexOf(b.status),
+      commune: (a, b) => (a.commune || "").localeCompare(b.commune || ""),
+      category: (a, b) => ((a.path || [])[0] || "").localeCompare((b.path || [])[0] || "")
+    };
+    reepFiltered.sort(REEP_SORTERS[s.reepSort] || REEP_SORTERS.date_desc);
     const selReepRaw = s.selId ? allReeps.find((r) => r.id === s.selId) : null;
 
     const allAccounts = Store.listAccounts({}).filter((a) => a.type !== "gerant");
@@ -1341,6 +1360,15 @@ class Component extends DCLogic {
       catOptions: ["Toutes"].concat(CATS),
       filterStatus: s.filterStatus, onFilterStatus: (e) => this.setState({ filterStatus: e.target.value }),
       statusOptions: ["Tous"].concat(STATUS_ORDER),
+      reepQuery: s.reepQuery, onReepQuery: (e) => this.setState({ reepQuery: e.target.value }),
+      reepSort: s.reepSort, onReepSort: (e) => this.setState({ reepSort: e.target.value }),
+      reepSortOptions: [
+        { value: "date_desc", label: "Date (récent d'abord)" },
+        { value: "date_asc", label: "Date (ancien d'abord)" },
+        { value: "status", label: "Statut" },
+        { value: "commune", label: "Commune" },
+        { value: "category", label: "Catégorie" }
+      ],
 
       reepRowCount: reepFiltered.length,
       reepsEmpty: reepFiltered.length === 0,
