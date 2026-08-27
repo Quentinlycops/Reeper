@@ -1214,13 +1214,24 @@
       persist(data);
       return c;
     },
-    addContractNote: function (commune, text, who) {
+    addContractNote: function (commune, text, who, dueDate) {
       var data = load();
       var c = data.contracts.find(function (x) { return x.commune === commune; });
       if (!c || !text || !text.trim()) return null;
-      c.journal.unshift({ id: "jn" + (data.seq = (data.seq || 4900) + 1), when: now(), text: text.trim(), who: who || "" });
+      c.journal.unshift({ id: "jn" + (data.seq = (data.seq || 4900) + 1), when: now(), text: text.trim(), who: who || "", dueDate: dueDate || null });
       persist(data);
       return c;
+    },
+    upcomingDeadlines: function () {
+      var data = load();
+      var out = [];
+      data.contracts.forEach(function (c) {
+        (c.journal || []).forEach(function (j) {
+          if (j.dueDate && j.dueDate >= now()) out.push({ commune: c.commune, entryId: j.id, text: j.text, dueDate: j.dueDate, who: j.who || "" });
+        });
+      });
+      out.sort(function (a, b) { return a.dueDate - b.dueDate; });
+      return out;
     },
     updateContractNote: function (commune, id, text) {
       var data = load();

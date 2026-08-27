@@ -121,6 +121,20 @@ select,textarea,input{font-family:inherit}
             </sc-for>
           </div>
 
+          <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:hidden">
+            <div style="padding:16px 20px;border-bottom:1px solid rgba(27,42,65,.08);font-family:Georgia,serif;font-size:16px;font-weight:700">À venir</div>
+            <sc-for list="{{ upcomingDeadlines }}" as="u" hint-placeholder-count="2">
+              <button onClick="{{ u.onClick }}" style="width:100%;display:flex;align-items:center;gap:12px;padding:13px 20px;border:none;border-bottom:1px solid rgba(27,42,65,.06);background:#fff;text-align:left" style-hover="background:#FAFBFC">
+                <span style="width:64px;flex:none;font-size:12.5px;font-weight:700;color:#54459B">{{ u.dateLabel }}</span>
+                <span style="flex:1;min-width:0;font-size:13.5px;color:#1B2A41;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ u.text }}</span>
+                <span style="font-size:12px;color:#8A98A8;flex:none">{{ u.commune }}</span>
+              </button>
+            </sc-for>
+            <sc-if value="{{ upcomingDeadlinesEmpty }}" hint-placeholder-val="{{ true }}">
+              <div style="padding:24px 20px;text-align:center;font-size:12.5px;color:#8A98A8">Aucune échéance à venir.</div>
+            </sc-if>
+          </div>
+
           <div class="rg-2col" style="gap:18px;align-items:start">
             <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:hidden">
               <div style="padding:16px 20px;border-bottom:1px solid rgba(27,42,65,.08);font-family:Georgia,serif;font-size:16px;font-weight:700">Reeps par commune</div>
@@ -840,12 +854,16 @@ select,textarea,input{font-family:inherit}
 
           <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;padding:20px">
             <div style="font-family:Georgia,serif;font-size:16px;font-weight:700;margin-bottom:14px">Journal de suivi</div>
-            <div style="display:flex;gap:8px;margin-bottom:16px">
-              <textarea value="{{ cNoteText }}" onChange="{{ onCNoteText }}" rows="2" placeholder="Ajouter une note (appel, décision, problème rencontré…)" style="flex:1;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:11px 13px;font-size:13.5px;font-family:inherit;resize:none"></textarea>
+            <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+              <textarea value="{{ cNoteText }}" onChange="{{ onCNoteText }}" rows="2" placeholder="Ajouter une note (appel, décision, problème rencontré…)" style="flex:1;min-width:200px;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:11px 13px;font-size:13.5px;font-family:inherit;resize:none"></textarea>
               <button onClick="{{ addNote }}" style="border:none;background:#1B2A41;color:#fff;border-radius:9px;padding:0 18px;font-size:13px;font-weight:600;flex:none">Ajouter</button>
             </div>
+            <div style="margin-bottom:16px">
+              <label style="font-size:11.5px;color:#8A98A8">Échéance (facultatif) :</label>
+              <input value="{{ cNoteDueDate }}" onChange="{{ onCNoteDueDate }}" type="date" style="border:1px solid rgba(27,42,65,.16);border-radius:8px;padding:6px 9px;font-size:12.5px;margin-left:8px" />
+            </div>
             <sc-for list="{{ journalEntries }}" as="j" hint-placeholder-count="3">
-              <div style="border-top:1px solid rgba(27,42,65,.07);padding:12px 0">
+              <div data-journal-id="{{ j.id }}" style="border-top:1px solid rgba(27,42,65,.07);padding:12px;margin:0 -12px;border-radius:8px;background:{{ j.highlightBg }}">
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
                   <span style="font-size:11.5px;color:#8A98A8;flex:1">{{ j.whenLabel }}</span>
                   <sc-if value="{{ j.notEditing }}" hint-placeholder-val="{{ true }}">
@@ -855,6 +873,9 @@ select,textarea,input{font-family:inherit}
                 </div>
                 <sc-if value="{{ j.notEditing }}" hint-placeholder-val="{{ true }}">
                   <p style="margin:0;font-size:13.5px;line-height:1.55;color:#1B2A41;white-space:pre-wrap">{{ j.text }}</p>
+                  <sc-if value="{{ j.hasDueDate }}" hint-placeholder-val="{{ false }}">
+                    <span style="display:inline-block;margin-top:6px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;background:#EDE9F5;color:#54459B">📅 Échéance : {{ j.dueDateLabel }}</span>
+                  </sc-if>
                 </sc-if>
                 <sc-if value="{{ j.editing }}" hint-placeholder-val="{{ false }}">
                   <textarea value="{{ j.text }}" onChange="{{ j.onEditText }}" rows="2" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:9px 11px;font-size:13px;font-family:inherit;resize:none;margin-bottom:8px"></textarea>
@@ -960,7 +981,8 @@ class Component extends DCLogic {
     addCommuneOpen: false, addCommuneName: "", addCommuneError: "",
     cNewProjectName: "", cNewProjectAmount: "", cNewInvoiceLabel: "", cNewInvoiceAmount: "", cNewInvoiceStatus: "En attente", cNewInvoiceDate: "",
     cNewDocType: "Contrat", cNewDocTitle: "", cNewDocNote: "", cNewDocError: "",
-    cNoteText: "", cNoteEditingId: null, cNoteEditText: "",
+    cNoteText: "", cNoteEditingId: null, cNoteEditText: "", cNoteDueDate: "",
+    scrollToJournalId: null, highlightJournalId: null,
     shellFitH: null
   };
 
@@ -972,7 +994,18 @@ class Component extends DCLogic {
     Store.startAutoSync();
     window.addEventListener("reeper:sync", this._onSync = () => this.forceUpdate());
   }
-  componentDidUpdate() { this._syncShellHeight(); }
+  componentDidUpdate() {
+    this._syncShellHeight();
+    if (this.state.scrollToJournalId) {
+      const id = this.state.scrollToJournalId;
+      const el = document.querySelector('[data-journal-id="' + id + '"]');
+      if (el) {
+        el.scrollIntoView({ behavior: "auto", block: "center" });
+        this.setState({ scrollToJournalId: null, highlightJournalId: id });
+        setTimeout(() => { if (this.state.highlightJournalId === id) this.setState({ highlightJournalId: null }); }, 3000);
+      }
+    }
+  }
   componentWillUnmount() {
     if (this._onResize) window.removeEventListener("resize", this._onResize);
     if (this._onSync) window.removeEventListener("reeper:sync", this._onSync);
@@ -1308,6 +1341,8 @@ class Component extends DCLogic {
         id: j.id, whenLabel: fmtDateTime(j.when) + (j.who ? " · " + j.who : ""),
         editing: s.cNoteEditingId === j.id, notEditing: s.cNoteEditingId !== j.id,
         text: s.cNoteEditingId === j.id ? s.cNoteEditText : j.text,
+        hasDueDate: !!j.dueDate, dueDateLabel: fmtDateShort(j.dueDate),
+        highlightBg: s.highlightJournalId === j.id ? "#FDF7E8" : "transparent",
         onEditText: (e) => this.setState({ cNoteEditText: e.target.value }),
         onEdit: () => this.setState({ cNoteEditingId: j.id, cNoteEditText: j.text }),
         onSaveEdit: () => { Store.updateContractNote(curContract.commune, j.id, s.cNoteEditText); this.setState({ cNoteEditingId: null, cNoteEditText: "" }); },
@@ -1316,10 +1351,11 @@ class Component extends DCLogic {
       })) : [],
       journalEmpty: !curContract || !curContract.journal.length,
       cNoteText: s.cNoteText, onCNoteText: (e) => this.setState({ cNoteText: e.target.value }),
+      cNoteDueDate: s.cNoteDueDate, onCNoteDueDate: (e) => this.setState({ cNoteDueDate: e.target.value }),
       addNote: () => {
         if (!s.cNoteText.trim()) return;
-        Store.addContractNote(curContract.commune, s.cNoteText, session.displayName);
-        this.setState({ cNoteText: "" });
+        Store.addContractNote(curContract.commune, s.cNoteText, session.displayName, dateInputToTs(s.cNoteDueDate));
+        this.setState({ cNoteText: "", cNoteDueDate: "" });
       },
 
       documentTypeOptions: DOCUMENT_TYPES,
@@ -1373,6 +1409,15 @@ class Component extends DCLogic {
           { label: "Total", value: String(g.total), note: "depuis le lancement" }
         ];
       })(),
+      upcomingDeadlines: Store.upcomingDeadlines().map((u) => ({
+        commune: u.commune, text: u.text, dateLabel: fmtDateShort(u.dueDate),
+        onClick: () => this._transition(() => this.setState({
+          screen: "contracts", contractSel: u.commune,
+          contractDraft: JSON.parse(JSON.stringify(Store.getContract(u.commune))), contractSaved: true,
+          cNoteEditingId: null, scrollToJournalId: u.entryId
+        }))
+      })),
+      upcomingDeadlinesEmpty: Store.upcomingDeadlines().length === 0,
       byCommuneRows: (() => {
         const g = Store.statsGlobal();
         const max = Math.max(1, ...Object.values(g.byCommune));
