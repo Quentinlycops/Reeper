@@ -524,9 +524,12 @@ select,textarea,input{font-family:inherit}
 
       <sc-if value="{{ isContractsList }}" hint-placeholder-val="{{ false }}">
         <div class="rg-content" style="display:flex;flex-direction:column;gap:16px">
-          <div>
-            <h1 style="margin:0;font-family:Georgia,Cambria,serif;font-size:24px;font-weight:700;letter-spacing:-.3px">Gestion des contrats communes</h1>
-            <div style="font-size:12.5px;color:#8A98A8;margin-top:3px">Suivi commercial interne — non visible depuis l'espace commune</div>
+          <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
+            <div style="flex:1">
+              <h1 style="margin:0;font-family:Georgia,Cambria,serif;font-size:24px;font-weight:700;letter-spacing:-.3px">Gestion des contrats communes</h1>
+              <div style="font-size:12.5px;color:#8A98A8;margin-top:3px">Suivi commercial interne — non visible depuis l'espace commune</div>
+            </div>
+            <button onClick="{{ openAddCommune }}" style="border:none;background:#1B2A41;color:#fff;border-radius:9px;padding:11px 16px;font-size:13px;font-weight:600;white-space:nowrap">+ Ajouter une commune</button>
           </div>
           <input value="{{ contractQuery }}" onChange="{{ onContractQuery }}" placeholder="Rechercher une commune…" style="border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:11px 15px;font-size:13.5px;max-width:340px;box-sizing:border-box" />
           <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:hidden">
@@ -553,6 +556,7 @@ select,textarea,input{font-family:inherit}
           <div style="display:flex;align-items:center;gap:12px">
             <button onClick="{{ closeContract }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;border-radius:9px;padding:9px 13px;font-size:13px;font-weight:600;color:#1B2A41">‹ Retour</button>
             <h1 style="margin:0;font-family:Georgia,Cambria,serif;font-size:22px;font-weight:700">{{ curContractCommune }}</h1>
+            <span style="font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#8A98A8;background:#F3F6F8;border-radius:999px;padding:5px 12px">Code : {{ curContractCode }}</span>
           </div>
 
           <div class="rg-2col" style="gap:16px;align-items:start">
@@ -768,6 +772,23 @@ select,textarea,input{font-family:inherit}
         </div>
       </sc-if>
 
+      <sc-if value="{{ addCommuneOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position:fixed;inset:0;background:rgba(27,42,65,.4);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px">
+          <div style="background:#fff;border-radius:16px;padding:28px 26px;max-width:420px;width:100%;box-shadow:0 24px 60px rgba(27,42,65,.32)">
+            <h2 style="margin:0;font-family:Georgia,Cambria,serif;font-size:20px;font-weight:700">Ajouter une commune</h2>
+            <p style="margin:8px 0 16px;font-size:13px;line-height:1.55;color:#5A6B7E">Le code d'inscription est généré automatiquement et affiché sur sa fiche une fois créée.</p>
+            <input value="{{ addCommuneName }}" onChange="{{ onAddCommuneName }}" placeholder="Nom de la commune, du canton…" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:12px 14px;font-size:14px" />
+            <sc-if value="{{ hasAddCommuneError }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:9px;font-size:12.5px;color:#D62839">{{ addCommuneError }}</div>
+            </sc-if>
+            <div style="margin-top:18px;display:flex;gap:10px">
+              <button onClick="{{ submitAddCommune }}" style="flex:1;border:none;background:#1B2A41;color:#fff;border-radius:10px;padding:12px;font-size:13.5px;font-weight:600">Créer</button>
+              <button onClick="{{ closeAddCommune }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;border-radius:10px;padding:12px 16px;font-size:13.5px;font-weight:600">Annuler</button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
     </div>
 
     <div class="rg-mobile-nav" style="flex:none;background:#fff;border-top:1px solid rgba(27,42,65,.1);padding:8px 4px 12px">
@@ -835,12 +856,15 @@ class Component extends DCLogic {
     pwdPanelOpen: false, pwdOld: "", pwdNew1: "", pwdNew2: "", pwdMsg: "", pwdMsgIsError: false,
     activityMode: "journal", activityCommune: "Toutes",
     contractQuery: "", contractSel: null, contractDraft: null, contractSaved: false,
+    addCommuneOpen: false, addCommuneName: "", addCommuneError: "",
     cNewProjectName: "", cNewProjectAmount: "", cNewInvoiceLabel: "", cNewInvoiceAmount: "", cNewInvoiceStatus: "En attente", cNewInvoiceDate: "",
     cNoteText: "", cNoteEditingId: null, cNoteEditText: "",
     shellFitH: null
   };
 
   componentDidMount() {
+    const session = Store.getSession();
+    if (!session || session.type !== "gerant") { window.location.href = "./Reeper Web.dc.html"; return; }
     this._syncShellHeight();
     window.addEventListener("resize", this._onResize = () => this._syncShellHeight());
     Store.startAutoSync();
@@ -864,6 +888,7 @@ class Component extends DCLogic {
   renderVals() {
     const s = this.state;
     const session = Store.getSession() || FALLBACK_SESSION;
+    const communeNamesLive = Object.keys(Store.COMMUNES);
 
     const goSite = () => { window.location.href = "./Reeper Web.dc.html"; };
     const doLogout = () => { Store.logout(); window.location.href = "./Reeper Web.dc.html"; };
@@ -1050,6 +1075,18 @@ class Component extends DCLogic {
 
       closeContract,
       curContractCommune: curContract ? curContract.commune : "",
+      curContractCode: curContract ? (Store.communeCodeFor(curContract.commune) || "—") : "",
+
+      addCommuneOpen: s.addCommuneOpen,
+      openAddCommune: () => this.setState({ addCommuneOpen: true, addCommuneName: "", addCommuneError: "" }),
+      closeAddCommune: () => this.setState({ addCommuneOpen: false }),
+      addCommuneName: s.addCommuneName, onAddCommuneName: (e) => this.setState({ addCommuneName: e.target.value, addCommuneError: "" }),
+      hasAddCommuneError: !!s.addCommuneError, addCommuneError: s.addCommuneError,
+      submitAddCommune: () => {
+        const res = Store.addCommune(s.addCommuneName);
+        if (!res.ok) { this.setState({ addCommuneError: res.error }); return; }
+        this.setState({ addCommuneOpen: false, contractSel: res.commune, contractDraft: JSON.parse(JSON.stringify(Store.getContract(res.commune))), contractSaved: true });
+      },
       cTier: cDraft ? cDraft.tier : "Moyenne", onCTier: onContractField("tier"),
       contractTierOptions: CONTRACT_TIERS,
       cAmount: cDraft ? cDraft.annualAmount : 0, onCAmount: onContractField("annualAmount"),
@@ -1166,7 +1203,7 @@ class Component extends DCLogic {
       byCommuneRows: (() => {
         const g = Store.statsGlobal();
         const max = Math.max(1, ...Object.values(g.byCommune));
-        return COMMUNE_NAMES.map((name) => ({ name, count: g.byCommune[name] || 0, pct: Math.round(((g.byCommune[name] || 0) / max) * 100) + "%" }));
+        return communeNamesLive.map((name) => ({ name, count: g.byCommune[name] || 0, pct: Math.round(((g.byCommune[name] || 0) / max) * 100) + "%" }));
       })(),
       byStatusRows: (() => {
         const g = Store.statsGlobal();
@@ -1175,7 +1212,7 @@ class Component extends DCLogic {
       })(),
 
       filterCommune: s.filterCommune, onFilterCommune: (e) => this.setState({ filterCommune: e.target.value }),
-      communeOptions: ["Toutes"].concat(COMMUNE_NAMES),
+      communeOptions: ["Toutes"].concat(communeNamesLive),
       filterCat: s.filterCat, onFilterCat: (e) => this.setState({ filterCat: e.target.value }),
       catOptions: ["Toutes"].concat(CATS),
       filterStatus: s.filterStatus, onFilterStatus: (e) => this.setState({ filterStatus: e.target.value }),
@@ -1202,7 +1239,7 @@ class Component extends DCLogic {
 
       acctQuery: s.acctQuery, onAcctQuery: (e) => this.setState({ acctQuery: e.target.value }),
       acctFilterCommune: s.acctFilterCommune, onAcctFilterCommune: (e) => this.setState({ acctFilterCommune: e.target.value }),
-      acctCommuneOptions: ["Toutes"].concat(COMMUNE_NAMES).concat(["—"]),
+      acctCommuneOptions: ["Toutes"].concat(communeNamesLive).concat(["—"]),
       acctFilterType: s.acctFilterType, onAcctFilterType: (e) => this.setState({ acctFilterType: e.target.value }),
       acctTypeOptions: ["Tous", "Citoyens", "Agents"],
       acctGridCols: (s.sheetOpen || s.replaceOpen) ? "1fr 380px" : "1fr",
@@ -1231,7 +1268,7 @@ class Component extends DCLogic {
         };
       }),
 
-      openNewAccount: () => this.setState({ sheetOpen: true, replaceOpen: false, newType: "agent", newFirst: "", newLast: "", newEmail: "", newCommune: COMMUNE_NAMES[0], newRole: "agent", newError: "" }),
+      openNewAccount: () => this.setState({ sheetOpen: true, replaceOpen: false, newType: "agent", newFirst: "", newLast: "", newEmail: "", newCommune: communeNamesLive[0], newRole: "agent", newError: "" }),
       closeNewAccount: () => this.setState({ sheetOpen: false }),
       sheetOpen: s.sheetOpen,
       typeTabs: [["citizen", "Citoyen"], ["agent", "Agent / commune"]].concat(session.primary ? [["gerant", "Gérant Reeper"]] : []).map(([k, label]) => ({
@@ -1244,7 +1281,7 @@ class Component extends DCLogic {
       newLast: s.newLast, onNewLast: (e) => this.setState({ newLast: e.target.value, newError: "" }),
       newEmail: s.newEmail, onNewEmail: (e) => this.setState({ newEmail: e.target.value, newError: "" }),
       newCommune: s.newCommune, onNewCommune: (e) => this.setState({ newCommune: e.target.value }),
-      communeChoices: COMMUNE_NAMES,
+      communeChoices: communeNamesLive,
       newRole: s.newRole, onNewRole: (e) => this.setState({ newRole: e.target.value }),
       hasNewError: !!s.newError, newError: s.newError,
       saveNewAccount: () => {

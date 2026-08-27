@@ -95,6 +95,12 @@
   function rowToGrp(row) {
     return { id: row.id, name: row.name, members: row.members || [], createdBy: row.created_by, createdWhen: row.created_when };
   }
+  function communeMetaToRow(m) {
+    return { name: m.name, code: m.code, center: m.center, zip: m.zip || [], updated_at: Date.now() };
+  }
+  function rowToCommuneMeta(row) {
+    return { name: row.name, code: row.code, center: row.center, zip: row.zip || [] };
+  }
   function contractToRow(c) {
     return {
       commune: c.commune, tier: c.tier, annual_amount: c.annualAmount || 0,
@@ -125,7 +131,8 @@
       sbUpsert("reeps", (data.reeps || []).map(reepToRow), "id"),
       sbUpsert("messages", (data.messages || []).map(msgToRow), "id"),
       sbUpsert("groups", (data.groups || []).map(grpToRow), "id"),
-      sbUpsert("contracts", (data.contracts || []).map(contractToRow), "commune")
+      sbUpsert("contracts", (data.contracts || []).map(contractToRow), "commune"),
+      sbUpsert("communes_meta", (data.communesMeta || []).map(communeMetaToRow), "name")
     ]);
   }
   function _schedulePush(data) {
@@ -150,9 +157,9 @@
 
   function syncPull() {
     if (!SYNC_ON || _pushTimer) return Promise.resolve(false);
-    return Promise.all([sbSelectAll("accounts"), sbSelectAll("reeps"), sbSelectAll("messages"), sbSelectAll("groups"), sbSelectAll("contracts")])
+    return Promise.all([sbSelectAll("accounts"), sbSelectAll("reeps"), sbSelectAll("messages"), sbSelectAll("groups"), sbSelectAll("contracts"), sbSelectAll("communes_meta")])
       .then(function (results) {
-        var accRows = results[0], reepRows = results[1], msgRows = results[2], grpRows = results[3], contractRows = results[4];
+        var accRows = results[0], reepRows = results[1], msgRows = results[2], grpRows = results[3], contractRows = results[4], metaRows = results[5];
         if (!accRows || !reepRows || !msgRows || !grpRows) return false;
         var data = load();
         // Cloud not seeded yet but we already have local data: push ours up instead of wiping local with empty cloud tables.
@@ -165,10 +172,13 @@
         data.reeps = reepRows.map(rowToReep);
         data.messages = msgRows.map(rowToMsg);
         data.groups = grpRows.map(rowToGrp);
-        // Contracts table is optional (added later) — only apply if the pull actually succeeded, and
-        // never let an empty/missing cloud table wipe locally-seeded or already-entered contract data.
+        // Contracts / communes_meta tables are optional (added later) — only apply if the pull
+        // actually succeeded, and never let an empty/missing cloud table wipe locally-entered data.
         if (contractRows && (contractRows.length > 0 || !data.contracts || data.contracts.every(function (c) { return !c.annualAmount && !c.journal.length; }))) {
           data.contracts = contractRows.map(rowToContract);
+        }
+        if (metaRows && (metaRows.length > 0 || !data.communesMeta || data.communesMeta.length === 0)) {
+          data.communesMeta = metaRows.map(rowToCommuneMeta);
         }
         var maxSeq = data.seq || 4900;
         data.reeps.forEach(function (r) {
@@ -335,6 +345,16 @@
     var PURGE_AFTER_MS = 365 * 86400000;
     data.reeps = (data.reeps || []).filter(function (r) {
       return !(r.deleted && r.deletedAt && (now() - r.deletedAt) > PURGE_AFTER_MS);
+    });
+    if (!data.communesMeta) {
+      data.communesMeta = Object.keys(COMMUNES).map(function (name) {
+        var code = Object.keys(COMMUNE_CODES).filter(function (c) { return COMMUNE_CODES[c] === name; })[0];
+        return { name: name, code: code, center: COMMUNES[name].center, zip: COMMUNES[name].zip };
+      });
+    }
+    data.communesMeta.forEach(function (m) {
+      COMMUNES[m.name] = { center: m.center, zip: m.zip || [] };
+      COMMUNE_CODES[m.code] = m.name;
     });
     if (!data.contracts) data.contracts = [];
     Object.keys(COMMUNES).forEach(function (name) {
@@ -1142,6 +1162,41 @@
         if (monthsAgo === 0) buckets[2]++; else if (monthsAgo === 1) buckets[1]++; else if (monthsAgo === 2) buckets[0]++;
       });
       return { total: total, monthlyAvg: Math.round(monthlyAvg * 10) / 10, last3Months: buckets };
+    },
+    addCommune: function (name, opts) {
+      opts = opts || {};
+      var data = load();
+      name = String(name || "").trim();
+      if (!name) return { ok: false, error: "Nom requis." };
+      if (data.communesMeta.some(function (m) { return m.name.toLowerCase() === name.toLowerCase(); })) {
+        return { ok: false, error: "Cette entité existe déjà." };
+      }
+      var year = new Date().getFullYear();
+      var baseCode = slugify(name).toUpperCase() || "ENTITE";
+      var code = baseCode + "-" + year;
+      var n = 2;
+      while (data.communesMeta.some(function (m) { return m.code === code; })) {
+        code = baseCode + n + "-" + year;
+        n++;
+      }
+      var center = opts.center || (data.communesMeta[0] ? data.communesMeta[0].center : { lat: 46.5197, lon: 6.6323 });
+      var meta = { name: name, code: code, center: center, zip: opts.zip || [] };
+      data.communesMeta.push(meta);
+      COMMUNES[name] = { center: center, zip: meta.zip };
+      COMMUNE_CODES[code] = name;
+      data.contracts.push({
+        commune: name, tier: "Moyenne", annualAmount: 0, contractStart: now(), status: "Pilote en cours", renewalDate: null,
+        contacts: [{ role: "principal", name: "", title: "", email: "", phone: "" }, { role: "secours", name: "", title: "", email: "", phone: "" }],
+        budget5: { total: 0, projects: [] }, postalAddress: "", contractFileUrl: null, contractFileName: null,
+        satisfaction: null, invoices: [], journal: []
+      });
+      persist(data);
+      return { ok: true, commune: name, code: code };
+    },
+    communeCodeFor: function (name) {
+      var data = load();
+      var m = data.communesMeta.find(function (x) { return x.name === name; });
+      return m ? m.code : null;
     },
 
     chartData: function (commune, mode) {
