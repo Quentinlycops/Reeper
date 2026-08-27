@@ -1739,7 +1739,7 @@ class Component extends DCLogic {
     const pendingEntry = (s.pendingRealConv && !realConvs.some((c) => c.id === s.pendingRealConv.key))
       ? [{ who: s.pendingRealConv.name, id: s.pendingRealConv.key, real: true, isGroup: false, role: s.pendingRealConv.role, initials: s.pendingRealConv.initials, avBg: s.pendingRealConv.avBg, when: "", unread: false, lastText: "Nouvelle conversation", msgs: [] }]
       : [];
-    const reeperEntry = (isAdmin && !realConvs.some((c) => c.id === Store.REEPER_SUPPORT_KEY))
+    const reeperEntry = (!realConvs.some((c) => c.id === Store.REEPER_SUPPORT_KEY))
       ? [{ who: "Reeper", id: Store.REEPER_SUPPORT_KEY, real: true, isGroup: false, role: "Support Reeper", initials: "RP", avBg: "#D62839", when: "", unread: false, lastText: "Nouvelle conversation", msgs: [] }]
       : [];
     const groupList = Store.groupsFor(session.key);

@@ -413,27 +413,40 @@ select,textarea,input{font-family:inherit}
           <div class="rg-msg-split" style="gap:18px;flex:1;min-height:0">
             <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:auto;display:flex;flex-direction:column">
               <div style="padding:10px 12px;border-bottom:1px solid rgba(27,42,65,.08);flex:none">
-                <input value="{{ msgQuery }}" onChange="{{ onMsgQuery }}" placeholder="Rechercher une conversation…" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:9px 12px;font-size:13px;outline:none" />
+                <input value="{{ msgQuery }}" onChange="{{ onMsgQuery }}" placeholder="Rechercher une personne…" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:9px 12px;font-size:13px;outline:none" />
               </div>
-              <sc-for list="{{ msgConvs }}" as="c" hint-placeholder-count="4">
-                <button onClick="{{ c.onClick }}" style="width:100%;display:flex;align-items:center;gap:11px;padding:13px 16px;border:none;border-bottom:1px solid rgba(27,42,65,.06);background:{{ c.rowBg }};text-align:left" style-hover="background:#FAFBFC">
-                  <span style="width:34px;height:34px;border-radius:50%;background:{{ c.avBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:none">{{ c.initials }}</span>
-                  <span style="flex:1;min-width:0">
-                    <span style="display:flex;align-items:center;gap:6px">
-                      <span style="font-size:13.5px;font-weight:600;color:#1B2A41">{{ c.name }}</span>
-                      <sc-if value="{{ c.unread }}" hint-placeholder-val="{{ false }}">
-                        <span style="width:7px;height:7px;border-radius:50%;background:#D62839;flex:none"></span>
-                      </sc-if>
+              <sc-if value="{{ isMsgSearch }}" hint-placeholder-val="{{ false }}">
+                <sc-for list="{{ dirResults }}" as="d" hint-placeholder-count="4">
+                  <button onClick="{{ d.onClick }}" style="width:100%;display:flex;align-items:center;gap:11px;padding:13px 16px;border:none;border-bottom:1px solid rgba(27,42,65,.06);background:#fff;text-align:left" style-hover="background:#FAFBFC">
+                    <span style="width:34px;height:34px;border-radius:50%;background:{{ d.avBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:none">{{ d.initials }}</span>
+                    <span style="flex:1;min-width:0">
+                      <span style="display:block;font-size:13.5px;font-weight:600;color:#1B2A41">{{ d.name }}</span>
+                      <span style="display:block;font-size:11.5px;color:#8A98A8;margin-top:2px">{{ d.role }}</span>
                     </span>
-                    <span style="display:block;font-size:11.5px;color:#8A98A8;margin-top:2px">{{ c.role }}</span>
-                  </span>
-                </button>
-              </sc-for>
-              <sc-if value="{{ msgConvsEmpty }}" hint-placeholder-val="{{ false }}">
-                <div style="padding:30px 18px;text-align:center;font-size:12.5px;color:#8A98A8;line-height:1.6">Aucun message pour le moment. Les administrateurs communaux peuvent écrire à "Reeper" depuis leur messagerie.</div>
+                  </button>
+                </sc-for>
+                <sc-if value="{{ dirEmpty }}" hint-placeholder-val="{{ false }}">
+                  <div style="padding:30px 18px;text-align:center;font-size:12.5px;color:#8A98A8;line-height:1.6">Aucune personne ne correspond.</div>
+                </sc-if>
               </sc-if>
-              <sc-if value="{{ msgSearchEmpty }}" hint-placeholder-val="{{ false }}">
-                <div style="padding:30px 18px;text-align:center;font-size:12.5px;color:#8A98A8;line-height:1.6">Aucune conversation ne correspond à cette recherche.</div>
+              <sc-if value="{{ isMsgConvs }}" hint-placeholder-val="{{ true }}">
+                <sc-for list="{{ msgConvs }}" as="c" hint-placeholder-count="4">
+                  <button onClick="{{ c.onClick }}" style="width:100%;display:flex;align-items:center;gap:11px;padding:13px 16px;border:none;border-bottom:1px solid rgba(27,42,65,.06);background:{{ c.rowBg }};text-align:left" style-hover="background:#FAFBFC">
+                    <span style="width:34px;height:34px;border-radius:50%;background:{{ c.avBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:none">{{ c.initials }}</span>
+                    <span style="flex:1;min-width:0">
+                      <span style="display:flex;align-items:center;gap:6px">
+                        <span style="font-size:13.5px;font-weight:600;color:#1B2A41">{{ c.name }}</span>
+                        <sc-if value="{{ c.unread }}" hint-placeholder-val="{{ false }}">
+                          <span style="width:7px;height:7px;border-radius:50%;background:#D62839;flex:none"></span>
+                        </sc-if>
+                      </span>
+                      <span style="display:block;font-size:11.5px;color:#8A98A8;margin-top:2px">{{ c.role }}</span>
+                    </span>
+                  </button>
+                </sc-for>
+                <sc-if value="{{ msgConvsEmpty }}" hint-placeholder-val="{{ false }}">
+                  <div style="padding:30px 18px;text-align:center;font-size:12.5px;color:#8A98A8;line-height:1.6">Aucun message pour le moment. Recherchez une personne pour démarrer une conversation.</div>
+                </sc-if>
               </sc-if>
             </div>
 
@@ -918,7 +931,7 @@ class Component extends DCLogic {
     sheetOpen: false, newType: "agent", newFirst: "", newLast: "", newEmail: "", newCommune: COMMUNE_NAMES[0], newRole: "agent", newError: "",
     replaceOpen: false, replaceForKey: null, replaceCommune: "", replaceMode: "select", replacementKey: "",
     replFirst: "", replLast: "", replEmail: "", replaceError: "",
-    msgSel: null, msgQuery: "", draft: "",
+    msgSel: null, msgQuery: "", pendingConv: null, draft: "",
     pwdPanelOpen: false, pwdOld: "", pwdNew1: "", pwdNew2: "", pwdMsg: "", pwdMsgIsError: false,
     activityMode: "journal", activityCommune: "Toutes", activityStatus: "Tous", activityCat: "Toutes", activityPeriod: "Tout", activitySearch: "",
     contractQuery: "", contractSel: null, contractDraft: null, contractSaved: false, contractEditOpen: false,
@@ -1077,9 +1090,21 @@ class Component extends DCLogic {
     const rawInboxes = Store.inboxFor(Store.REEPER_SUPPORT_KEY).concat(session.key ? Store.inboxFor(session.key) : []);
     const inboxByKey = {};
     rawInboxes.forEach((c) => { if (!inboxByKey[c.withKey] || inboxByKey[c.withKey].lastWhen < c.lastWhen) inboxByKey[c.withKey] = c; });
-    const supportInbox = Object.keys(inboxByKey).map((k) => inboxByKey[k]).sort((a, b) => b.lastWhen - a.lastWhen);
+    const supportInboxRaw = Object.keys(inboxByKey).map((k) => inboxByKey[k]).sort((a, b) => b.lastWhen - a.lastWhen);
+    const pendingConvEntry = (s.pendingConv && !supportInboxRaw.some((c) => c.withKey === s.pendingConv.withKey))
+      ? [{ withKey: s.pendingConv.withKey, withName: s.pendingConv.withName, withRole: s.pendingConv.withRole, withInitials: s.pendingConv.withInitials, withAvBg: s.pendingConv.withAvBg, unread: false, lastWhen: Date.now(), lastText: "Nouvelle conversation" }]
+      : [];
+    const supportInbox = pendingConvEntry.concat(supportInboxRaw);
     const msgQueryLc = (s.msgQuery || "").trim().toLowerCase();
-    const msgConvsFiltered = supportInbox.filter((c) => !msgQueryLc || (c.withName || "").toLowerCase().indexOf(msgQueryLc) >= 0);
+    const isMsgSearchMode = msgQueryLc.length > 0;
+    const msgConvsFiltered = supportInbox;
+    const dirResults = !msgQueryLc ? [] : Store.listAccounts({ activeOnly: true, excludeKey: session.key }).filter((a) => a.type !== "gerant" && !supportInbox.some((c) => c.withKey === a.key)).filter((a) => {
+      return a.displayName.toLowerCase().indexOf(msgQueryLc) >= 0 || (a.commune || "").toLowerCase().indexOf(msgQueryLc) >= 0 || a.role.toLowerCase().indexOf(msgQueryLc) >= 0;
+    }).map((a) => ({
+      name: a.displayName, initials: a.initials, avBg: a.avBg,
+      role: a.type === "citizen" ? "Citoyen" : a.role + " · " + a.commune,
+      onClick: () => this.setState({ msgQuery: "", pendingConv: { withKey: a.key, withName: a.displayName, withRole: a.type === "citizen" ? "Citoyen" : a.role + " · " + a.commune, withInitials: a.initials, withAvBg: a.avBg }, msgSel: a.key })
+    }));
     const curSupportConv = s.msgSel ? supportInbox.find((c) => c.withKey === s.msgSel) : supportInbox[0];
     const curSupportThread = curSupportConv
       ? Store.getThread(Store.REEPER_SUPPORT_KEY, curSupportConv.withKey)
@@ -1424,6 +1449,8 @@ class Component extends DCLogic {
       },
 
       msgQuery: s.msgQuery, onMsgQuery: (e) => this.setState({ msgQuery: e.target.value }),
+      isMsgConvs: !isMsgSearchMode, isMsgSearch: isMsgSearchMode,
+      dirResults: dirResults, dirEmpty: dirResults.length === 0,
       msgConvs: msgConvsFiltered.map((c) => ({
         name: c.withName, role: c.withRole, initials: c.withInitials, avBg: c.withAvBg, unread: c.unread,
         rowBg: c.withKey === (curSupportConv || {}).withKey ? "#FAFBFC" : "#fff",
@@ -1434,7 +1461,6 @@ class Component extends DCLogic {
         }
       })),
       msgConvsEmpty: supportInbox.length === 0,
-      msgSearchEmpty: supportInbox.length > 0 && msgConvsFiltered.length === 0,
       hasCurConv: !!curSupportConv, noCurConv: !curSupportConv,
       curConv: curSupportConv ? { name: curSupportConv.withName, role: curSupportConv.withRole, initials: curSupportConv.withInitials, avBg: curSupportConv.withAvBg } : { name: "", role: "", initials: "", avBg: "" },
       curThread: curSupportThread.map((m) => {
