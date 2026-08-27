@@ -920,7 +920,11 @@ class Component extends DCLogic {
     const CONTRACT_TIERS = ["Petite", "Moyenne", "Grande", "Ville"];
     const fmtDateShort = (ts) => ts ? new Date(ts).toLocaleDateString("fr-CH", { day: "2-digit", month: "2-digit", year: "numeric" }) : "—";
     const fmtChf = (n) => (Number(n) || 0).toLocaleString("fr-CH") + " CHF";
-    const tsToDateInput = (ts) => ts ? new Date(ts).toISOString().slice(0, 10) : "";
+    const tsToDateInput = (ts) => {
+      if (!ts) return "";
+      const d = new Date(ts);
+      return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+    };
     const dateInputToTs = (str) => str ? new Date(str + "T00:00:00").getTime() : null;
 
     const allContracts = Store.getContracts();
