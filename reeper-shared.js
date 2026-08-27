@@ -19,6 +19,8 @@
       method: "POST",
       headers: sbHeaders({ Prefer: "resolution=merge-duplicates,return=minimal" }),
       body: JSON.stringify(rows)
+    }).then(function (r) {
+      if (!r.ok) return r.text().then(function (t) { try { console.warn("[reeper-sync] push rejected:", table, r.status, t); } catch (x) {} });
     }).catch(function (e) { try { console.warn("[reeper-sync] push failed:", table, e); } catch (x) {} });
   }
   function sbSelectAll(table) {
