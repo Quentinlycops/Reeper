@@ -145,7 +145,9 @@
 
   var _pushTimer = null;
   var _pendingPushData = null;
+  var _pushInFlight = false;
   function _runPush(data) {
+    _pushInFlight = true;
     return Promise.all([
       sbUpsert("accounts", (data.accounts || []).map(accToRow), "key"),
       sbUpsert("reeps", (data.reeps || []).map(reepToRow), "id"),
@@ -154,7 +156,7 @@
       sbUpsert("contracts", (data.contracts || []).map(contractToRow), "commune"),
       sbUpsert("communes_meta", (data.communesMeta || []).map(communeMetaToRow), "name"),
       sbUpsert("commune_config", (data.communeConfigs || []).map(commConfigToRow), "commune")
-    ]);
+    ]).then(function (r) { _pushInFlight = false; return r; }, function (e) { _pushInFlight = false; throw e; });
   }
   function _schedulePush(data) {
     if (!SYNC_ON) return;
@@ -177,7 +179,7 @@
   }
 
   function syncPull() {
-    if (!SYNC_ON || _pushTimer) return Promise.resolve(false);
+    if (!SYNC_ON || _pushTimer || _pushInFlight) return Promise.resolve(false);
     return Promise.all([sbSelectAll("accounts"), sbSelectAll("reeps"), sbSelectAll("messages"), sbSelectAll("groups"), sbSelectAll("contracts"), sbSelectAll("communes_meta"), sbSelectAll("commune_config")])
       .then(function (results) {
         var accRows = results[0], reepRows = results[1], msgRows = results[2], grpRows = results[3], contractRows = results[4], metaRows = results[5], configRows = results[6];

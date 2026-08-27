@@ -678,40 +678,38 @@ select,textarea,input{font-family:inherit}
                     </div>
                   </div>
                 </sc-if>
+              </div>
 
-                <div style="border-top:1px solid rgba(27,42,65,.08);padding-top:14px;margin-top:14px">
-                  <div style="font-size:13px;font-weight:700;margin-bottom:10px">Contacts</div>
-                  <sc-for list="{{ contactRows }}" as="ct" hint-placeholder-count="2">
-                    <div style="border:1px solid rgba(27,42,65,.08);border-radius:10px;padding:12px 14px;margin-bottom:10px">
-                      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-                        <span style="font-size:11px;font-weight:700;color:#8A98A8;text-transform:uppercase;letter-spacing:.06em;flex:1">{{ ct.roleLabel }}</span>
-                        <sc-if value="{{ ct.removable }}" hint-placeholder-val="{{ false }}">
-                          <button onClick="{{ ct.onRemove }}" style="border:none;background:none;color:#D62839;font-size:12px;font-weight:600">Retirer</button>
-                        </sc-if>
-                      </div>
-                      <div class="rg-2col" style="gap:8px;margin-bottom:8px">
-                        <input value="{{ ct.name }}" onChange="{{ ct.onName }}" placeholder="Nom" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:8px;padding:9px 11px;font-size:13px" />
-                        <input value="{{ ct.title }}" onChange="{{ ct.onTitle }}" placeholder="Fonction" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:8px;padding:9px 11px;font-size:13px" />
-                      </div>
-                      <div class="rg-2col" style="gap:8px">
-                        <input value="{{ ct.email }}" onChange="{{ ct.onEmail }}" placeholder="E-mail" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:8px;padding:9px 11px;font-size:13px" />
-                        <input value="{{ ct.phone }}" onChange="{{ ct.onPhone }}" placeholder="Téléphone" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:8px;padding:9px 11px;font-size:13px" />
-                      </div>
+              <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;padding:20px">
+                <div style="font-family:Georgia,serif;font-size:16px;font-weight:700;margin-bottom:14px">Contacts &amp; adresse</div>
+                <sc-for list="{{ contactRows }}" as="ct" hint-placeholder-count="2">
+                  <div style="border:1px solid rgba(27,42,65,.08);border-radius:10px;padding:12px 14px;margin-bottom:10px">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                      <span style="font-size:11px;font-weight:700;color:#8A98A8;text-transform:uppercase;letter-spacing:.06em;flex:1">{{ ct.roleLabel }}</span>
+                      <sc-if value="{{ ct.removable }}" hint-placeholder-val="{{ false }}">
+                        <button onClick="{{ ct.onRemove }}" style="border:none;background:none;color:#D62839;font-size:12px;font-weight:600">Retirer</button>
+                      </sc-if>
                     </div>
-                  </sc-for>
-                  <button onClick="{{ addExtraContact }}" style="border:1px dashed rgba(27,42,65,.28);background:#FAFBFC;border-radius:9px;padding:9px 13px;font-size:12.5px;font-weight:600;color:#1B2A41;width:100%">+ Ajouter un contact</button>
-                </div>
-
-                <div style="border-top:1px solid rgba(27,42,65,.08);padding-top:14px;margin-top:14px">
-                  <div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:6px">Adresse postale</div>
-                  <input value="{{ cPostal }}" onChange="{{ onCPostal }}" placeholder="Rue, NPA, localité" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:10px 12px;font-size:13.5px;margin-bottom:14px" />
-
-                  <div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:8px">Satisfaction perçue</div>
-                  <div style="display:flex;gap:6px;margin-bottom:16px">
-                    <sc-for list="{{ satisfactionStars }}" as="st" hint-placeholder-count="5">
-                      <button onClick="{{ st.onClick }}" style="border:none;background:none;font-size:22px;line-height:1;color:{{ st.color }}">★</button>
-                    </sc-for>
+                    <div class="rg-2col" style="gap:8px;margin-bottom:8px">
+                      <input value="{{ ct.name }}" onChange="{{ ct.onName }}" placeholder="Nom" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:8px;padding:9px 11px;font-size:13px" />
+                      <input value="{{ ct.title }}" onChange="{{ ct.onTitle }}" placeholder="Fonction" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:8px;padding:9px 11px;font-size:13px" />
+                    </div>
+                    <div class="rg-2col" style="gap:8px">
+                      <input value="{{ ct.email }}" onChange="{{ ct.onEmail }}" placeholder="E-mail" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:8px;padding:9px 11px;font-size:13px" />
+                      <input value="{{ ct.phone }}" onChange="{{ ct.onPhone }}" placeholder="Téléphone" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:8px;padding:9px 11px;font-size:13px" />
+                    </div>
                   </div>
+                </sc-for>
+                <button onClick="{{ addExtraContact }}" style="border:1px dashed rgba(27,42,65,.28);background:#FAFBFC;border-radius:9px;padding:9px 13px;font-size:12.5px;font-weight:600;color:#1B2A41;width:100%;margin-bottom:16px">+ Ajouter un contact</button>
+
+                <div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:6px">Adresse postale</div>
+                <input value="{{ cPostal }}" onChange="{{ onCPostal }}" placeholder="Rue, NPA, localité" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:10px 12px;font-size:13.5px;margin-bottom:16px" />
+
+                <div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:8px">Satisfaction perçue</div>
+                <div style="display:flex;gap:6px;margin-bottom:16px">
+                  <sc-for list="{{ satisfactionStars }}" as="st" hint-placeholder-count="5">
+                    <button onClick="{{ st.onClick }}" style="border:none;background:none;font-size:22px;line-height:1;color:{{ st.color }}">★</button>
+                  </sc-for>
                 </div>
 
                 <button onClick="{{ saveContractInfo }}" style="width:100%;border:none;background:#1B2A41;color:#fff;border-radius:10px;padding:13px;font-size:13.5px;font-weight:600">{{ contractSaveLabel }}</button>
@@ -1241,7 +1239,10 @@ class Component extends DCLogic {
       contractSaveLabel: s.contractSaved ? "Modifications enregistrées ✓" : "Enregistrer les modifications",
       contractEditOpen: s.contractEditOpen,
       openContractEdit: () => this.setState({ contractEditOpen: true }),
-      closeContractEdit: () => this.setState({ contractEditOpen: false, contractDraft: JSON.parse(JSON.stringify(curContract)) }),
+      closeContractEdit: () => this.setState({
+        contractEditOpen: false,
+        contractDraft: { ...cDraft, tier: curContract.tier, annualAmount: curContract.annualAmount, status: curContract.status, contractStart: curContract.contractStart, renewalDate: curContract.renewalDate }
+      }),
       saveContractEdit: () => { saveContractInfo(); this.setState({ contractEditOpen: false }); },
 
       contactRows: (cDraft ? cDraft.contacts : []).map((c, idx) => ({
