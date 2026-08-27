@@ -1318,7 +1318,7 @@ class Component extends DCLogic {
       budgetProjects: curContract ? curContract.budget5.projects.slice().sort((a, b) => b.date - a.date).map((p) => ({
         name: p.name, amountLabel: fmtChf(p.amount), dateLabel: fmtDateShort(p.date),
         pctLabel: budgetTotal > 0 ? Math.round((p.amount / budgetTotal) * 100) + "%" : "—",
-        onRemove: () => Store.removeBudgetProject(curContract.commune, p.id)
+        onRemove: () => { Store.removeBudgetProject(curContract.commune, p.id); this.forceUpdate(); }
       })) : [],
       budgetProjectsEmpty: !curContract || !curContract.budget5.projects.length,
       cNewProjectName: s.cNewProjectName, onCNewProjectName: (e) => this.setState({ cNewProjectName: e.target.value }),
@@ -1347,7 +1347,7 @@ class Component extends DCLogic {
         onEdit: () => this.setState({ cNoteEditingId: j.id, cNoteEditText: j.text }),
         onSaveEdit: () => { Store.updateContractNote(curContract.commune, j.id, s.cNoteEditText); this.setState({ cNoteEditingId: null, cNoteEditText: "" }); },
         onCancelEdit: () => this.setState({ cNoteEditingId: null, cNoteEditText: "" }),
-        onRemove: () => Store.removeContractNote(curContract.commune, j.id)
+        onRemove: () => { Store.removeContractNote(curContract.commune, j.id); this.forceUpdate(); }
       })) : [],
       journalEmpty: !curContract || !curContract.journal.length,
       cNoteText: s.cNoteText, onCNoteText: (e) => this.setState({ cNoteText: e.target.value }),
@@ -1379,7 +1379,7 @@ class Component extends DCLogic {
       documentRows: curContract ? curContract.documents.slice().sort((a, b) => b.uploadedAt - a.uploadedAt).map((d) => ({
         type: d.type, title: d.title, note: d.note, hasNote: !!d.note, dateLabel: fmtDateShort(d.uploadedAt),
         fileUrl: d.fileUrl, fileName: d.fileName,
-        onRemove: () => Store.removeContractDocument(curContract.commune, d.id)
+        onRemove: () => { Store.removeContractDocument(curContract.commune, d.id); this.forceUpdate(); }
       })) : [],
       documentsEmpty: !curContract || !curContract.documents.length,
 
@@ -1387,8 +1387,8 @@ class Component extends DCLogic {
         label: inv.label, amountLabel: fmtChf(inv.amount), dateLabel: fmtDateShort(inv.date), status: inv.status,
         statusBg: inv.status === "Payé" ? "#E5F1EA" : inv.status === "En retard" ? "#FDF2F3" : "#FDF0E2",
         statusFg: inv.status === "Payé" ? "#2E6B48" : inv.status === "En retard" ? "#8A2530" : "#A96A16",
-        onStatus: (e) => Store.updateInvoice(curContract.commune, inv.id, { status: e.target.value }),
-        onRemove: () => Store.removeInvoice(curContract.commune, inv.id)
+        onStatus: (e) => { Store.updateInvoice(curContract.commune, inv.id, { status: e.target.value }); this.forceUpdate(); },
+        onRemove: () => { Store.removeInvoice(curContract.commune, inv.id); this.forceUpdate(); }
       })) : [],
       invoicesEmpty: !curContract || !curContract.invoices.length,
       invoiceStatusOptions: ["Payé", "En attente", "En retard"],
