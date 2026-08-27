@@ -95,6 +95,27 @@
   function rowToGrp(row) {
     return { id: row.id, name: row.name, members: row.members || [], createdBy: row.created_by, createdWhen: row.created_when };
   }
+  function contractToRow(c) {
+    return {
+      commune: c.commune, tier: c.tier, annual_amount: c.annualAmount || 0,
+      contract_start: c.contractStart, status: c.status, renewal_date: c.renewalDate,
+      contacts: c.contacts || [], budget_total: (c.budget5 && c.budget5.total) || 0,
+      budget_projects: (c.budget5 && c.budget5.projects) || [],
+      postal_address: c.postalAddress || "", contract_file_url: c.contractFileUrl || null,
+      contract_file_name: c.contractFileName || null, satisfaction: c.satisfaction,
+      invoices: c.invoices || [], journal: c.journal || [], updated_at: Date.now()
+    };
+  }
+  function rowToContract(row) {
+    return {
+      commune: row.commune, tier: row.tier, annualAmount: row.annual_amount || 0,
+      contractStart: row.contract_start, status: row.status, renewalDate: row.renewal_date,
+      contacts: row.contacts || [], budget5: { total: row.budget_total || 0, projects: row.budget_projects || [] },
+      postalAddress: row.postal_address || "", contractFileUrl: row.contract_file_url || null,
+      contractFileName: row.contract_file_name || null, satisfaction: row.satisfaction,
+      invoices: row.invoices || [], journal: row.journal || []
+    };
+  }
 
   var _pushTimer = null;
   var _pendingPushData = null;
@@ -103,7 +124,8 @@
       sbUpsert("accounts", (data.accounts || []).map(accToRow), "key"),
       sbUpsert("reeps", (data.reeps || []).map(reepToRow), "id"),
       sbUpsert("messages", (data.messages || []).map(msgToRow), "id"),
-      sbUpsert("groups", (data.groups || []).map(grpToRow), "id")
+      sbUpsert("groups", (data.groups || []).map(grpToRow), "id"),
+      sbUpsert("contracts", (data.contracts || []).map(contractToRow), "commune")
     ]);
   }
   function _schedulePush(data) {
@@ -128,9 +150,9 @@
 
   function syncPull() {
     if (!SYNC_ON || _pushTimer) return Promise.resolve(false);
-    return Promise.all([sbSelectAll("accounts"), sbSelectAll("reeps"), sbSelectAll("messages"), sbSelectAll("groups")])
+    return Promise.all([sbSelectAll("accounts"), sbSelectAll("reeps"), sbSelectAll("messages"), sbSelectAll("groups"), sbSelectAll("contracts")])
       .then(function (results) {
-        var accRows = results[0], reepRows = results[1], msgRows = results[2], grpRows = results[3];
+        var accRows = results[0], reepRows = results[1], msgRows = results[2], grpRows = results[3], contractRows = results[4];
         if (!accRows || !reepRows || !msgRows || !grpRows) return false;
         var data = load();
         // Cloud not seeded yet but we already have local data: push ours up instead of wiping local with empty cloud tables.
@@ -143,6 +165,11 @@
         data.reeps = reepRows.map(rowToReep);
         data.messages = msgRows.map(rowToMsg);
         data.groups = grpRows.map(rowToGrp);
+        // Contracts table is optional (added later) — only apply if the pull actually succeeded, and
+        // never let an empty/missing cloud table wipe locally-seeded or already-entered contract data.
+        if (contractRows && (contractRows.length > 0 || !data.contracts || data.contracts.every(function (c) { return !c.annualAmount && !c.journal.length; }))) {
+          data.contracts = contractRows.map(rowToContract);
+        }
         var maxSeq = data.seq || 4900;
         data.reeps.forEach(function (r) {
           var m = /RE02-26-(\d+)/.exec(r.id || "");
@@ -308,6 +335,27 @@
     var PURGE_AFTER_MS = 365 * 86400000;
     data.reeps = (data.reeps || []).filter(function (r) {
       return !(r.deleted && r.deletedAt && (now() - r.deletedAt) > PURGE_AFTER_MS);
+    });
+    if (!data.contracts) data.contracts = [];
+    Object.keys(COMMUNES).forEach(function (name) {
+      if (!data.contracts.some(function (c) { return c.commune === name; })) {
+        data.contracts.push({
+          commune: name, tier: "Moyenne", annualAmount: 0,
+          contractStart: now(), status: "Contrat annuel actif", renewalDate: null,
+          contacts: [], budget5: { total: 0, projects: [] },
+          postalAddress: "", contractFileUrl: null, contractFileName: null,
+          satisfaction: null, invoices: [], journal: []
+        });
+      }
+    });
+    data.contracts.forEach(function (c) {
+      if (!c.contacts) c.contacts = [];
+      if (!c.contacts.some(function (k) { return k.role === "principal"; })) c.contacts.unshift({ role: "principal", name: "", title: "", email: "", phone: "" });
+      if (!c.contacts.some(function (k) { return k.role === "secours"; })) c.contacts.splice(1, 0, { role: "secours", name: "", title: "", email: "", phone: "" });
+      if (!c.budget5) c.budget5 = { total: 0, projects: [] };
+      if (!c.budget5.projects) c.budget5.projects = [];
+      if (!c.invoices) c.invoices = [];
+      if (!c.journal) c.journal = [];
     });
     return data;
   }
@@ -985,6 +1033,115 @@
       r.timeline.push(timelineEntry("Reep restauré", who || "Agent commune", now(), "Restauré depuis la corbeille.", true));
       persist(data);
       return r;
+    },
+
+    // --- Gérant: commune contract CRM -----------------------------------------
+    getContracts: function () {
+      return load().contracts.slice().sort(function (a, b) { return a.commune.localeCompare(b.commune); });
+    },
+    getContract: function (commune) {
+      var data = load();
+      return data.contracts.find(function (c) { return c.commune === commune; }) || null;
+    },
+    updateContractInfo: function (commune, patch) {
+      var data = load();
+      var c = data.contracts.find(function (x) { return x.commune === commune; });
+      if (!c) return null;
+      Object.assign(c, patch);
+      persist(data);
+      return c;
+    },
+    setContractContacts: function (commune, contacts) {
+      return this.updateContractInfo(commune, { contacts: contacts });
+    },
+    addBudgetProject: function (commune, o) {
+      var data = load();
+      var c = data.contracts.find(function (x) { return x.commune === commune; });
+      if (!c) return null;
+      c.budget5.projects.push({ id: "bp" + (data.seq = (data.seq || 4900) + 1), name: o.name || "", amount: Number(o.amount) || 0, date: o.date || now() });
+      persist(data);
+      return c;
+    },
+    removeBudgetProject: function (commune, id) {
+      var data = load();
+      var c = data.contracts.find(function (x) { return x.commune === commune; });
+      if (!c) return null;
+      c.budget5.projects = c.budget5.projects.filter(function (p) { return p.id !== id; });
+      persist(data);
+      return c;
+    },
+    setBudgetTotal: function (commune, total) {
+      var data = load();
+      var c = data.contracts.find(function (x) { return x.commune === commune; });
+      if (!c) return null;
+      c.budget5.total = Number(total) || 0;
+      persist(data);
+      return c;
+    },
+    addInvoice: function (commune, o) {
+      var data = load();
+      var c = data.contracts.find(function (x) { return x.commune === commune; });
+      if (!c) return null;
+      c.invoices.push({ id: "inv" + (data.seq = (data.seq || 4900) + 1), label: o.label || "", amount: Number(o.amount) || 0, date: o.date || now(), status: o.status || "En attente" });
+      persist(data);
+      return c;
+    },
+    updateInvoice: function (commune, id, patch) {
+      var data = load();
+      var c = data.contracts.find(function (x) { return x.commune === commune; });
+      if (!c) return null;
+      var inv = c.invoices.find(function (i) { return i.id === id; });
+      if (inv) Object.assign(inv, patch);
+      persist(data);
+      return c;
+    },
+    removeInvoice: function (commune, id) {
+      var data = load();
+      var c = data.contracts.find(function (x) { return x.commune === commune; });
+      if (!c) return null;
+      c.invoices = c.invoices.filter(function (i) { return i.id !== id; });
+      persist(data);
+      return c;
+    },
+    addContractNote: function (commune, text, who) {
+      var data = load();
+      var c = data.contracts.find(function (x) { return x.commune === commune; });
+      if (!c || !text || !text.trim()) return null;
+      c.journal.unshift({ id: "jn" + (data.seq = (data.seq || 4900) + 1), when: now(), text: text.trim(), who: who || "" });
+      persist(data);
+      return c;
+    },
+    updateContractNote: function (commune, id, text) {
+      var data = load();
+      var c = data.contracts.find(function (x) { return x.commune === commune; });
+      if (!c) return null;
+      var n = c.journal.find(function (j) { return j.id === id; });
+      if (n) n.text = text;
+      persist(data);
+      return c;
+    },
+    removeContractNote: function (commune, id) {
+      var data = load();
+      var c = data.contracts.find(function (x) { return x.commune === commune; });
+      if (!c) return null;
+      c.journal = c.journal.filter(function (j) { return j.id !== id; });
+      persist(data);
+      return c;
+    },
+    reepStatsForCommune: function (commune, sinceTs) {
+      var data = load();
+      var reeps = data.reeps.filter(function (r) { return r.commune === commune && !r.deleted && r.createdAt >= (sinceTs || 0); });
+      var total = reeps.length;
+      var since = sinceTs || (reeps.length ? Math.min.apply(null, reeps.map(function (r) { return r.createdAt; })) : now());
+      var months = Math.max(1, (now() - since) / (30 * 86400000));
+      var monthlyAvg = total / months;
+      var buckets = [0, 0, 0];
+      var d0 = now();
+      reeps.forEach(function (r) {
+        var monthsAgo = Math.floor((d0 - r.createdAt) / (30 * 86400000));
+        if (monthsAgo === 0) buckets[2]++; else if (monthsAgo === 1) buckets[1]++; else if (monthsAgo === 2) buckets[0]++;
+      });
+      return { total: total, monthlyAvg: Math.round(monthlyAvg * 10) / 10, last3Months: buckets };
     },
 
     chartData: function (commune, mode) {

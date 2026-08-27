@@ -522,6 +522,252 @@ select,textarea,input{font-family:inherit}
         </div>
       </sc-if>
 
+      <sc-if value="{{ isContractsList }}" hint-placeholder-val="{{ false }}">
+        <div class="rg-content" style="display:flex;flex-direction:column;gap:16px">
+          <div>
+            <h1 style="margin:0;font-family:Georgia,Cambria,serif;font-size:24px;font-weight:700;letter-spacing:-.3px">Gestion des contrats communes</h1>
+            <div style="font-size:12.5px;color:#8A98A8;margin-top:3px">Suivi commercial interne — non visible depuis l'espace commune</div>
+          </div>
+          <input value="{{ contractQuery }}" onChange="{{ onContractQuery }}" placeholder="Rechercher une commune…" style="border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:11px 15px;font-size:13.5px;max-width:340px;box-sizing:border-box" />
+          <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:hidden">
+            <div style="display:grid;grid-template-columns:1.4fr .9fr .9fr 1fr;padding:12px 20px;background:#FAFBFC;border-bottom:1px solid rgba(27,42,65,.08);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700">
+              <span>Commune</span><span>Statut</span><span>Palier</span><span>Prochaine échéance</span>
+            </div>
+            <sc-for list="{{ contractRows }}" as="c" hint-placeholder-count="3">
+              <button onClick="{{ c.onClick }}" style="display:grid;grid-template-columns:1.4fr .9fr .9fr 1fr;gap:10px;align-items:center;width:100%;padding:14px 20px;border:none;border-bottom:1px solid rgba(27,42,65,.06);background:#fff;text-align:left;color:#1B2A41" style-hover="background:#FAFBFC">
+                <span style="font-size:14px;font-weight:600">{{ c.commune }}</span>
+                <span style="font-size:11px;font-weight:700;padding:5px 10px;border-radius:999px;background:{{ c.statusBg }};color:{{ c.statusFg }};justify-self:start;white-space:nowrap">{{ c.statusLabel }}</span>
+                <span style="font-size:13px;color:#48566B">{{ c.tier }}</span>
+                <span style="font-size:13px;color:#48566B">{{ c.renewalLabel }}</span>
+              </button>
+            </sc-for>
+            <sc-if value="{{ contractsEmpty }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:30px 20px;text-align:center;font-size:13px;color:#8A98A8">Aucune commune ne correspond à cette recherche.</div>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isContractDetail }}" hint-placeholder-val="{{ false }}">
+        <div class="rg-content" style="display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;align-items:center;gap:12px">
+            <button onClick="{{ closeContract }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;border-radius:9px;padding:9px 13px;font-size:13px;font-weight:600;color:#1B2A41">‹ Retour</button>
+            <h1 style="margin:0;font-family:Georgia,Cambria,serif;font-size:22px;font-weight:700">{{ curContractCommune }}</h1>
+          </div>
+
+          <div class="rg-2col" style="gap:16px;align-items:start">
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;padding:20px">
+                <div style="font-family:Georgia,serif;font-size:16px;font-weight:700;margin-bottom:14px">Informations contractuelles</div>
+                <div class="rg-2col" style="gap:12px;margin-bottom:12px">
+                  <div>
+                    <div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:6px">Palier</div>
+                    <select value="{{ cTier }}" onChange="{{ onCTier }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:10px 12px;font-size:13.5px;background:#fff">
+                      <sc-for list="{{ contractTierOptions }}" as="t" hint-placeholder-count="4"><option value="{{ t }}">{{ t }}</option></sc-for>
+                    </select>
+                  </div>
+                  <div>
+                    <div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:6px">Montant annuel (CHF)</div>
+                    <input value="{{ cAmount }}" onChange="{{ onCAmount }}" type="number" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:10px 12px;font-size:13.5px" />
+                  </div>
+                </div>
+                <div class="rg-2col" style="gap:12px;margin-bottom:12px">
+                  <div>
+                    <div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:6px">Statut</div>
+                    <select value="{{ cStatus }}" onChange="{{ onCStatus }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:10px 12px;font-size:13.5px;background:#fff">
+                      <sc-for list="{{ contractStatusOptions }}" as="t" hint-placeholder-count="4"><option value="{{ t }}">{{ t }}</option></sc-for>
+                    </select>
+                  </div>
+                  <div>
+                    <div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:6px">Client depuis</div>
+                    <input value="{{ cStart }}" onChange="{{ onCStart }}" type="date" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:10px 12px;font-size:13.5px" />
+                  </div>
+                </div>
+                <div style="margin-bottom:14px">
+                  <div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:6px">Prochaine échéance / renouvellement</div>
+                  <input value="{{ cRenewal }}" onChange="{{ onCRenewal }}" type="date" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:10px 12px;font-size:13.5px" />
+                </div>
+
+                <div style="border-top:1px solid rgba(27,42,65,.08);padding-top:14px">
+                  <div style="font-size:13px;font-weight:700;margin-bottom:10px">Contacts</div>
+                  <sc-for list="{{ contactRows }}" as="ct" hint-placeholder-count="2">
+                    <div style="border:1px solid rgba(27,42,65,.08);border-radius:10px;padding:12px 14px;margin-bottom:10px">
+                      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                        <span style="font-size:11px;font-weight:700;color:#8A98A8;text-transform:uppercase;letter-spacing:.06em;flex:1">{{ ct.roleLabel }}</span>
+                        <sc-if value="{{ ct.removable }}" hint-placeholder-val="{{ false }}">
+                          <button onClick="{{ ct.onRemove }}" style="border:none;background:none;color:#D62839;font-size:12px;font-weight:600">Retirer</button>
+                        </sc-if>
+                      </div>
+                      <div class="rg-2col" style="gap:8px;margin-bottom:8px">
+                        <input value="{{ ct.name }}" onChange="{{ ct.onName }}" placeholder="Nom" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:8px;padding:9px 11px;font-size:13px" />
+                        <input value="{{ ct.title }}" onChange="{{ ct.onTitle }}" placeholder="Fonction" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:8px;padding:9px 11px;font-size:13px" />
+                      </div>
+                      <div class="rg-2col" style="gap:8px">
+                        <input value="{{ ct.email }}" onChange="{{ ct.onEmail }}" placeholder="E-mail" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:8px;padding:9px 11px;font-size:13px" />
+                        <input value="{{ ct.phone }}" onChange="{{ ct.onPhone }}" placeholder="Téléphone" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:8px;padding:9px 11px;font-size:13px" />
+                      </div>
+                    </div>
+                  </sc-for>
+                  <button onClick="{{ addExtraContact }}" style="border:1px dashed rgba(27,42,65,.28);background:#FAFBFC;border-radius:9px;padding:9px 13px;font-size:12.5px;font-weight:600;color:#1B2A41;width:100%">+ Ajouter un contact</button>
+                </div>
+
+                <div style="border-top:1px solid rgba(27,42,65,.08);padding-top:14px;margin-top:14px">
+                  <div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:6px">Adresse postale</div>
+                  <input value="{{ cPostal }}" onChange="{{ onCPostal }}" placeholder="Rue, NPA, localité" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:10px 12px;font-size:13.5px;margin-bottom:14px" />
+
+                  <div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:8px">Satisfaction perçue</div>
+                  <div style="display:flex;gap:6px;margin-bottom:16px">
+                    <sc-for list="{{ satisfactionStars }}" as="st" hint-placeholder-count="5">
+                      <button onClick="{{ st.onClick }}" style="border:none;background:none;font-size:22px;line-height:1;color:{{ st.color }}">★</button>
+                    </sc-for>
+                  </div>
+                </div>
+
+                <button onClick="{{ saveContractInfo }}" style="width:100%;border:none;background:#1B2A41;color:#fff;border-radius:10px;padding:13px;font-size:13.5px;font-weight:600">{{ contractSaveLabel }}</button>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;padding:20px">
+                <div style="font-family:Georgia,serif;font-size:16px;font-weight:700;margin-bottom:14px">Suivi financier — 5%</div>
+                <div style="display:flex;gap:10px;align-items:flex-end;margin-bottom:12px">
+                  <div style="flex:1">
+                    <div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:6px">Montant total alloué (CHF)</div>
+                    <input value="{{ cBudgetTotal }}" onChange="{{ onCBudgetTotal }}" type="number" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:10px 12px;font-size:13.5px" />
+                  </div>
+                  <button onClick="{{ saveBudgetTotal }}" style="border:none;background:#1B2A41;color:#fff;border-radius:9px;padding:11px 14px;font-size:12.5px;font-weight:600">Enregistrer</button>
+                </div>
+                <div style="background:#F3F6F8;border-radius:10px;height:8px;overflow:hidden;margin-bottom:8px">
+                  <div style="height:100%;background:#3F8F63;width:{{ budgetPct }}"></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:12px;color:#5A6B7E;margin-bottom:16px;flex-wrap:wrap;gap:6px">
+                  <span>Engagé : {{ budgetEngagedLabel }} ({{ budgetPct }})</span>
+                  <span>Restant : {{ budgetRemainingLabel }}</span>
+                </div>
+                <div style="font-size:11px;font-weight:700;color:#8A98A8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Projets financés</div>
+                <sc-for list="{{ budgetProjects }}" as="p" hint-placeholder-count="2">
+                  <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(27,42,65,.06)">
+                    <span style="flex:1;min-width:0">
+                      <span style="display:block;font-size:13.5px;font-weight:600">{{ p.name }}</span>
+                      <span style="display:block;font-size:11.5px;color:#8A98A8;margin-top:2px">{{ p.dateLabel }} · {{ p.pctLabel }}</span>
+                    </span>
+                    <span style="font-size:13px;font-weight:600;color:#1B2A41">{{ p.amountLabel }}</span>
+                    <button onClick="{{ p.onRemove }}" style="border:none;background:none;color:#D62839;font-size:16px;line-height:1">×</button>
+                  </div>
+                </sc-for>
+                <sc-if value="{{ budgetProjectsEmpty }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-size:12.5px;color:#8A98A8;padding:8px 0">Aucun projet enregistré.</div>
+                </sc-if>
+                <div style="display:flex;gap:8px;margin-top:12px">
+                  <input value="{{ cNewProjectName }}" onChange="{{ onCNewProjectName }}" placeholder="Nom du projet" style="flex:1;min-width:0;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:10px 12px;font-size:13px" />
+                  <input value="{{ cNewProjectAmount }}" onChange="{{ onCNewProjectAmount }}" placeholder="Montant" type="number" style="width:100px;flex:none;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:10px 12px;font-size:13px" />
+                  <button onClick="{{ addBudgetProjectRow }}" style="border:none;background:#1B2A41;color:#fff;border-radius:9px;padding:10px 14px;font-size:13px;font-weight:600;flex:none">+</button>
+                </div>
+              </div>
+
+              <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;padding:20px">
+                <div style="font-family:Georgia,serif;font-size:16px;font-weight:700;margin-bottom:14px">Statistiques d'usage</div>
+                <div class="rg-2col" style="gap:12px;margin-bottom:16px">
+                  <div>
+                    <div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700">Total Reeps</div>
+                    <div style="font-family:Georgia,Cambria,serif;font-size:26px;font-weight:700;margin-top:4px">{{ statTotal }}</div>
+                  </div>
+                  <div>
+                    <div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700">Moyenne mensuelle</div>
+                    <div style="font-family:Georgia,Cambria,serif;font-size:26px;font-weight:700;margin-top:4px">{{ statMonthlyAvg }}</div>
+                  </div>
+                </div>
+                <div style="font-size:11px;font-weight:700;color:#8A98A8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Tendance récente</div>
+                <sc-for list="{{ statTrend }}" as="tr" hint-placeholder-count="3">
+                  <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid rgba(27,42,65,.06)">
+                    <span style="color:#5A6B7E">{{ tr.label }}</span><span style="font-weight:600">{{ tr.n }}</span>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;padding:20px">
+                <div style="font-family:Georgia,serif;font-size:16px;font-weight:700;margin-bottom:14px">Document et facturation</div>
+                <div style="margin-bottom:16px">
+                  <div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:8px">Contrat signé (PDF)</div>
+                  <sc-if value="{{ hasContractFile }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;align-items:center;gap:10px;background:#F3F6F8;border-radius:9px;padding:10px 13px">
+                      <span style="flex:1;min-width:0;font-size:13px;color:#1B2A41;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📄 {{ contractFileName }}</span>
+                      <button onClick="{{ removeContractFile }}" style="border:none;background:none;color:#D62839;font-size:12px;font-weight:600;flex:none">Retirer</button>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ noContractFile }}" hint-placeholder-val="{{ true }}">
+                    <label style="display:flex;align-items:center;justify-content:center;gap:8px;border:1px dashed rgba(27,42,65,.28);background:#FAFBFC;border-radius:9px;padding:12px;font-size:13px;font-weight:600;color:#1B2A41;cursor:pointer">
+                      📎 Choisir un fichier PDF
+                      <input type="file" accept="application/pdf" onChange="{{ onContractFile }}" style="display:none" />
+                    </label>
+                  </sc-if>
+                  <sc-if value="{{ hasContractFileError }}" hint-placeholder-val="{{ false }}">
+                    <div style="margin-top:8px;font-size:12px;color:#D62839">{{ contractFileError }}</div>
+                  </sc-if>
+                </div>
+
+                <div style="font-size:11px;font-weight:700;color:#8A98A8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Factures</div>
+                <sc-for list="{{ invoiceRows }}" as="inv" hint-placeholder-count="2">
+                  <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(27,42,65,.06);flex-wrap:wrap">
+                    <span style="flex:1;min-width:100px">
+                      <span style="display:block;font-size:13.5px;font-weight:600">{{ inv.label }}</span>
+                      <span style="display:block;font-size:11.5px;color:#8A98A8;margin-top:2px">{{ inv.dateLabel }} · {{ inv.amountLabel }}</span>
+                    </span>
+                    <select value="{{ inv.status }}" onChange="{{ inv.onStatus }}" style="border:1px solid rgba(27,42,65,.16);border-radius:999px;padding:5px 10px;font-size:11px;font-weight:700;background:{{ inv.statusBg }};color:{{ inv.statusFg }}">
+                      <sc-for list="{{ invoiceStatusOptions }}" as="opt" hint-placeholder-count="3"><option value="{{ opt }}">{{ opt }}</option></sc-for>
+                    </select>
+                    <button onClick="{{ inv.onRemove }}" style="border:none;background:none;color:#D62839;font-size:16px;line-height:1">×</button>
+                  </div>
+                </sc-for>
+                <sc-if value="{{ invoicesEmpty }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-size:12.5px;color:#8A98A8;padding:8px 0">Aucune facture enregistrée.</div>
+                </sc-if>
+                <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+                  <input value="{{ cNewInvoiceLabel }}" onChange="{{ onCNewInvoiceLabel }}" placeholder="Libellé" style="flex:1;min-width:100px;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:10px 12px;font-size:13px" />
+                  <input value="{{ cNewInvoiceAmount }}" onChange="{{ onCNewInvoiceAmount }}" placeholder="Montant" type="number" style="width:100px;flex:none;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:10px 12px;font-size:13px" />
+                  <select value="{{ cNewInvoiceStatus }}" onChange="{{ onCNewInvoiceStatus }}" style="border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:10px 12px;font-size:13px;background:#fff;flex:none">
+                    <sc-for list="{{ invoiceStatusOptions }}" as="opt" hint-placeholder-count="3"><option value="{{ opt }}">{{ opt }}</option></sc-for>
+                  </select>
+                  <button onClick="{{ addInvoiceRow }}" style="border:none;background:#1B2A41;color:#fff;border-radius:9px;padding:10px 14px;font-size:13px;font-weight:600;flex:none">+</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;padding:20px">
+            <div style="font-family:Georgia,serif;font-size:16px;font-weight:700;margin-bottom:14px">Journal de suivi</div>
+            <div style="display:flex;gap:8px;margin-bottom:16px">
+              <textarea value="{{ cNoteText }}" onChange="{{ onCNoteText }}" rows="2" placeholder="Ajouter une note (appel, décision, problème rencontré…)" style="flex:1;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:11px 13px;font-size:13.5px;font-family:inherit;resize:none"></textarea>
+              <button onClick="{{ addNote }}" style="border:none;background:#1B2A41;color:#fff;border-radius:9px;padding:0 18px;font-size:13px;font-weight:600;flex:none">Ajouter</button>
+            </div>
+            <sc-for list="{{ journalEntries }}" as="j" hint-placeholder-count="3">
+              <div style="border-top:1px solid rgba(27,42,65,.07);padding:12px 0">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                  <span style="font-size:11.5px;color:#8A98A8;flex:1">{{ j.whenLabel }}</span>
+                  <sc-if value="{{ j.notEditing }}" hint-placeholder-val="{{ true }}">
+                    <button onClick="{{ j.onEdit }}" style="border:none;background:none;color:#5A6B7E;font-size:12px;font-weight:600">Modifier</button>
+                    <button onClick="{{ j.onRemove }}" style="border:none;background:none;color:#D62839;font-size:12px;font-weight:600">Supprimer</button>
+                  </sc-if>
+                </div>
+                <sc-if value="{{ j.notEditing }}" hint-placeholder-val="{{ true }}">
+                  <p style="margin:0;font-size:13.5px;line-height:1.55;color:#1B2A41;white-space:pre-wrap">{{ j.text }}</p>
+                </sc-if>
+                <sc-if value="{{ j.editing }}" hint-placeholder-val="{{ false }}">
+                  <textarea value="{{ j.text }}" onChange="{{ j.onEditText }}" rows="2" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:9px 11px;font-size:13px;font-family:inherit;resize:none;margin-bottom:8px"></textarea>
+                  <div style="display:flex;gap:8px">
+                    <button onClick="{{ j.onSaveEdit }}" style="border:none;background:#1B2A41;color:#fff;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:600">Enregistrer</button>
+                    <button onClick="{{ j.onCancelEdit }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:600">Annuler</button>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+            <sc-if value="{{ journalEmpty }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size:12.5px;color:#8A98A8;padding:8px 0">Aucune note pour le moment.</div>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+
     </div>
 
     <div class="rg-mobile-nav" style="flex:none;background:#fff;border-top:1px solid rgba(27,42,65,.1);padding:8px 4px 12px">
@@ -588,6 +834,9 @@ class Component extends DCLogic {
     msgSel: null, draft: "",
     pwdPanelOpen: false, pwdOld: "", pwdNew1: "", pwdNew2: "", pwdMsg: "", pwdMsgIsError: false,
     activityMode: "journal", activityCommune: "Toutes",
+    contractQuery: "", contractSel: null, contractDraft: null, contractSaved: false,
+    cNewProjectName: "", cNewProjectAmount: "", cNewInvoiceLabel: "", cNewInvoiceAmount: "", cNewInvoiceStatus: "En attente", cNewInvoiceDate: "",
+    cNoteText: "", cNoteEditingId: null, cNoteEditText: "",
     shellFitH: null
   };
 
@@ -619,7 +868,7 @@ class Component extends DCLogic {
     const goSite = () => { window.location.href = "./Reeper Web.dc.html"; };
     const doLogout = () => { Store.logout(); window.location.href = "./Reeper Web.dc.html"; };
 
-    const navDef = [["Tableau de bord", "dash"], ["Reeps", "reeps"], ["Comptes", "accounts"], ["Messagerie", "msg"], ["Activité", "activity"]];
+    const navDef = [["Tableau de bord", "dash"], ["Reeps", "reeps"], ["Comptes", "accounts"], ["Messagerie", "msg"], ["Activité", "activity"], ["Contrats", "contracts"]];
 
     const startDelete = (key) => {
       if (s.pendingDeleteKey === key) {
@@ -661,6 +910,54 @@ class Component extends DCLogic {
     const replaceCandidates = s.replaceForKey
       ? Store.agentsForCommune(s.replaceCommune).filter((a) => a.key !== s.replaceForKey)
       : [];
+
+    const CONTRACT_STATUS = {
+      "Pilote en cours": { bg: "#EDE9F5", fg: "#54459B" },
+      "Contrat annuel actif": { bg: "#E5F1EA", fg: "#2E6B48" },
+      "En cours de renouvellement": { bg: "#FDF0E2", fg: "#A96A16" },
+      "Résilié": { bg: "#F3F6F8", fg: "#8A98A8" }
+    };
+    const CONTRACT_TIERS = ["Petite", "Moyenne", "Grande", "Ville"];
+    const fmtDateShort = (ts) => ts ? new Date(ts).toLocaleDateString("fr-CH", { day: "2-digit", month: "2-digit", year: "numeric" }) : "—";
+    const fmtChf = (n) => (Number(n) || 0).toLocaleString("fr-CH") + " CHF";
+    const tsToDateInput = (ts) => ts ? new Date(ts).toISOString().slice(0, 10) : "";
+    const dateInputToTs = (str) => str ? new Date(str + "T00:00:00").getTime() : null;
+
+    const allContracts = Store.getContracts();
+    const contractQueryLc = (s.contractQuery || "").trim().toLowerCase();
+    const contractRowsRaw = allContracts.filter((c) => !contractQueryLc || c.commune.toLowerCase().indexOf(contractQueryLc) >= 0);
+    const curContract = s.contractSel ? Store.getContract(s.contractSel) : null;
+    const cDraft = s.contractDraft || curContract;
+    const curStats = curContract ? Store.reepStatsForCommune(curContract.commune, curContract.contractStart) : null;
+    const budgetTotal = curContract ? curContract.budget5.total : 0;
+    const budgetEngaged = curContract ? curContract.budget5.projects.reduce((sum, p) => sum + p.amount, 0) : 0;
+    const budgetRemaining = budgetTotal - budgetEngaged;
+    const budgetPct = budgetTotal > 0 ? Math.min(100, Math.round((budgetEngaged / budgetTotal) * 100)) : 0;
+
+    const openContract = (commune) => () => this.setState({ contractSel: commune, contractDraft: JSON.parse(JSON.stringify(Store.getContract(commune))), contractSaved: true, cNoteEditingId: null });
+    const closeContract = () => this.setState({ contractSel: null, contractDraft: null });
+    const onContractField = (field) => (e) => this.setState({ contractDraft: { ...cDraft, [field]: e.target.value }, contractSaved: false });
+    const onContractDateField = (field) => (e) => this.setState({ contractDraft: { ...cDraft, [field]: dateInputToTs(e.target.value) }, contractSaved: false });
+    const onContactField = (idx, field) => (e) => {
+      const contacts = cDraft.contacts.map((c, i) => i === idx ? { ...c, [field]: e.target.value } : c);
+      this.setState({ contractDraft: { ...cDraft, contacts }, contractSaved: false });
+    };
+    const addExtraContact = () => {
+      const contacts = cDraft.contacts.concat([{ role: "autre", name: "", title: "", email: "", phone: "" }]);
+      this.setState({ contractDraft: { ...cDraft, contacts }, contractSaved: false });
+    };
+    const removeContact = (idx) => () => {
+      const contacts = cDraft.contacts.filter((c, i) => i !== idx);
+      this.setState({ contractDraft: { ...cDraft, contacts }, contractSaved: false });
+    };
+    const saveContractInfo = () => {
+      Store.updateContractInfo(cDraft.commune, {
+        tier: cDraft.tier, annualAmount: Number(cDraft.annualAmount) || 0, status: cDraft.status,
+        contractStart: cDraft.contractStart, renewalDate: cDraft.renewalDate,
+        contacts: cDraft.contacts, postalAddress: cDraft.postalAddress, satisfaction: cDraft.satisfaction
+      });
+      this.setState({ contractSaved: true });
+    };
 
     const activityReeps = Store.getReeps({ includeDeleted: true }).filter((r) => s.activityCommune === "Toutes" || r.commune === s.activityCommune);
     const activityFeedAll = activityReeps.flatMap((r) => (r.timeline || []).map((t) => ({ ...t, commune: r.commune, reepId: r.id, reepTitle: r.title })))
@@ -734,6 +1031,125 @@ class Component extends DCLogic {
         onRestore: () => { Store.restoreReep(r.id, session.displayName); this.forceUpdate(); }
       })),
       activityTrashEmpty: !activityTrashRaw.length,
+
+      isContracts: s.screen === "contracts",
+      isContractsList: s.screen === "contracts" && !s.contractSel,
+      isContractDetail: s.screen === "contracts" && !!s.contractSel,
+      contractQuery: s.contractQuery, onContractQuery: (e) => this.setState({ contractQuery: e.target.value }),
+      contractRows: contractRowsRaw.map((c) => ({
+        commune: c.commune,
+        statusLabel: c.status, statusBg: (CONTRACT_STATUS[c.status] || {}).bg || "#F3F6F8", statusFg: (CONTRACT_STATUS[c.status] || {}).fg || "#5A6B7E",
+        tier: c.tier, amountLabel: fmtChf(c.annualAmount), renewalLabel: fmtDateShort(c.renewalDate),
+        onClick: openContract(c.commune)
+      })),
+      contractsEmpty: !contractRowsRaw.length,
+
+      closeContract,
+      curContractCommune: curContract ? curContract.commune : "",
+      cTier: cDraft ? cDraft.tier : "Moyenne", onCTier: onContractField("tier"),
+      contractTierOptions: CONTRACT_TIERS,
+      cAmount: cDraft ? cDraft.annualAmount : 0, onCAmount: onContractField("annualAmount"),
+      cStatus: cDraft ? cDraft.status : "", onCStatus: onContractField("status"),
+      contractStatusOptions: Object.keys(CONTRACT_STATUS),
+      cStart: cDraft ? tsToDateInput(cDraft.contractStart) : "", onCStart: onContractDateField("contractStart"),
+      cRenewal: cDraft ? tsToDateInput(cDraft.renewalDate) : "", onCRenewal: onContractDateField("renewalDate"),
+      cPostal: cDraft ? cDraft.postalAddress : "", onCPostal: onContractField("postalAddress"),
+      saveContractInfo,
+      contractSaveLabel: s.contractSaved ? "Modifications enregistrées ✓" : "Enregistrer les modifications",
+
+      contactRows: (cDraft ? cDraft.contacts : []).map((c, idx) => ({
+        role: c.role,
+        roleLabel: c.role === "principal" ? "Contact principal" : c.role === "secours" ? "Contact de secours" : "Autre contact",
+        removable: c.role === "autre",
+        name: c.name, title: c.title, email: c.email, phone: c.phone,
+        onName: onContactField(idx, "name"), onTitle: onContactField(idx, "title"),
+        onEmail: onContactField(idx, "email"), onPhone: onContactField(idx, "phone"),
+        onRemove: removeContact(idx)
+      })),
+      addExtraContact,
+
+      satisfactionStars: [1, 2, 3, 4, 5].map((n) => ({
+        n, color: (cDraft ? cDraft.satisfaction : 0) >= n ? "#E8A33D" : "#D8DEE4",
+        onClick: () => this.setState({ contractDraft: { ...cDraft, satisfaction: n }, contractSaved: false })
+      })),
+
+      budgetTotalLabel: fmtChf(budgetTotal), budgetEngagedLabel: fmtChf(budgetEngaged), budgetRemainingLabel: fmtChf(budgetRemaining),
+      budgetPct: budgetPct + "%",
+      cBudgetTotal: cDraft ? cDraft.budget5.total : 0,
+      onCBudgetTotal: (e) => this.setState({ contractDraft: { ...cDraft, budget5: { ...cDraft.budget5, total: e.target.value } }, contractSaved: false }),
+      saveBudgetTotal: () => { Store.setBudgetTotal(cDraft.commune, cDraft.budget5.total); this.setState({ contractSaved: true }); },
+      budgetProjects: curContract ? curContract.budget5.projects.slice().sort((a, b) => b.date - a.date).map((p) => ({
+        name: p.name, amountLabel: fmtChf(p.amount), dateLabel: fmtDateShort(p.date),
+        pctLabel: budgetTotal > 0 ? Math.round((p.amount / budgetTotal) * 100) + "%" : "—",
+        onRemove: () => Store.removeBudgetProject(curContract.commune, p.id)
+      })) : [],
+      budgetProjectsEmpty: !curContract || !curContract.budget5.projects.length,
+      cNewProjectName: s.cNewProjectName, onCNewProjectName: (e) => this.setState({ cNewProjectName: e.target.value }),
+      cNewProjectAmount: s.cNewProjectAmount, onCNewProjectAmount: (e) => this.setState({ cNewProjectAmount: e.target.value }),
+      addBudgetProjectRow: () => {
+        if (!s.cNewProjectName.trim() || !Number(s.cNewProjectAmount)) return;
+        Store.addBudgetProject(curContract.commune, { name: s.cNewProjectName.trim(), amount: s.cNewProjectAmount });
+        this.setState({ cNewProjectName: "", cNewProjectAmount: "" });
+      },
+
+      statTotal: curStats ? curStats.total : 0,
+      statMonthlyAvg: curStats ? curStats.monthlyAvg : 0,
+      statTrend: curStats ? [
+        { label: "Il y a 2 mois", n: curStats.last3Months[0] },
+        { label: "Le mois dernier", n: curStats.last3Months[1] },
+        { label: "Ce mois-ci", n: curStats.last3Months[2] }
+      ] : [],
+
+      journalEntries: curContract ? curContract.journal.map((j) => ({
+        id: j.id, whenLabel: fmtDateTime(j.when) + (j.who ? " · " + j.who : ""),
+        editing: s.cNoteEditingId === j.id, notEditing: s.cNoteEditingId !== j.id,
+        text: s.cNoteEditingId === j.id ? s.cNoteEditText : j.text,
+        onEditText: (e) => this.setState({ cNoteEditText: e.target.value }),
+        onEdit: () => this.setState({ cNoteEditingId: j.id, cNoteEditText: j.text }),
+        onSaveEdit: () => { Store.updateContractNote(curContract.commune, j.id, s.cNoteEditText); this.setState({ cNoteEditingId: null, cNoteEditText: "" }); },
+        onCancelEdit: () => this.setState({ cNoteEditingId: null, cNoteEditText: "" }),
+        onRemove: () => Store.removeContractNote(curContract.commune, j.id)
+      })) : [],
+      journalEmpty: !curContract || !curContract.journal.length,
+      cNoteText: s.cNoteText, onCNoteText: (e) => this.setState({ cNoteText: e.target.value }),
+      addNote: () => {
+        if (!s.cNoteText.trim()) return;
+        Store.addContractNote(curContract.commune, s.cNoteText, session.displayName);
+        this.setState({ cNoteText: "" });
+      },
+
+      hasContractFile: !!(curContract && curContract.contractFileUrl),
+      noContractFile: !(curContract && curContract.contractFileUrl),
+      contractFileName: curContract ? curContract.contractFileName : "",
+      onContractFile: (e) => {
+        const file = e.target.files[0];
+        e.target.value = "";
+        if (!file) return;
+        if (file.size > 4 * 1024 * 1024) { this.setState({ contractFileError: "Fichier trop volumineux (max 4 Mo)." }); return; }
+        const reader = new FileReader();
+        reader.onload = () => { Store.updateContractInfo(curContract.commune, { contractFileUrl: reader.result, contractFileName: file.name }); this.setState({ contractFileError: "" }); };
+        reader.readAsDataURL(file);
+      },
+      hasContractFileError: !!s.contractFileError, contractFileError: s.contractFileError,
+      removeContractFile: () => Store.updateContractInfo(curContract.commune, { contractFileUrl: null, contractFileName: null }),
+
+      invoiceRows: curContract ? curContract.invoices.slice().sort((a, b) => b.date - a.date).map((inv) => ({
+        label: inv.label, amountLabel: fmtChf(inv.amount), dateLabel: fmtDateShort(inv.date), status: inv.status,
+        statusBg: inv.status === "Payé" ? "#E5F1EA" : inv.status === "En retard" ? "#FDF2F3" : "#FDF0E2",
+        statusFg: inv.status === "Payé" ? "#2E6B48" : inv.status === "En retard" ? "#8A2530" : "#A96A16",
+        onStatus: (e) => Store.updateInvoice(curContract.commune, inv.id, { status: e.target.value }),
+        onRemove: () => Store.removeInvoice(curContract.commune, inv.id)
+      })) : [],
+      invoicesEmpty: !curContract || !curContract.invoices.length,
+      invoiceStatusOptions: ["Payé", "En attente", "En retard"],
+      cNewInvoiceLabel: s.cNewInvoiceLabel, onCNewInvoiceLabel: (e) => this.setState({ cNewInvoiceLabel: e.target.value }),
+      cNewInvoiceAmount: s.cNewInvoiceAmount, onCNewInvoiceAmount: (e) => this.setState({ cNewInvoiceAmount: e.target.value }),
+      cNewInvoiceStatus: s.cNewInvoiceStatus, onCNewInvoiceStatus: (e) => this.setState({ cNewInvoiceStatus: e.target.value }),
+      addInvoiceRow: () => {
+        if (!s.cNewInvoiceLabel.trim()) return;
+        Store.addInvoice(curContract.commune, { label: s.cNewInvoiceLabel.trim(), amount: s.cNewInvoiceAmount, status: s.cNewInvoiceStatus });
+        this.setState({ cNewInvoiceLabel: "", cNewInvoiceAmount: "", cNewInvoiceStatus: "En attente" });
+      },
 
       statCards: (() => {
         const g = Store.statsGlobal();
