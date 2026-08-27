@@ -21,24 +21,14 @@ a{color:#1B2A41}a:hover{color:#D62839}
 button{font-family:inherit;cursor:pointer}
 select,textarea,input{font-family:inherit}
 .rc-page{padding:40px 40px 64px}
-.rc-banner{width:1360px}
 @media (max-width: 900px) {
   .rc-page{padding:14px 12px 28px}
-  .rc-banner{display:none}
   [style*="grid-template-columns"] > *{min-width:0}
 }
 </style>
 </helmet>
 
 <div class="rc-page" style="min-height:100vh;box-sizing:border-box;background:#E7ECF0;background-image:repeating-radial-gradient(circle at 20% 30%, rgba(27,42,65,.05) 0 1px, transparent 1px 28px);display:flex;flex-direction:column;align-items:flex-start;gap:24px">
-
-  <div class="rc-banner" style="max-width:100%">
-    <div style="display:flex;align-items:baseline;gap:10px">
-      <span style="font-family:Georgia,Cambria,serif;font-size:29px;font-weight:700;color:#1B2A41;letter-spacing:-.5px">Reeper</span><span style="width:8px;height:8px;border-radius:50%;background:#D62839;display:inline-block"></span>
-      <span style="font-family:Georgia,serif;font-size:14.5px;color:#5A6B7E;font-style:italic">Espace commune — outil de travail des agents</span>
-    </div>
-    <p style="margin:11px 0 0;font-size:13.5px;line-height:1.6;color:#48566B;max-width:92ch;text-wrap:pretty">Tableau de bord, carte, liste, détail d'un signalement avec clôture, et configuration de la commune en six volets. Les filtres, compteurs, menus, toggles et la fiche agent sont cliquables.</p>
-  </div>
 
   <div data-role="shell" style="width:{{ shellW }};max-width:1600px;background:#F3F6F8;border:1px solid rgba(27,42,65,.14);border-radius:14px;overflow:hidden;box-shadow:0 18px 44px rgba(27,42,65,.14);display:flex;flex-direction:column;height:{{ shellH }}">
 
@@ -1137,13 +1127,13 @@ select,textarea,input{font-family:inherit}
                   <div style="display:flex;flex-direction:column;gap:14px;margin-top:16px">
                     <div>
                       <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Nom</div>
-                      <input placeholder="Ex. Signalisation routière" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;outline:none" />
+                      <input value="{{ newCatName }}" onChange="{{ onNewCatName }}" placeholder="Ex. Signalisation routière" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;outline:none" />
                     </div>
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
                       <div>
                         <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Catégorie parente</div>
-                        <select style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;background:#fff">
-                          <option>Aucune — catégorie principale</option>
+                        <select value="{{ newCatParentSel }}" onChange="{{ onNewCatParentSel }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;background:#fff">
+                          <option value="">Aucune — catégorie principale</option>
                           <sc-for list="{{ catNames }}" as="n" hint-placeholder-count="4">
                             <option value="{{ n }}">{{ n }}</option>
                           </sc-for>
@@ -1151,7 +1141,7 @@ select,textarea,input{font-family:inherit}
                       </div>
                       <div>
                         <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Service assigné</div>
-                        <select style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;background:#fff">
+                        <select value="{{ newCatService }}" onChange="{{ onNewCatService }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;background:#fff">
                           <sc-for list="{{ serviceNames }}" as="n" hint-placeholder-count="4">
                             <option value="{{ n }}">{{ n }}</option>
                           </sc-for>
@@ -1159,13 +1149,16 @@ select,textarea,input{font-family:inherit}
                       </div>
                     </div>
                     <div style="display:flex;align-items:center;gap:12px">
-                      <span style="border-radius:999px;width:46px;height:26px;background:#3F8F63;padding:3px;box-sizing:border-box;display:flex;align-items:center;justify-content:flex-end;flex:none">
+                      <button onClick="{{ toggleNewCatActive }}" style="border:none;border-radius:999px;width:46px;height:26px;background:{{ newCatActiveBg }};padding:3px;box-sizing:border-box;display:flex;align-items:center;justify-content:{{ newCatActiveJustify }};flex:none">
                         <span style="width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25)"></span>
-                      </span>
+                      </button>
                       <span style="font-size:13.5px;color:#1B2A41">Catégorie active</span>
                     </div>
+                    <sc-if value="{{ hasNewCatError }}" hint-placeholder-val="{{ false }}">
+                      <div style="font-size:12.5px;color:#D62839">{{ newCatError }}</div>
+                    </sc-if>
                     <div style="display:flex;gap:10px;margin-top:4px">
-                      <button onClick="{{ closeNewCat }}" style="border:none;background:#1B2A41;color:#fff;border-radius:10px;padding:12px 18px;font-size:14px;font-weight:600">Créer la catégorie</button>
+                      <button onClick="{{ submitNewCat }}" style="border:none;background:#1B2A41;color:#fff;border-radius:10px;padding:12px 18px;font-size:14px;font-weight:600">Créer la catégorie</button>
                       <button onClick="{{ closeNewCat }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;color:#48566B;border-radius:10px;padding:12px 16px;font-size:14px;font-weight:600">Annuler</button>
                     </div>
                   </div>
@@ -1179,15 +1172,23 @@ select,textarea,input{font-family:inherit}
               <sc-for list="{{ services }}" as="s" hint-placeholder-count="4">
                 <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;padding:16px 18px">
                   <div style="display:flex;align-items:center;gap:14px">
-                    <span style="flex:1;font-size:15px;font-weight:600">{{ s.name }}</span>
-                    <span style="font-size:12.5px;color:#8A98A8;white-space:nowrap">{{ s.catCount }}</span>
-                    <button style="border:1px solid rgba(27,42,65,.14);background:#fff;border-radius:8px;width:34px;height:34px;font-size:13px;color:#48566B;flex:none">✎</button>
+                    <sc-if value="{{ s.isEditing }}" hint-placeholder-val="{{ false }}">
+                      <input value="{{ s.editValue }}" onChange="{{ s.onEditChange }}" style="flex:1;min-width:0;box-sizing:border-box;border:1px solid rgba(27,42,65,.24);border-radius:8px;padding:9px 11px;font-size:14px;font-weight:600;outline:none">
+                      <button onClick="{{ s.onEditSave }}" style="border:none;background:#3F8F63;color:#fff;border-radius:8px;width:34px;height:34px;font-size:14px;flex:none">✓</button>
+                      <button onClick="{{ s.onEditCancel }}" style="border:1px solid rgba(27,42,65,.14);background:#fff;border-radius:8px;width:34px;height:34px;font-size:14px;color:#48566B;flex:none">×</button>
+                    </sc-if>
+                    <sc-if value="{{ s.isView }}" hint-placeholder-val="{{ true }}">
+                      <span style="flex:1;font-size:15px;font-weight:600">{{ s.name }}</span>
+                      <span style="font-size:12.5px;color:#8A98A8;white-space:nowrap">{{ s.catCount }}</span>
+                      <button onClick="{{ s.onEdit }}" style="border:1px solid rgba(27,42,65,.14);background:#fff;border-radius:8px;width:34px;height:34px;font-size:13px;color:#48566B;flex:none">✎</button>
+                    </sc-if>
                   </div>
                   <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center">
                     <sc-for list="{{ s.emails }}" as="e" hint-placeholder-count="2">
-                      <span style="display:flex;align-items:center;gap:9px;background:#F3F6F8;border:1px solid rgba(27,42,65,.1);border-radius:999px;padding:7px 12px;font-size:12.5px;color:#1B2A41;white-space:nowrap">{{ e }}<span style="color:#8A98A8">×</span></span>
+                      <span style="display:flex;align-items:center;gap:9px;background:#F3F6F8;border:1px solid rgba(27,42,65,.1);border-radius:999px;padding:7px 12px;font-size:12.5px;color:#1B2A41;white-space:nowrap">{{ e.value }}<button onClick="{{ e.onRemove }}" style="border:none;background:none;color:#8A98A8;padding:0;font-size:12.5px">×</button></span>
                     </sc-for>
-                    <button style="border:1px dashed rgba(27,42,65,.28);background:none;border-radius:999px;padding:7px 12px;font-size:12.5px;font-weight:600;color:#48566B;white-space:nowrap">+ Ajouter une adresse</button>
+                    <input value="{{ s.emailDraft }}" onChange="{{ s.onEmailDraft }}" placeholder="adresse@commune.ch" style="border:1px solid rgba(27,42,65,.16);border-radius:999px;padding:7px 12px;font-size:12.5px;outline:none;width:170px" />
+                    <button onClick="{{ s.addEmail }}" style="border:1px dashed rgba(27,42,65,.28);background:none;border-radius:999px;padding:7px 12px;font-size:12.5px;font-weight:600;color:#48566B;white-space:nowrap">+ Ajouter</button>
                   </div>
                 </div>
               </sc-for>
@@ -1202,15 +1203,23 @@ select,textarea,input{font-family:inherit}
                   <div style="display:flex;flex-direction:column;gap:14px;margin-top:16px">
                     <div>
                       <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Nom du service</div>
-                      <input placeholder="Ex. Éclairage" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;outline:none" />
+                      <input value="{{ newServiceName }}" onChange="{{ onNewServiceName }}" placeholder="Ex. Éclairage" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;outline:none" />
                     </div>
                     <div>
                       <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Adresses de notification</div>
-                      <input placeholder="eclairage@nyon.ch" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;outline:none" />
-                      <button style="margin-top:9px;border:1px dashed rgba(27,42,65,.28);background:none;border-radius:9px;padding:9px 13px;font-size:12.5px;font-weight:600;color:#48566B">+ Ajouter une adresse</button>
+                      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:9px">
+                        <sc-for list="{{ newServiceEmailChips }}" as="e" hint-placeholder-count="1">
+                          <span style="display:flex;align-items:center;gap:9px;background:#F3F6F8;border:1px solid rgba(27,42,65,.1);border-radius:999px;padding:7px 12px;font-size:12.5px;color:#1B2A41;white-space:nowrap">{{ e.value }}<button onClick="{{ e.onRemove }}" style="border:none;background:none;color:#8A98A8;padding:0;font-size:12.5px">×</button></span>
+                        </sc-for>
+                      </div>
+                      <input value="{{ newServiceEmailDraft }}" onChange="{{ onNewServiceEmailDraft }}" placeholder="eclairage@nyon.ch" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;outline:none" />
+                      <button onClick="{{ addNewServiceEmail }}" style="margin-top:9px;border:1px dashed rgba(27,42,65,.28);background:none;border-radius:9px;padding:9px 13px;font-size:12.5px;font-weight:600;color:#48566B">+ Ajouter une adresse</button>
                     </div>
+                    <sc-if value="{{ hasNewServiceError }}" hint-placeholder-val="{{ false }}">
+                      <div style="font-size:12.5px;color:#D62839">{{ newServiceError }}</div>
+                    </sc-if>
                     <div style="display:flex;gap:10px;margin-top:4px">
-                      <button onClick="{{ closeNewService }}" style="border:none;background:#1B2A41;color:#fff;border-radius:10px;padding:12px 18px;font-size:14px;font-weight:600">Créer le service</button>
+                      <button onClick="{{ submitNewService }}" style="border:none;background:#1B2A41;color:#fff;border-radius:10px;padding:12px 18px;font-size:14px;font-weight:600">Créer le service</button>
                       <button onClick="{{ closeNewService }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;color:#48566B;border-radius:10px;padding:12px 16px;font-size:14px;font-weight:600">Annuler</button>
                     </div>
                   </div>
@@ -1248,7 +1257,7 @@ select,textarea,input{font-family:inherit}
                   <div style="display:flex;flex-direction:column;gap:14px;margin-top:16px">
                     <div>
                       <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Nom du statut</div>
-                      <input placeholder="Ex. Planifié (travaux)" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;outline:none" />
+                      <input value="{{ newStatusName }}" onChange="{{ onNewStatusName }}" placeholder="Ex. Planifié (travaux)" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;outline:none" />
                     </div>
                     <div>
                       <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:9px">Couleur</div>
@@ -1267,8 +1276,11 @@ select,textarea,input{font-family:inherit}
                       </select>
                       <div style="font-size:11.5px;color:#8A98A8;margin-top:6px">Obligatoire : le citoyen verra « {{ newStatusMap }} » à la place du nom interne.</div>
                     </div>
+                    <sc-if value="{{ hasNewStatusError }}" hint-placeholder-val="{{ false }}">
+                      <div style="font-size:12.5px;color:#D62839">{{ newStatusError }}</div>
+                    </sc-if>
                     <div style="display:flex;gap:10px;margin-top:4px">
-                      <button onClick="{{ closeNewStatus }}" style="border:none;background:#1B2A41;color:#fff;border-radius:10px;padding:12px 18px;font-size:14px;font-weight:600">Créer le statut</button>
+                      <button onClick="{{ submitNewStatus }}" style="border:none;background:#1B2A41;color:#fff;border-radius:10px;padding:12px 18px;font-size:14px;font-weight:600">Créer le statut</button>
                       <button onClick="{{ closeNewStatus }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;color:#48566B;border-radius:10px;padding:12px 16px;font-size:14px;font-weight:600">Annuler</button>
                     </div>
                   </div>
@@ -1569,14 +1581,6 @@ const CONVS = [
   ] }
 ];
 
-const SERVICES = [
-  { name: "Voirie", emails: ["voirie@nyon.ch", "piquet.voirie@nyon.ch"], catCount: "6 catégories rattachées" },
-  { name: "Propreté publique", emails: ["proprete@nyon.ch"], catCount: "5 catégories rattachées" },
-  { name: "Éclairage", emails: ["eclairage@nyon.ch", "sig@nyon.ch"], catCount: "4 catégories rattachées" },
-  { name: "Espaces verts", emails: ["parcs@nyon.ch"], catCount: "3 catégories rattachées" },
-  { name: "Bâtiments", emails: ["batiments@nyon.ch"], catCount: "4 catégories rattachées" }
-];
-
 function roleTier(roleStr) {
   const r = (roleStr || "").toLowerCase();
   if (r.indexOf("administra") >= 0) return "Administrateur";
@@ -1589,7 +1593,7 @@ function agentsForCommune(session) {
   const raw = Store.agentsForCommune(commune).slice().sort((a, b) => (a.key === session.key ? -1 : 0) - (b.key === session.key ? -1 : 0));
   const real = raw.map((a) => {
     const parts = (a.displayName || "").split(" ");
-    return { initials: a.initials, first: parts[0] || a.displayName, last: parts.slice(1).join(" "), email: a.username + "@" + commune.toLowerCase() + ".ch", service: "Voirie", role: roleTier(a.role), mail: false, avBg: a.avBg, accountKey: a.key };
+    return { initials: a.initials, first: parts[0] || a.displayName, last: parts.slice(1).join(" "), email: a.username + "@" + commune.toLowerCase() + ".ch", service: a.service || "Voirie", role: roleTier(a.role), mail: !!a.notifyByEmail, avBg: a.avBg, accountKey: a.key };
   });
   const cast = [
     { initials: "PM", first: "Paul", last: "Meylan", email: "p.meylan@" + commune.toLowerCase() + ".ch", service: "Propreté publique", role: "Agent", mail: true, avBg: "#31506F" },
@@ -1616,16 +1620,16 @@ class Component extends DCLogic {
     pickQuery: "", shellFitH: null, syncToast: "",
     extra: {}, xfer: {}, refuseKey: null, refuseMode: "back", refuseNote: "", xferService: "Propreté publique",
     query: "", partner: null, partnerService: "", manualMail: "",
-    catsOff: [], catOverrides: {}, catEdit: null, catEditLabel: "", msgOff: [], msgOverrides: {}, msgEditing: null, msgDrafts: {}, sheet: null, sheetMail: true, sheetSaved: false, inviteError: "", newCat: false, newService: false, device: "Bureau",
+    catEdit: null, catEditLabel: "", msgEditing: null, msgDrafts: {}, sheet: null, sheetMail: true, sheetSaved: false, inviteError: "", newCat: false, newService: false, device: "Bureau",
     sheetDeleteConfirm: false, sheetDeleteError: "",
     pwdOld: "", pwdNew1: "", pwdNew2: "", pwdMsg: "", pwdMsgIsError: false,
     replaceOpen: false, replaceForKey: null, replaceCommune: "", replaceMode: "select", replacementKey: "",
     replFirst: "", replLast: "", replEmail: "", replaceError: "",
-    statusVisible: [], newStatus: false, newStatusMap: "En cours", newStatusColor: "#7A6BC4",
-    accent: "#4E8FA8",
-    genName: "Commune de " + (Store.getSession() || FALLBACK_SESSION).commune,
-    genEmail: "greffe@" + (Store.getSession() || FALLBACK_SESSION).commune.toLowerCase() + ".ch",
-    genAddress: "", defaultView: "Carte", adminLang: "Français", genSaved: false,
+    newStatus: false, newStatusName: "", newStatusMap: "En cours", newStatusColor: "#7A6BC4", newStatusError: "",
+    genName: null, genEmail: null, genAddress: null, genSaved: false,
+    newServiceName: "", newServiceEmails: [], newServiceEmailDraft: "", newServiceError: "",
+    svcEdit: null, svcEditValue: "", svcEmailDrafts: {},
+    newCatName: "", newCatParentSel: "", newCatService: "", newCatActiveFlag: true, newCatError: "",
     notifOpen: false,
     msgTab: "convs", dirQuery: "", pendingRealConv: null,
     mobileThreadOpen: false, attachMenuOpen: false, groupInfoOpen: false,
@@ -1715,13 +1719,14 @@ class Component extends DCLogic {
     const session = Store.getSession() || FALLBACK_SESSION;
     const agentName = session.displayName || "Agent commune";
     const commune = session.commune;
+    const commConfig = Store.getCommuneConfig(commune);
     const AGENTS = agentsForCommune(session);
     const REEPS = Store.getReeps({ commune });
     const EMPTY_REEP = { id: "—", title: "—", cat: "—", path: [], leaf: "", place: "—", service: "Voirie", status: "Nouveau", desc: "", lat: Store.COMMUNES[commune].center.lat, lon: Store.COMMUNES[commune].center.lon, photoUrl: null, closePhotoUrl: null, closeNote: "", agentsIn: [], reporterAccount: null, createdAt: Date.now(), closedAt: null, deleted: false, deletedAt: null, timeline: [] };
     const cur = (s.sel != null && Store.getReep(s.sel)) || REEPS[0] || EMPTY_REEP;
     const status = s.status || cur.status;
     const service = s.service || cur.service;
-    const serviceNames = Store.SERVICE_NAMES;
+    const serviceNames = commConfig.services.map((sv) => sv.name);
     const stats = Store.statsForCommune(commune);
     const chartD = Store.chartData(commune, s.statMode);
     const isAdmin = session.role.toLowerCase().indexOf("administra") >= 0;
@@ -2397,32 +2402,35 @@ class Component extends DCLogic {
       configActionLabel: action ? action[0] : "",
       configAction: action ? action[1] : () => {},
       isGeneral: s.configTab === "Général", isCats: s.configTab === "Catégories",
-      accent: s.accent,
+      accent: commConfig.general.accent,
       accents: ["#4E8FA8", "#3F8F63", "#A96A16", "#7A6BC4", "#8A98A8"].map((hex) => ({
-        hex, onClick: () => this.setState({ accent: hex }),
-        border: s.accent === hex ? "#1B2A41" : "transparent"
+        hex, onClick: () => Store.updateGeneralSettings(commune, { accent: hex }) && this.forceUpdate(),
+        border: commConfig.general.accent === hex ? "#1B2A41" : "transparent"
       })),
-      genName: s.genName, onGenName: (e) => this.setState({ genName: e.target.value, genSaved: false }),
-      genAddress: s.genAddress, onGenAddress: (e) => this.setState({ genAddress: e.target.value, genSaved: false }),
-      genEmail: s.genEmail, onGenEmail: (e) => this.setState({ genEmail: e.target.value, genSaved: false }),
+      genName: s.genName != null ? s.genName : commConfig.general.name, onGenName: (e) => this.setState({ genName: e.target.value, genSaved: false }),
+      genAddress: s.genAddress != null ? s.genAddress : commConfig.general.address, onGenAddress: (e) => this.setState({ genAddress: e.target.value, genSaved: false }),
+      genEmail: s.genEmail != null ? s.genEmail : commConfig.general.email, onGenEmail: (e) => this.setState({ genEmail: e.target.value, genSaved: false }),
       viewCardCols: mobile ? "1fr" : "repeat(3,1fr)",
       defaultViews: [
         { label: "Carte", desc: "Marqueurs géolocalisés, utile pour le terrain." },
         { label: "Liste", desc: "Fiches détaillées avec photo et statut." },
         { label: "Tableau", desc: "Colonnes triables, adapté au traitement en volume." }
       ].map((v) => {
-        const on = s.defaultView === v.label;
-        return { ...v, onClick: () => this.setState({ defaultView: v.label, genSaved: false }),
+        const on = commConfig.general.defaultView === v.label;
+        return { ...v, onClick: () => Store.updateGeneralSettings(commune, { defaultView: v.label }) && this.forceUpdate(),
           border: on ? "#1B2A41" : "rgba(27,42,65,.12)", bg: on ? "#F7F9FB" : "#fff",
           dotBorder: on ? "#1B2A41" : "rgba(27,42,65,.28)", dotBg: on ? "#1B2A41" : "transparent" };
       }),
       adminLangs: ["Français", "Deutsch", "English"].map((label) => {
-        const on = s.adminLang === label;
-        return { label, onClick: () => this.setState({ adminLang: label, genSaved: false }),
+        const on = commConfig.general.adminLang === label;
+        return { label, onClick: () => Store.updateGeneralSettings(commune, { adminLang: label }) && this.forceUpdate(),
           bg: on ? "#1B2A41" : "#fff", fg: on ? "#fff" : "#48566B",
           border: on ? "#1B2A41" : "rgba(27,42,65,.16)" };
       }),
-      saveGeneral: () => this.setState({ genSaved: true }),
+      saveGeneral: () => {
+        Store.updateGeneralSettings(commune, { name: s.genName != null ? s.genName : commConfig.general.name, address: s.genAddress != null ? s.genAddress : commConfig.general.address, email: s.genEmail != null ? s.genEmail : commConfig.general.email });
+        this.setState({ genSaved: true, genName: null, genAddress: null, genEmail: null });
+      },
       generalSaveLabel: s.genSaved ? "Modifications enregistrées ✓" : "Enregistrer les modifications",
       isServices: s.configTab === "Services", isStatuses: s.configTab === "Statuts",
       isMessages: s.configTab === "Messages automatiques", isRights: s.configTab === "Droits d'accès",
@@ -2430,16 +2438,17 @@ class Component extends DCLogic {
       catItems: (() => {
         const node = Store.treeAt(s.catPath);
         const isTop = s.catPath.length === 0;
-        return Object.keys(node).map((k) => {
+        const topName = s.catPath[0];
+        const treeItems = Object.keys(node).map((k) => {
           const path = s.catPath.concat([k]);
           const key = path.join("::");
           const child = node[k];
-          const label = (s.catOverrides[key] && s.catOverrides[key].label) || k;
-          const on = isTop ? !s.catsOff.includes(k) : true;
+          const label = (commConfig.catOverrides[key] && commConfig.catOverrides[key].label) || k;
+          const on = isTop ? !commConfig.catsOff.includes(k) : true;
           const isEditing = s.catEdit === key;
           const childCount = child ? Object.keys(child).length : 0;
           return {
-            key, label, isTop,
+            key, label, isTop, isExtra: false,
             chev: child ? "›" : "",
             meta: (child ? (childCount + (childCount > 1 ? " sous-catégories" : " sous-catégorie")) : "") + (isTop && !on ? " · désactivée" : ""),
             service: isTop ? (Store.SERVICE[k] || "") : "",
@@ -2449,19 +2458,46 @@ class Component extends DCLogic {
             onEdit: () => this.setState({ catEdit: key, catEditLabel: label }),
             onEditSave: () => {
               const v = s.catEditLabel.trim();
-              this.setState((st) => ({ catOverrides: { ...st.catOverrides, [key]: { label: v || label } }, catEdit: null, catEditLabel: "" }));
+              Store.renameCategoryLabel(commune, key, v || label);
+              this.setState({ catEdit: null, catEditLabel: "" });
             },
             onEditCancel: () => this.setState({ catEdit: null, catEditLabel: "" }),
             onOpen: child ? () => this.setState({ catPath: path }) : () => {},
-            onToggleActive: isTop ? () => this.setState((st) => ({ catsOff: on ? [...st.catsOff, k] : st.catsOff.filter((x) => x !== k) })) : () => {},
+            onToggleActive: isTop ? () => Store.setCategoryActive(commune, k, !on) && this.forceUpdate() : () => {},
             toggleBg: on ? "#3F8F63" : "#C6D0D9", toggleJustify: on ? "flex-end" : "flex-start"
           };
         });
+        const extras = commConfig.catExtra.filter((e) => (isTop ? !e.parentName : e.parentName === topName)).map((e) => {
+          const key = isTop ? e.name : topName + "::" + e.name;
+          const label = (commConfig.catOverrides[key] && commConfig.catOverrides[key].label) || e.name;
+          const on = isTop ? !commConfig.catsOff.includes(e.name) : true;
+          const isEditing = s.catEdit === key;
+          return {
+            key, label, isTop, isExtra: true,
+            chev: "",
+            meta: (isTop && !on ? "désactivée" : "") || "ajoutée",
+            service: isTop ? e.service : "",
+            isEditing, isView: !isEditing,
+            editValue: isEditing ? s.catEditLabel : "",
+            onEditChange: (ev) => this.setState({ catEditLabel: ev.target.value }),
+            onEdit: () => this.setState({ catEdit: key, catEditLabel: label }),
+            onEditSave: () => {
+              const v = s.catEditLabel.trim();
+              Store.renameCategoryLabel(commune, key, v || label);
+              this.setState({ catEdit: null, catEditLabel: "" });
+            },
+            onEditCancel: () => this.setState({ catEdit: null, catEditLabel: "" }),
+            onOpen: () => {},
+            onToggleActive: isTop ? () => Store.setCategoryActive(commune, e.name, !on) && this.forceUpdate() : () => {},
+            toggleBg: on ? "#3F8F63" : "#C6D0D9", toggleJustify: on ? "flex-end" : "flex-start"
+          };
+        });
+        return treeItems.concat(extras);
       })(),
       catCrumbs: [{ label: "Catégories", path: [] }].concat(s.catPath.map((_, i) => {
         const segPath = s.catPath.slice(0, i + 1);
         const segKey = segPath.join("::");
-        const label = (s.catOverrides[segKey] && s.catOverrides[segKey].label) || s.catPath[i];
+        const label = (commConfig.catOverrides[segKey] && commConfig.catOverrides[segKey].label) || s.catPath[i];
         return { label, path: segPath };
       })).map((seg, i, arr) => {
         const isLast = i === arr.length - 1;
@@ -2474,54 +2510,108 @@ class Component extends DCLogic {
       }),
       catHasUp: s.catPath.length > 0,
       catUp: () => this.setState({ catPath: s.catPath.slice(0, -1) }),
-      catNames: CATS.map((c) => c.name),
+      catNames: CATS.map((c) => c.name).concat(commConfig.catExtra.filter((e) => !e.parentName).map((e) => e.name)),
       newCatOpen: s.newCat, closeNewCat: () => this.setState({ newCat: false }),
       newCatHasParent: s.newCatParent.length > 0,
       newCatParentLabel: s.newCatParent.map((_, i) => {
         const segKey = s.newCatParent.slice(0, i + 1).join("::");
-        return (s.catOverrides[segKey] && s.catOverrides[segKey].label) || s.newCatParent[i];
+        return (commConfig.catOverrides[segKey] && commConfig.catOverrides[segKey].label) || s.newCatParent[i];
       }).join(" › "),
+      newCatName: s.newCatName, onNewCatName: (e) => this.setState({ newCatName: e.target.value }),
+      newCatParentSel: s.newCatParentSel || (s.newCatParent[0] || ""),
+      onNewCatParentSel: (e) => this.setState({ newCatParentSel: e.target.value }),
+      newCatService: s.newCatService || Store.SERVICE_NAMES[0],
+      onNewCatService: (e) => this.setState({ newCatService: e.target.value }),
+      newCatActiveFlag: s.newCatActiveFlag,
+      toggleNewCatActive: () => this.setState({ newCatActiveFlag: !s.newCatActiveFlag }),
+      newCatActiveBg: s.newCatActiveFlag ? "#3F8F63" : "#C6D0D9", newCatActiveJustify: s.newCatActiveFlag ? "flex-end" : "flex-start",
+      hasNewCatError: !!s.newCatError, newCatError: s.newCatError,
+      submitNewCat: () => {
+        const parentSel = s.newCatParentSel || (s.newCatParent[0] || "");
+        const res = Store.addCategory(commune, { name: s.newCatName, parentName: parentSel || null, service: s.newCatService || Store.SERVICE_NAMES[0], active: s.newCatActiveFlag });
+        if (!res.ok) { this.setState({ newCatError: res.error }); return; }
+        this.setState({ newCat: false, newCatName: "", newCatParentSel: "", newCatService: "", newCatActiveFlag: true, newCatError: "" });
+      },
 
-      services: SERVICES,
+      services: commConfig.services.map((svc) => {
+        const catCount = CATS.filter((c) => c.service === svc.name).length + commConfig.catExtra.filter((e) => !e.parentName && e.service === svc.name).length;
+        const isEditing = s.svcEdit === svc.name;
+        return {
+          name: svc.name, isEditing, isView: !isEditing,
+          editValue: isEditing ? s.svcEditValue : "",
+          onEditChange: (e) => this.setState({ svcEditValue: e.target.value }),
+          onEdit: () => this.setState({ svcEdit: svc.name, svcEditValue: svc.name }),
+          onEditSave: () => { Store.renameService(commune, svc.name, s.svcEditValue.trim()); this.setState({ svcEdit: null, svcEditValue: "" }); },
+          onEditCancel: () => this.setState({ svcEdit: null, svcEditValue: "" }),
+          catCount: catCount + (catCount > 1 ? " catégories rattachées" : catCount === 1 ? " catégorie rattachée" : "Aucune catégorie rattachée"),
+          emails: svc.emails.map((e) => ({ value: e, onRemove: () => Store.removeServiceEmail(commune, svc.name, e) && this.forceUpdate() })),
+          emailDraft: s.svcEmailDrafts[svc.name] || "",
+          onEmailDraft: (e) => this.setState({ svcEmailDrafts: { ...s.svcEmailDrafts, [svc.name]: e.target.value } }),
+          addEmail: () => {
+            const v = (s.svcEmailDrafts[svc.name] || "").trim();
+            if (!v) return;
+            Store.addServiceEmail(commune, svc.name, v);
+            this.setState({ svcEmailDrafts: { ...s.svcEmailDrafts, [svc.name]: "" } });
+          }
+        };
+      }),
       newServiceOpen: s.newService,
-      closeNewService: () => this.setState({ newService: false }),
+      closeNewService: () => this.setState({ newService: false, newServiceName: "", newServiceEmails: [], newServiceEmailDraft: "", newServiceError: "" }),
+      newServiceName: s.newServiceName, onNewServiceName: (e) => this.setState({ newServiceName: e.target.value }),
+      newServiceEmailDraft: s.newServiceEmailDraft, onNewServiceEmailDraft: (e) => this.setState({ newServiceEmailDraft: e.target.value }),
+      newServiceEmailChips: s.newServiceEmails.map((e) => ({ value: e, onRemove: () => this.setState({ newServiceEmails: s.newServiceEmails.filter((x) => x !== e) }) })),
+      addNewServiceEmail: () => {
+        const v = s.newServiceEmailDraft.trim();
+        if (!v) return;
+        this.setState({ newServiceEmails: s.newServiceEmails.concat([v]), newServiceEmailDraft: "" });
+      },
+      hasNewServiceError: !!s.newServiceError, newServiceError: s.newServiceError,
+      submitNewService: () => {
+        const res = Store.addService(commune, { name: s.newServiceName, emails: s.newServiceEmails });
+        if (!res.ok) { this.setState({ newServiceError: res.error }); return; }
+        this.setState({ newService: false, newServiceName: "", newServiceEmails: [], newServiceEmailDraft: "", newServiceError: "" });
+      },
 
       statusRows: [
         { name: "Nouveau", dot: "#D62839", origin: "par défaut", locked: true, map: "Nouveau" },
         { name: "En cours", dot: "#E8A33D", origin: "par défaut", locked: true, map: "En cours" },
-        { name: "Traité", dot: "#3F8F63", origin: "par défaut", locked: true, map: "Traité" },
-        { name: "Planifié (travaux)", dot: "#7A6BC4", origin: "statut interne", locked: false, map: "En cours" },
-        { name: "En attente de pièce", dot: "#4E8FA8", origin: "statut interne", locked: false, map: "En cours" }
-      ].map((r) => {
-        const on = r.locked || s.statusVisible.includes(r.name);
+        { name: "Traité", dot: "#3F8F63", origin: "par défaut", locked: true, map: "Traité" }
+      ].concat(commConfig.statusExtra.map((e) => ({ name: e.name, dot: e.color, origin: "statut interne", locked: false, map: e.mapsTo }))).map((r) => {
+        const on = r.locked || commConfig.statusVisible.includes(r.name);
         return { ...r,
           tag: on ? "Visible citoyen" : "Interne",
           shown: on ? r.name : "Affiché « " + r.map + " »",
           tagBg: on ? "#E5F1EA" : "#EDE9F5", tagFg: on ? "#2E6B48" : "#54459B",
           toggleBg: on ? "#3F8F63" : "#C6D0D9", toggleJustify: on ? "flex-end" : "flex-start",
           toggleOpacity: r.locked ? ".45" : "1",
-          onToggle: r.locked ? () => {} : () => this.setState((st) => ({
-            statusVisible: on ? st.statusVisible.filter((x) => x !== r.name) : [...st.statusVisible, r.name]
-          }))
+          onToggle: r.locked ? () => {} : () => Store.setStatusVisible(commune, r.name, !on) && this.forceUpdate()
         };
       }),
       visibleStatuses: ["Nouveau", "En cours", "Traité"],
       newStatusOpen: s.newStatus,
-      closeNewStatus: () => this.setState({ newStatus: false }),
+      closeNewStatus: () => this.setState({ newStatus: false, newStatusName: "", newStatusError: "" }),
+      newStatusName: s.newStatusName, onNewStatusName: (e) => this.setState({ newStatusName: e.target.value }),
       newStatusMap: s.newStatusMap,
       onNewStatusMap: (e) => this.setState({ newStatusMap: e.target.value }),
       statusColors: ["#7A6BC4", "#4E8FA8", "#A96A16", "#5A6B7E", "#B0447A"].map((hex) => ({
         hex, onClick: () => this.setState({ newStatusColor: hex }),
         border: s.newStatusColor === hex ? "#1B2A41" : "transparent"
       })),
+      hasNewStatusError: !!s.newStatusError, newStatusError: s.newStatusError,
+      submitNewStatus: () => {
+        const res = Store.addInternalStatus(commune, { name: s.newStatusName, color: s.newStatusColor, mapsTo: s.newStatusMap });
+        if (!res.ok) { this.setState({ newStatusError: res.error }); return; }
+        this.setState({ newStatus: false, newStatusName: "", newStatusMap: "En cours", newStatusColor: "#7A6BC4", newStatusError: "" });
+      },
 
       messages: [
         { trigger: "Reep reçu", preview: "Votre Reep RE02-26-XXXXX a bien été transmis au service compétent de la commune de Nyon." },
         { trigger: "Reep confirmé", preview: "Un autre habitant a confirmé votre Reep. La commune en est informée." },
         { trigger: "Reep clôturé", preview: "L'intervention a été réalisée. Merci de votre Reep." }
       ].map((m) => {
-        const on = !s.msgOff.includes(m.trigger);
-        const custom = s.msgOverrides[m.trigger];
+        const saved = commConfig.messages[m.trigger] || {};
+        const on = !saved.off;
+        const custom = saved.text;
         const editing = s.msgEditing === m.trigger;
         const draft = s.msgDrafts[m.trigger] != null ? s.msgDrafts[m.trigger] : (custom || m.preview);
         return { ...m,
@@ -2529,9 +2619,9 @@ class Component extends DCLogic {
           isCustom: !!custom, editing, notEditing: !editing, draft,
           onDraft: (e) => this.setState({ msgDrafts: { ...s.msgDrafts, [m.trigger]: e.target.value } }),
           onEdit: () => this.setState({ msgEditing: m.trigger, msgDrafts: { ...s.msgDrafts, [m.trigger]: custom || m.preview } }),
-          onSave: () => this.setState({ msgOverrides: { ...s.msgOverrides, [m.trigger]: (s.msgDrafts[m.trigger] || "").trim() || m.preview }, msgEditing: null }),
+          onSave: () => { Store.setMessageOverride(commune, m.trigger, (s.msgDrafts[m.trigger] || "").trim() || m.preview); this.setState({ msgEditing: null }); },
           onCancel: () => this.setState({ msgEditing: null }),
-          onToggle: () => this.setState((st) => ({ msgOff: on ? [...st.msgOff, m.trigger] : st.msgOff.filter((x) => x !== m.trigger) })),
+          onToggle: () => Store.toggleMessageOff(commune, m.trigger, on) && this.forceUpdate(),
           toggleBg: on ? "#3F8F63" : "#C6D0D9", toggleJustify: on ? "flex-end" : "flex-start" };
       }),
 
@@ -2557,7 +2647,7 @@ class Component extends DCLogic {
       saveSheet: () => {
         if (!sheet) return;
         if (sheet.isNew) {
-          const res = Store.inviteAgent(commune, { first: sheet.first, last: sheet.last, email: sheet.email, role: sheet.role });
+          const res = Store.inviteAgent(commune, { first: sheet.first, last: sheet.last, email: sheet.email, role: sheet.role, service: sheet.service, notifyByEmail: s.sheetMail });
           if (!res.ok) { this.setState({ inviteError: res.error }); return; }
           this.setState({ sheetSaved: true, inviteError: "", sheet: Object.assign({}, res.account, { isNew: false, accountKey: res.account.key, first: res.account.firstName, last: res.account.lastName }) });
           return;
@@ -2565,7 +2655,7 @@ class Component extends DCLogic {
         if (sheet.accountKey) {
           const displayName = (sheet.first + " " + sheet.last).trim();
           const roleLabel = sheet.role === "Administrateur" ? "Agent commune · Administrateur" : sheet.role === "Chef de service" ? "Chef de service" : "Agent";
-          Store.updateAccount(sheet.accountKey, { displayName, role: roleLabel, initials: ((sheet.first[0] || "") + (sheet.last[0] || "")).toUpperCase() });
+          Store.updateAccount(sheet.accountKey, { displayName, role: roleLabel, initials: ((sheet.first[0] || "") + (sheet.last[0] || "")).toUpperCase(), service: sheet.service, notifyByEmail: s.sheetMail });
         }
         this.setState({ sheetSaved: true, inviteError: "" });
       },

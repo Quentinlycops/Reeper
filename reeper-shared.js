@@ -35,7 +35,9 @@
       email: a.email || "", phone: a.phone || "", address: a.address || "",
       initials: a.initials, av_bg: a.avBg, role: a.role, status: a.status,
       commune: a.commune || null, points: a.points || 0, pending_commune: a.pendingCommune || null,
-      is_primary: !!a.primary, redeemed: a.redeemed || [], updated_at: Date.now()
+      is_primary: !!a.primary, redeemed: a.redeemed || [],
+      service: a.service || null, notify_by_email: a.notifyByEmail == null ? null : !!a.notifyByEmail,
+      updated_at: Date.now()
     };
   }
   function rowToAcc(r) {
@@ -48,6 +50,7 @@
     if (r.commune) a.commune = r.commune;
     if (r.type === "citizen") { a.points = r.points || 0; a.pendingCommune = r.pending_commune; }
     if (r.type === "gerant") a.primary = !!r.is_primary;
+    if (r.type === "agent") { a.service = r.service || undefined; a.notifyByEmail = r.notify_by_email == null ? undefined : !!r.notify_by_email; }
     return a;
   }
   function reepToRow(r) {
@@ -123,6 +126,23 @@
     };
   }
 
+  function commConfigToRow(c) {
+    return {
+      commune: c.commune, general: c.general || {}, cats_off: c.catsOff || [],
+      cat_overrides: c.catOverrides || {}, cat_extra: c.catExtra || [],
+      services: c.services || [], status_visible: c.statusVisible || [],
+      status_extra: c.statusExtra || [], messages: c.messages || {}, updated_at: Date.now()
+    };
+  }
+  function rowToCommConfig(row) {
+    return {
+      commune: row.commune, general: row.general || {}, catsOff: row.cats_off || [],
+      catOverrides: row.cat_overrides || {}, catExtra: row.cat_extra || [],
+      services: row.services || [], statusVisible: row.status_visible || [],
+      statusExtra: row.status_extra || [], messages: row.messages || {}
+    };
+  }
+
   var _pushTimer = null;
   var _pendingPushData = null;
   function _runPush(data) {
@@ -132,7 +152,8 @@
       sbUpsert("messages", (data.messages || []).map(msgToRow), "id"),
       sbUpsert("groups", (data.groups || []).map(grpToRow), "id"),
       sbUpsert("contracts", (data.contracts || []).map(contractToRow), "commune"),
-      sbUpsert("communes_meta", (data.communesMeta || []).map(communeMetaToRow), "name")
+      sbUpsert("communes_meta", (data.communesMeta || []).map(communeMetaToRow), "name"),
+      sbUpsert("commune_config", (data.communeConfigs || []).map(commConfigToRow), "commune")
     ]);
   }
   function _schedulePush(data) {
@@ -157,9 +178,9 @@
 
   function syncPull() {
     if (!SYNC_ON || _pushTimer) return Promise.resolve(false);
-    return Promise.all([sbSelectAll("accounts"), sbSelectAll("reeps"), sbSelectAll("messages"), sbSelectAll("groups"), sbSelectAll("contracts"), sbSelectAll("communes_meta")])
+    return Promise.all([sbSelectAll("accounts"), sbSelectAll("reeps"), sbSelectAll("messages"), sbSelectAll("groups"), sbSelectAll("contracts"), sbSelectAll("communes_meta"), sbSelectAll("commune_config")])
       .then(function (results) {
-        var accRows = results[0], reepRows = results[1], msgRows = results[2], grpRows = results[3], contractRows = results[4], metaRows = results[5];
+        var accRows = results[0], reepRows = results[1], msgRows = results[2], grpRows = results[3], contractRows = results[4], metaRows = results[5], configRows = results[6];
         if (!accRows || !reepRows || !msgRows || !grpRows) return false;
         var data = load();
         // Cloud not seeded yet but we already have local data: push ours up instead of wiping local with empty cloud tables.
@@ -179,6 +200,9 @@
         }
         if (metaRows && (metaRows.length > 0 || !data.communesMeta || data.communesMeta.length === 0)) {
           data.communesMeta = metaRows.map(rowToCommuneMeta);
+        }
+        if (configRows && (configRows.length > 0 || !data.communeConfigs || data.communeConfigs.length === 0)) {
+          data.communeConfigs = configRows.map(rowToCommConfig);
         }
         var maxSeq = data.seq || 4900;
         data.reeps.forEach(function (r) {
@@ -296,9 +320,9 @@
 
   var DEFAULT_ACCOUNTS = [
     { key: "citizen_berger", type: "citizen", username: "mberger", password: REEPER_DEFAULT_PW_HASH, displayName: "M. Berger", firstName: "M.", lastName: "Berger", email: "m.berger@example.ch", phone: "", address: "", initials: "MB", avBg: "#1B2A41", role: "Espace citoyen", status: "active", pendingCommune: null, points: 40 },
-    { key: "agent_rochat", type: "agent", username: "srochat", password: REEPER_DEFAULT_PW_HASH, displayName: "Sandrine Rochat", firstName: "Sandrine", lastName: "Rochat", email: "s.rochat@nyon.ch", phone: "", address: "", initials: "SR", avBg: "#D62839", commune: "Nyon", role: "Service voirie · Administratrice", status: "active" },
-    { key: "agent_blanc", type: "agent", username: "ablanc", password: REEPER_DEFAULT_PW_HASH, displayName: "Antoine Blanc", firstName: "Antoine", lastName: "Blanc", email: "a.blanc@rolle.ch", phone: "", address: "", initials: "AB", avBg: "#3F8F63", commune: "Rolle", role: "Agent commune · Administrateur", status: "active" },
-    { key: "agent_martin", type: "agent", username: "smartin", password: REEPER_DEFAULT_PW_HASH, displayName: "Steve Martin", firstName: "Steve", lastName: "Martin", email: "s.martin@nyon.ch", phone: "", address: "", initials: "SM", avBg: "#5A6B7E", commune: "Nyon", role: "Agent d'entretien", status: "active" },
+    { key: "agent_rochat", type: "agent", username: "srochat", password: REEPER_DEFAULT_PW_HASH, displayName: "Sandrine Rochat", firstName: "Sandrine", lastName: "Rochat", email: "s.rochat@nyon.ch", phone: "", address: "", initials: "SR", avBg: "#D62839", commune: "Nyon", role: "Service voirie · Administratrice", status: "active", service: "Voirie", notifyByEmail: true },
+    { key: "agent_blanc", type: "agent", username: "ablanc", password: REEPER_DEFAULT_PW_HASH, displayName: "Antoine Blanc", firstName: "Antoine", lastName: "Blanc", email: "a.blanc@rolle.ch", phone: "", address: "", initials: "AB", avBg: "#3F8F63", commune: "Rolle", role: "Agent commune · Administrateur", status: "active", service: "Voirie", notifyByEmail: true },
+    { key: "agent_martin", type: "agent", username: "smartin", password: REEPER_DEFAULT_PW_HASH, displayName: "Steve Martin", firstName: "Steve", lastName: "Martin", email: "s.martin@nyon.ch", phone: "", address: "", initials: "SM", avBg: "#5A6B7E", commune: "Nyon", role: "Agent d'entretien", status: "active", service: "Voirie", notifyByEmail: false },
     { key: "gerant_lycops", type: "gerant", username: "qlycops", password: REEPER_DEFAULT_PW_HASH, displayName: "Quentin Lycops", firstName: "Quentin", lastName: "Lycops", email: "q.lycops@reeper.ch", phone: "", address: "", initials: "QL", avBg: "#1B2A41", role: "Gérant", status: "active", primary: true }
   ];
 
@@ -377,7 +401,41 @@
       if (!c.invoices) c.invoices = [];
       if (!c.journal) c.journal = [];
     });
+    data.accounts.forEach(function (a) {
+      if (a.type === "agent") {
+        if (a.service == null) a.service = "Voirie";
+        if (a.notifyByEmail == null) a.notifyByEmail = true;
+      }
+    });
+    if (!data.communeConfigs) data.communeConfigs = [];
+    Object.keys(COMMUNES).forEach(function (name) {
+      if (!data.communeConfigs.some(function (c) { return c.commune === name; })) {
+        data.communeConfigs.push(defaultCommuneConfig(name));
+      }
+    });
+    data.communeConfigs.forEach(function (cc) {
+      var d = defaultCommuneConfig(cc.commune);
+      if (!cc.general) cc.general = d.general;
+      if (!cc.catsOff) cc.catsOff = [];
+      if (!cc.catOverrides) cc.catOverrides = {};
+      if (!cc.catExtra) cc.catExtra = [];
+      if (!cc.services) cc.services = d.services;
+      if (!cc.statusVisible) cc.statusVisible = [];
+      if (!cc.statusExtra) cc.statusExtra = [];
+      if (!cc.messages) cc.messages = {};
+    });
     return data;
+  }
+
+  function defaultCommuneConfig(commune) {
+    return {
+      commune: commune,
+      general: { name: "Commune de " + commune, address: "", email: "greffe@" + commune.toLowerCase() + ".ch", defaultView: "Carte", adminLang: "Français", accent: "#4E8FA8" },
+      catsOff: [], catOverrides: {}, catExtra: [],
+      services: SERVICE_NAMES.map(function (n) { return { name: n, emails: [] }; }),
+      statusVisible: [], statusExtra: [],
+      messages: {}
+    };
   }
 
   var EMAIL_SENDER = "contact@reeper.ch";
@@ -750,7 +808,7 @@
       var key = "agent_" + slugify(displayName) + "_" + (data.seq = (data.seq || 4900) + 1);
       var avBg = AV_COLORS[data.accounts.length % AV_COLORS.length];
       var role = o.role === "Administrateur" ? "Agent commune · Administrateur" : o.role === "Chef de service" ? "Chef de service" : "Agent";
-      var account = { key: key, type: "agent", username: uname, password: "Reeper", displayName: displayName, firstName: firstName, lastName: lastName, email: email, phone: "", address: "", initials: initialsOf(displayName), avBg: avBg, commune: commune, role: role, status: "active" };
+      var account = { key: key, type: "agent", username: uname, password: "Reeper", displayName: displayName, firstName: firstName, lastName: lastName, email: email, phone: "", address: "", initials: initialsOf(displayName), avBg: avBg, commune: commune, role: role, status: "active", service: o.service || "Voirie", notifyByEmail: o.notifyByEmail !== false };
       data.accounts.push(account);
       persist(data);
       return { ok: true, account: account };
@@ -1197,6 +1255,125 @@
       var data = load();
       var m = data.communesMeta.find(function (x) { return x.name === name; });
       return m ? m.code : null;
+    },
+
+    // --- Commune: per-commune Configuration (Général/Catégories/Services/Statuts/Messages) ---
+    getCommuneConfig: function (commune) {
+      var data = load();
+      return data.communeConfigs.find(function (c) { return c.commune === commune; }) || defaultCommuneConfig(commune);
+    },
+    updateGeneralSettings: function (commune, patch) {
+      var data = load();
+      var cc = data.communeConfigs.find(function (c) { return c.commune === commune; });
+      if (!cc) return null;
+      Object.assign(cc.general, patch);
+      persist(data);
+      return cc;
+    },
+    setCategoryActive: function (commune, key, active) {
+      var data = load();
+      var cc = data.communeConfigs.find(function (c) { return c.commune === commune; });
+      if (!cc) return null;
+      cc.catsOff = cc.catsOff.filter(function (k) { return k !== key; });
+      if (!active) cc.catsOff.push(key);
+      persist(data);
+      return cc;
+    },
+    renameCategoryLabel: function (commune, key, label) {
+      var data = load();
+      var cc = data.communeConfigs.find(function (c) { return c.commune === commune; });
+      if (!cc) return null;
+      cc.catOverrides[key] = { label: label };
+      persist(data);
+      return cc;
+    },
+    addCategory: function (commune, o) {
+      var data = load();
+      var cc = data.communeConfigs.find(function (c) { return c.commune === commune; });
+      if (!cc) return { ok: false, error: "Commune introuvable." };
+      var name = String(o.name || "").trim();
+      if (!name) return { ok: false, error: "Nom requis." };
+      var parentName = o.parentName || null;
+      cc.catExtra.push({ name: name, parentName: parentName, service: o.service || SERVICE_NAMES[0] });
+      if (!parentName && o.active === false) cc.catsOff.push(name);
+      persist(data);
+      return { ok: true, config: cc };
+    },
+    addService: function (commune, o) {
+      var data = load();
+      var cc = data.communeConfigs.find(function (c) { return c.commune === commune; });
+      if (!cc) return { ok: false, error: "Commune introuvable." };
+      var name = String(o.name || "").trim();
+      if (!name) return { ok: false, error: "Nom requis." };
+      if (cc.services.some(function (s) { return s.name.toLowerCase() === name.toLowerCase(); })) return { ok: false, error: "Ce service existe déjà." };
+      cc.services.push({ name: name, emails: (o.emails || []).filter(Boolean) });
+      persist(data);
+      return { ok: true, config: cc };
+    },
+    renameService: function (commune, oldName, newName) {
+      var data = load();
+      var cc = data.communeConfigs.find(function (c) { return c.commune === commune; });
+      if (!cc) return null;
+      var svc = cc.services.find(function (s) { return s.name === oldName; });
+      if (svc && newName && newName.trim()) svc.name = newName.trim();
+      persist(data);
+      return cc;
+    },
+    addServiceEmail: function (commune, serviceName, email) {
+      var data = load();
+      var cc = data.communeConfigs.find(function (c) { return c.commune === commune; });
+      if (!cc) return null;
+      var svc = cc.services.find(function (s) { return s.name === serviceName; });
+      var e = String(email || "").trim();
+      if (svc && e && svc.emails.indexOf(e) === -1) svc.emails.push(e);
+      persist(data);
+      return cc;
+    },
+    removeServiceEmail: function (commune, serviceName, email) {
+      var data = load();
+      var cc = data.communeConfigs.find(function (c) { return c.commune === commune; });
+      if (!cc) return null;
+      var svc = cc.services.find(function (s) { return s.name === serviceName; });
+      if (svc) svc.emails = svc.emails.filter(function (e) { return e !== email; });
+      persist(data);
+      return cc;
+    },
+    addInternalStatus: function (commune, o) {
+      var data = load();
+      var cc = data.communeConfigs.find(function (c) { return c.commune === commune; });
+      if (!cc) return { ok: false, error: "Commune introuvable." };
+      var name = String(o.name || "").trim();
+      if (!name) return { ok: false, error: "Nom requis." };
+      cc.statusExtra.push({ name: name, color: o.color || "#7A6BC4", mapsTo: o.mapsTo || "En cours" });
+      persist(data);
+      return { ok: true, config: cc };
+    },
+    setStatusVisible: function (commune, name, visible) {
+      var data = load();
+      var cc = data.communeConfigs.find(function (c) { return c.commune === commune; });
+      if (!cc) return null;
+      cc.statusVisible = cc.statusVisible.filter(function (n) { return n !== name; });
+      if (visible) cc.statusVisible.push(name);
+      persist(data);
+      return cc;
+    },
+    setMessageOverride: function (commune, trigger, text) {
+      var data = load();
+      var cc = data.communeConfigs.find(function (c) { return c.commune === commune; });
+      if (!cc) return null;
+      var cur = cc.messages[trigger] || {};
+      cc.messages[trigger] = { off: !!cur.off, text: text };
+      persist(data);
+      return cc;
+    },
+    toggleMessageOff: function (commune, trigger, off) {
+      var data = load();
+      var cc = data.communeConfigs.find(function (c) { return c.commune === commune; });
+      if (!cc) return null;
+      var cur = cc.messages[trigger] || {};
+      cc.messages[trigger] = { off: off, text: cur.text };
+      persist(data);
+      return cc;
     },
 
     chartData: function (commune, mode) {
