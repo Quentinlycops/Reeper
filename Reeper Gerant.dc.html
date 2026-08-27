@@ -407,7 +407,10 @@ select,textarea,input{font-family:inherit}
             <div style="font-size:12.5px;color:#8A98A8;margin-top:3px">Messages envoyés par les administrateurs communaux à "Reeper"</div>
           </div>
           <div class="rg-msg-split" style="gap:18px;flex:1;min-height:0">
-            <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:auto">
+            <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:auto;display:flex;flex-direction:column">
+              <div style="padding:10px 12px;border-bottom:1px solid rgba(27,42,65,.08);flex:none">
+                <input value="{{ msgQuery }}" onChange="{{ onMsgQuery }}" placeholder="Rechercher une conversation…" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:9px 12px;font-size:13px;outline:none" />
+              </div>
               <sc-for list="{{ msgConvs }}" as="c" hint-placeholder-count="4">
                 <button onClick="{{ c.onClick }}" style="width:100%;display:flex;align-items:center;gap:11px;padding:13px 16px;border:none;border-bottom:1px solid rgba(27,42,65,.06);background:{{ c.rowBg }};text-align:left" style-hover="background:#FAFBFC">
                   <span style="width:34px;height:34px;border-radius:50%;background:{{ c.avBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:none">{{ c.initials }}</span>
@@ -424,6 +427,9 @@ select,textarea,input{font-family:inherit}
               </sc-for>
               <sc-if value="{{ msgConvsEmpty }}" hint-placeholder-val="{{ false }}">
                 <div style="padding:30px 18px;text-align:center;font-size:12.5px;color:#8A98A8;line-height:1.6">Aucun message pour le moment. Les administrateurs communaux peuvent écrire à "Reeper" depuis leur messagerie.</div>
+              </sc-if>
+              <sc-if value="{{ msgSearchEmpty }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:30px 18px;text-align:center;font-size:12.5px;color:#8A98A8;line-height:1.6">Aucune conversation ne correspond à cette recherche.</div>
               </sc-if>
             </div>
 
@@ -501,7 +507,7 @@ select,textarea,input{font-family:inherit}
                 <span>Action</span><span>Commune</span><span>Détail</span><span>Quand</span>
               </div>
               <sc-for list="{{ activityFeed }}" as="a" hint-placeholder-count="8">
-                <div style="display:grid;grid-template-columns:1.3fr .8fr 2fr .7fr;gap:10px;align-items:start;padding:13px 20px;border-bottom:1px solid rgba(27,42,65,.06)">
+                <button onClick="{{ a.onClick }}" style="display:grid;grid-template-columns:1.3fr .8fr 2fr .7fr;gap:10px;align-items:start;padding:13px 20px;border:none;border-bottom:1px solid rgba(27,42,65,.06);background:#fff;width:100%;text-align:left;color:#1B2A41" style-hover="background:#FAFBFC">
                   <span style="min-width:0">
                     <span style="display:block;font-size:13.5px;font-weight:600">{{ a.label }}</span>
                     <span style="display:block;font-size:11.5px;color:#8A98A8;margin-top:2px">{{ a.who }} · {{ a.reepTitle }} · {{ a.reepId }}</span>
@@ -509,7 +515,7 @@ select,textarea,input{font-family:inherit}
                   <span style="font-size:12.5px;color:#48566B">{{ a.commune }}</span>
                   <span style="font-size:12.5px;color:#48566B;line-height:1.5">{{ a.note }}</span>
                   <span style="font-size:12px;color:#8A98A8;white-space:nowrap">{{ a.when }}</span>
-                </div>
+                </button>
               </sc-for>
               <sc-if value="{{ activityFeedEmpty }}" hint-placeholder-val="{{ false }}">
                 <div style="padding:30px 20px;text-align:center;font-size:13px;color:#8A98A8">Aucune activité pour ces filtres.</div>
@@ -908,7 +914,7 @@ class Component extends DCLogic {
     sheetOpen: false, newType: "agent", newFirst: "", newLast: "", newEmail: "", newCommune: COMMUNE_NAMES[0], newRole: "agent", newError: "",
     replaceOpen: false, replaceForKey: null, replaceCommune: "", replaceMode: "select", replacementKey: "",
     replFirst: "", replLast: "", replEmail: "", replaceError: "",
-    msgSel: null, draft: "",
+    msgSel: null, msgQuery: "", draft: "",
     pwdPanelOpen: false, pwdOld: "", pwdNew1: "", pwdNew2: "", pwdMsg: "", pwdMsgIsError: false,
     activityMode: "journal", activityCommune: "Toutes", activityStatus: "Tous", activityCat: "Toutes", activityPeriod: "Tout", activitySearch: "",
     contractQuery: "", contractSel: null, contractDraft: null, contractSaved: false, contractEditOpen: false,
@@ -930,6 +936,11 @@ class Component extends DCLogic {
   componentWillUnmount() {
     if (this._onResize) window.removeEventListener("resize", this._onResize);
     if (this._onSync) window.removeEventListener("reeper:sync", this._onSync);
+  }
+  _transition(fn) {
+    if (!document.startViewTransition) { fn(); return; }
+    const t = document.startViewTransition(fn);
+    [t.ready, t.updateCallbackDone, t.finished].forEach((p) => p && p.catch(() => {}));
   }
   _syncShellHeight() {
     const shell = document.querySelector('[data-role="shell"]');
@@ -1019,8 +1030,8 @@ class Component extends DCLogic {
     const budgetRemaining = budgetTotal - budgetEngaged;
     const budgetPct = budgetTotal > 0 ? Math.min(100, Math.round((budgetEngaged / budgetTotal) * 100)) : 0;
 
-    const openContract = (commune) => () => this.setState({ contractSel: commune, contractDraft: JSON.parse(JSON.stringify(Store.getContract(commune))), contractSaved: true, cNoteEditingId: null });
-    const closeContract = () => this.setState({ contractSel: null, contractDraft: null });
+    const openContract = (commune) => () => this._transition(() => this.setState({ contractSel: commune, contractDraft: JSON.parse(JSON.stringify(Store.getContract(commune))), contractSaved: true, cNoteEditingId: null }));
+    const closeContract = () => this._transition(() => this.setState({ contractSel: null, contractDraft: null }));
     const onContractField = (field) => (e) => this.setState({ contractDraft: { ...cDraft, [field]: e.target.value }, contractSaved: false });
     const onContractDateField = (field) => (e) => this.setState({ contractDraft: { ...cDraft, [field]: dateInputToTs(e.target.value) }, contractSaved: false });
     const onContactField = (idx, field) => (e) => {
@@ -1063,6 +1074,8 @@ class Component extends DCLogic {
     const inboxByKey = {};
     rawInboxes.forEach((c) => { if (!inboxByKey[c.withKey] || inboxByKey[c.withKey].lastWhen < c.lastWhen) inboxByKey[c.withKey] = c; });
     const supportInbox = Object.keys(inboxByKey).map((k) => inboxByKey[k]).sort((a, b) => b.lastWhen - a.lastWhen);
+    const msgQueryLc = (s.msgQuery || "").trim().toLowerCase();
+    const msgConvsFiltered = supportInbox.filter((c) => !msgQueryLc || (c.withName || "").toLowerCase().indexOf(msgQueryLc) >= 0);
     const curSupportConv = s.msgSel ? supportInbox.find((c) => c.withKey === s.msgSel) : supportInbox[0];
     const curSupportThread = curSupportConv
       ? Store.getThread(Store.REEPER_SUPPORT_KEY, curSupportConv.withKey)
@@ -1081,7 +1094,7 @@ class Component extends DCLogic {
       goSite, doLogout,
       nav: navDef.map(([label, key]) => {
         const on = s.screen === key;
-        return { label, onClick: () => this.setState({ screen: key, profileOpen: false }), bg: on ? "#1B2A41" : "transparent", fg: on ? "#fff" : "#5A6B7E", weight: on ? 700 : 500 };
+        return { label, onClick: () => this._transition(() => this.setState({ screen: key, profileOpen: false })), bg: on ? "#1B2A41" : "transparent", fg: on ? "#fff" : "#5A6B7E", weight: on ? 700 : 500 };
       }),
 
       profileOpen: s.profileOpen,
@@ -1127,7 +1140,10 @@ class Component extends DCLogic {
       activityModeJournalBg: s.activityMode !== "trash" ? "#1B2A41" : "transparent", activityModeJournalFg: s.activityMode !== "trash" ? "#fff" : "#5A6B7E",
       activityModeTrashBg: s.activityMode === "trash" ? "#1B2A41" : "transparent", activityModeTrashFg: s.activityMode === "trash" ? "#fff" : "#5A6B7E",
       activityTrashCount: activityTrashRaw.length,
-      activityFeed: activityFeedAll.map((a) => ({ label: a.label, who: a.who, note: a.note, commune: a.commune, reepTitle: a.reepTitle, reepId: a.reepId, when: fmtDateTime(a.when) })),
+      activityFeed: activityFeedAll.map((a) => ({
+        label: a.label, who: a.who, note: a.note, commune: a.commune, reepTitle: a.reepTitle, reepId: a.reepId, when: fmtDateTime(a.when),
+        onClick: () => this._transition(() => this.setState({ screen: "reeps", selId: a.reepId }))
+      })),
       activityFeedEmpty: !activityFeedAll.length,
       activityTrash: activityTrashRaw.map((r) => ({
         id: r.id, title: r.title, commune: r.commune, place: r.place || r.address || "—",
@@ -1402,7 +1418,8 @@ class Component extends DCLogic {
         this.setState({ replaceOpen: false, replaceForKey: null, replaceError: "" });
       },
 
-      msgConvs: supportInbox.map((c) => ({
+      msgQuery: s.msgQuery, onMsgQuery: (e) => this.setState({ msgQuery: e.target.value }),
+      msgConvs: msgConvsFiltered.map((c) => ({
         name: c.withName, role: c.withRole, initials: c.withInitials, avBg: c.withAvBg, unread: c.unread,
         rowBg: c.withKey === (curSupportConv || {}).withKey ? "#FAFBFC" : "#fff",
         onClick: () => {
@@ -1412,6 +1429,7 @@ class Component extends DCLogic {
         }
       })),
       msgConvsEmpty: supportInbox.length === 0,
+      msgSearchEmpty: supportInbox.length > 0 && msgConvsFiltered.length === 0,
       hasCurConv: !!curSupportConv, noCurConv: !curSupportConv,
       curConv: curSupportConv ? { name: curSupportConv.withName, role: curSupportConv.withRole, initials: curSupportConv.withInitials, avBg: curSupportConv.withAvBg } : { name: "", role: "", initials: "", avBg: "" },
       curThread: curSupportThread.map((m) => {

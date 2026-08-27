@@ -1849,10 +1849,10 @@ class Component extends DCLogic {
       profileBorder: s.profileOpen ? "#1B2A41" : "rgba(27,42,65,.14)",
       toggleProfile: () => this.setState({ profileOpen: !s.profileOpen }),
       profileItems: [
-        { label: "Mon profil", onClick: () => this.setState({ screen: "config", configTab: "Droits d'accès", sheet: AGENTS[0], profileOpen: false }) },
-        { label: "Paramètres", onClick: () => this.setState({ screen: "config", configTab: "Général", profileOpen: false }) },
-        { label: "Corbeille", onClick: () => this.setState({ screen: "trash", profileOpen: false }) },
-        { label: "Mentions légales", onClick: () => this.setState({ screen: "legal", profileOpen: false }) },
+        { label: "Mon profil", onClick: () => this._transition(() => this.setState({ screen: "config", configTab: "Droits d'accès", sheet: AGENTS[0], profileOpen: false })) },
+        { label: "Paramètres", onClick: () => this._transition(() => this.setState({ screen: "config", configTab: "Général", profileOpen: false })) },
+        { label: "Corbeille", onClick: () => this._transition(() => this.setState({ screen: "trash", profileOpen: false })) },
+        { label: "Mentions légales", onClick: () => this._transition(() => this.setState({ screen: "legal", profileOpen: false })) },
         { label: "Contactez-nous", onClick: () => this.setState({ profileOpen: false }) }
       ],
 
@@ -2242,7 +2242,7 @@ class Component extends DCLogic {
       counters: ["Nouveaux", "En cours", "Traités"].map((label, i) => ({
         label, value: String([stats.byStatus["Nouveau"] || 0, (stats.byStatus["En cours"] || 0) + (stats.byStatus["Planifié (travaux)"] || 0), stats.byStatus["Traité"] || 0][i]),
         dot: ["#D62839", "#E8A33D", "#3F8F63"][i], bg: "#fff",
-        onClick: () => this.setState({ screen: "list", filter: ["Nouveau", "En cours", "Traité"][i] })
+        onClick: () => this._transition(() => this.setState({ screen: "list", filter: ["Nouveau", "En cours", "Traité"][i] }))
       })),
       recent: REEPS.slice(0, 4).map((d) => ({ ...withStatus(d), slot: "k-" + d.id, hint: "Photo de l'anomalie", src: d.photoUrl || "", ring: "1px solid rgba(27,42,65,.1)", onClick: () => this.open(d.id) })),
       feed: REEPS.flatMap((d) => d.timeline.map((t) => ({ ...t, reepId: d.id, reepTitle: d.title })))
@@ -2263,7 +2263,7 @@ class Component extends DCLogic {
       miniMarkers: markersFor(REEPS),
 
       viewOptions: ["Liste", "Carte", "Tableau"], view: s.view,
-      onView: (e) => { const v = e.target.value; this.setState({ view: v, screen: v === "Carte" ? "map" : "list" }); },
+      onView: (e) => { const v = e.target.value; this._transition(() => this.setState({ view: v, screen: v === "Carte" ? "map" : "list" })); },
       catOptions: ["Toutes les catégories"].concat(Object.keys(Store.TREE)),
       catFilter: s.cat, onCat: (e) => this.setState({ cat: e.target.value, preview: false }),
       filteredCount: filtered.length,
@@ -2366,7 +2366,7 @@ class Component extends DCLogic {
       trashEmpty: deletedRows.length === 0,
       trashRows: deletedRows.map((r) => ({
         id: r.id, title: r.title, place: r.place, deletedWhen: relTime(r.deletedAt),
-        onOpen: () => this.setState({ screen: "detail", sel: r.id, note: "", service: null, status: null, saved: false, closed: false, closePhotoDataUrl: null, preview: false }),
+        onOpen: () => this._transition(() => this.setState({ screen: "detail", sel: r.id, note: "", service: null, status: null, saved: false, closed: false, closePhotoDataUrl: null, preview: false })),
         onRestore: () => { Store.restoreReep(r.id, agentName); this.forceUpdate(); }
       })),
 
