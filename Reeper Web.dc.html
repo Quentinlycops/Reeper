@@ -344,6 +344,7 @@ input,textarea,select{font-family:inherit}
               </div>
 
               <sc-if value="{{ isAuthLogin }}" hint-placeholder-val="{{ true }}">
+                <form onSubmit="{{ onLoginSubmit }}">
                 <div>
                   <div style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Compte</div>
                   <select value="{{ account }}" onChange="{{ onAccountSelect }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:13px 15px;font-size:14px;background:#fff">
@@ -356,14 +357,15 @@ input,textarea,select{font-family:inherit}
                 <div style="margin-top:14px">
                   <div style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Mot de passe</div>
                   <div style="position:relative">
-                    <input type="{{ pwdFieldType }}" value="{{ pwd }}" onChange="{{ onPwd }}" onKeyDown="{{ onPwdKeyDown }}" placeholder="Mot de passe" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:13px 44px 13px 15px;font-size:14px;outline:none">
+                    <input type="{{ pwdFieldType }}" value="{{ pwd }}" onChange="{{ onPwd }}" placeholder="Mot de passe" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:13px 44px 13px 15px;font-size:14px;outline:none">
                     <button onClick="{{ togglePwdVisible }}" type="button" style="position:absolute;top:0;right:0;bottom:0;width:40px;border:none;background:none;color:#8A98A8;font-size:12.5px;font-weight:600">{{ pwdToggleLabel }}</button>
                   </div>
                 </div>
                 <sc-if value="{{ hasLoginError }}" hint-placeholder-val="{{ false }}">
                   <div style="margin-top:10px;font-size:12.5px;color:#D62839">{{ loginError }}</div>
                 </sc-if>
-                <button onClick="{{ doLogin }}" style="margin-top:16px;width:100%;border:none;background:#1B2A41;color:#fff;border-radius:11px;padding:16px;font-size:15px;font-weight:600">Se connecter</button>
+                <button type="submit" style="margin-top:16px;width:100%;border:none;background:#1B2A41;color:#fff;border-radius:11px;padding:16px;font-size:15px;font-weight:600">Se connecter</button>
+                </form>
               </sc-if>
 
               <sc-if value="{{ isAuthSignup }}" hint-placeholder-val="{{ false }}">
@@ -717,7 +719,7 @@ class Component extends DCLogic {
         const { lat, lon } = e.detail;
         this.setState({ geoLat: lat, geoLon: lon, geo: true });
         Store.reverseGeocode(lat, lon).then((res) => {
-          this.setState({ addrText: res.street || res.address, addrNum: res.houseNumber || "", communeGuess: res.commune || this.state.communeGuess });
+          this.setState({ addrText: res.street || res.address, addrNum: res.houseNumber || "", communeGuess: res.commune || res.town || this.state.communeGuess });
         }).catch(() => {});
       });
     }
@@ -741,11 +743,13 @@ class Component extends DCLogic {
 
   _forwardGeocode(query) {
     const gen = (this._geoGen = (this._geoGen || 0) + 1);
-    fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=ch&q=" + encodeURIComponent(query))
+    fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=ch&addressdetails=1&q=" + encodeURIComponent(query))
       .then((r) => r.json()).then((list) => {
         if (gen !== this._geoGen || !list || !list[0]) return;
         const lat = parseFloat(list[0].lat), lon = parseFloat(list[0].lon);
-        this.setState({ geoLat: lat, geoLon: lon, geo: true, communeGuess: Store.communeFromText(list[0].display_name) || this.state.communeGuess });
+        const a0 = list[0].address || {};
+        const town0 = a0.city || a0.town || a0.village || a0.municipality || "";
+        this.setState({ geoLat: lat, geoLon: lon, geo: true, communeGuess: Store.communeFromText(list[0].display_name) || town0 || this.state.communeGuess });
         const el = document.querySelector('reeper-map[data-role="loc-picker"]');
         if (el && el.panTo) el.panTo(lat, lon, 17);
       }).catch(() => {});
@@ -763,7 +767,7 @@ class Component extends DCLogic {
           const street = a.road || a.pedestrian || a.footway || (item.display_name || "").split(",")[0];
           const town = a.city || a.town || a.village || a.municipality || "";
           const isServed = served.indexOf(town) !== -1;
-          return { label: street + (town ? ", " + town : ""), street, lat: parseFloat(item.lat), lon: parseFloat(item.lon), display: item.display_name, isServed };
+          return { label: street + (town ? ", " + town : ""), street, town, lat: parseFloat(item.lat), lon: parseFloat(item.lon), display: item.display_name, isServed };
         });
         mapped.sort((x, y) => (y.isServed ? 1 : 0) - (x.isServed ? 1 : 0));
         this.setState({ addrSuggestions: mapped });
@@ -933,7 +937,7 @@ class Component extends DCLogic {
       send: () => {
         if (!s.photoUrls.length) { this.setState({ photoStepError: "Ajoutez au moins une photo avant d'envoyer." }); this._scrollTo("sec-photo"); return; }
         if (s.geoLat == null || s.geoLon == null) { this.setState({ geoError: "Indiquez une localisation avant d'envoyer." }); this._scrollTo("sec-loc"); return; }
-        const commune = s.communeGuess || Store.communeFromText(s.addrText) || "Nyon";
+        const commune = s.communeGuess || Store.communeFromText(s.addrText) || null;
         const created = Store.addReep({
           path, leaf: s.leaf, address: fullAddr || "Adresse non précisée",
           lat: s.geoLat, lon: s.geoLon, desc: s.desc, photoUrls: s.photoUrls,
@@ -973,7 +977,7 @@ class Component extends DCLogic {
       addrSuggestions: s.addrSuggestions.map((a) => ({
         label: a.label,
         onClick: () => {
-          this.setState({ addrText: a.street, geoLat: a.lat, geoLon: a.lon, geo: true, addrSuggestions: [], communeGuess: Store.communeFromText(a.display) || s.communeGuess });
+          this.setState({ addrText: a.street, geoLat: a.lat, geoLon: a.lon, geo: true, addrSuggestions: [], communeGuess: Store.communeFromText(a.display) || a.town || s.communeGuess });
           const el = document.querySelector('reeper-map[data-role="loc-picker"]');
           if (el && el.panTo) el.panTo(a.lat, a.lon, 17);
         }
@@ -992,7 +996,7 @@ class Component extends DCLogic {
             const el = document.querySelector('reeper-map[data-role="loc-picker"]');
             if (el && el.panTo) el.panTo(lat, lon, 17);
             Store.reverseGeocode(lat, lon).then((res) => {
-              this.setState({ addrText: res.street || res.address, addrNum: res.houseNumber || "", communeGuess: res.commune || s.communeGuess });
+              this.setState({ addrText: res.street || res.address, addrNum: res.houseNumber || "", communeGuess: res.commune || res.town || s.communeGuess });
             }).catch(() => {
               this.setState({ addrText: lat.toFixed(5) + ", " + lon.toFixed(5) });
             });
@@ -1059,7 +1063,7 @@ class Component extends DCLogic {
       pwdFieldType: s.pwdVisible ? "text" : "password",
       pwdToggleLabel: s.pwdVisible ? "Masquer" : "Afficher",
       togglePwdVisible: () => this.setState({ pwdVisible: !s.pwdVisible }),
-      onPwdKeyDown: (e) => { if (e.key === "Enter") doLogin(); },
+      onLoginSubmit: (e) => { e.preventDefault(); doLogin(); },
       hasLoginError: !!s.loginError, loginError: s.loginError,
       doLogin,
 

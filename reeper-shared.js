@@ -999,15 +999,16 @@
       var data = load();
       var id = nextId(data);
       var createdAt = now();
-      var commune = o.commune || communeFromText(o.address) || "Nyon";
+      var commune = o.commune || communeFromText(o.address) || "Commune à déterminer";
+      var fallbackCenter = COMMUNES[commune] ? COMMUNES[commune].center : { lat: 46.5197, lon: 6.6323 };
       var photos = (o.photoUrls && o.photoUrls.length) ? o.photoUrls.slice() : (o.photoUrl ? [o.photoUrl] : []);
       var reep = {
         id: id, title: o.leaf || o.path[o.path.length - 1] || "Anomalie", path: o.path || [], leaf: o.leaf || "",
         cat: (o.path || []).join(" › ") + (o.leaf ? " › " + o.leaf : ""),
         service: SERVICE[(o.path || [])[0]] || "Voirie", status: "Nouveau", commune: commune,
         place: o.address || "", address: o.address || "",
-        lat: o.lat != null ? o.lat : COMMUNES[commune].center.lat + (Math.random() - 0.5) * 0.006,
-        lon: o.lon != null ? o.lon : COMMUNES[commune].center.lon + (Math.random() - 0.5) * 0.006,
+        lat: o.lat != null ? o.lat : fallbackCenter.lat + (Math.random() - 0.5) * 0.006,
+        lon: o.lon != null ? o.lon : fallbackCenter.lon + (Math.random() - 0.5) * 0.006,
         desc: o.desc || "", photoUrl: photos[0] || null, photos: photos, closePhotoUrl: null, closeNote: "",
         agentsIn: [], reporterAccount: o.reporterAccount || null,
         createdAt: createdAt, closedAt: null, deleted: false, deletedAt: null,

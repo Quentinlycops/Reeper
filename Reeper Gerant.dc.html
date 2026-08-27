@@ -11,6 +11,7 @@
 <body>
 <x-dc>
 <helmet>
+<script src="./image-slot.js"></script>
 <style>
 :root{color-scheme:light}
 *{box-sizing:border-box}
@@ -200,6 +201,9 @@ select,textarea,input{font-family:inherit}
                 <div style="padding:18px 20px;border-bottom:1px solid rgba(27,42,65,.08);display:flex;align-items:center;gap:10px">
                   <span style="flex:1;font-family:Georgia,serif;font-size:16.5px;font-weight:700">{{ selReep.title }}</span>
                   <button onClick="{{ closeSelReep }}" style="border:none;background:none;font-size:16px;color:#8A98A8">×</button>
+                </div>
+                <div style="height:200px;position:relative">
+                  <image-slot id="{{ selReep.slot }}" shape="rect" src="{{ selReep.src }}" placeholder="Photo de l'anomalie"></image-slot>
                 </div>
                 <div style="padding:16px 20px;display:flex;flex-direction:column;gap:12px">
                   <div style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:#8A98A8">{{ selReep.id }}</div>
@@ -1307,7 +1311,7 @@ class Component extends DCLogic {
       })(),
 
       filterCommune: s.filterCommune, onFilterCommune: (e) => this.setState({ filterCommune: e.target.value }),
-      communeOptions: ["Toutes"].concat(communeNamesLive),
+      communeOptions: ["Toutes"].concat(Array.from(new Set(communeNamesLive.concat(allReeps.map((r) => r.commune).filter(Boolean)))).sort()),
       filterCat: s.filterCat, onFilterCat: (e) => this.setState({ filterCat: e.target.value }),
       catOptions: ["Toutes"].concat(CATS),
       filterStatus: s.filterStatus, onFilterStatus: (e) => this.setState({ filterStatus: e.target.value }),
@@ -1324,8 +1328,9 @@ class Component extends DCLogic {
       closeSelReep: () => this.setState({ selId: null }),
       selReep: selReepRaw ? {
         ...selReepRaw,
+        slot: "gs-" + selReepRaw.id, src: selReepRaw.photoUrl || "",
         timeline: selReepRaw.timeline.slice().reverse().map((t) => ({ label: t.label, who: t.who, when: fmtDateTime(t.when) }))
-      } : { title: "", id: "", commune: "", place: "", desc: "", bg: "", fg: "", status: "", timeline: [] },
+      } : { title: "", id: "", commune: "", place: "", desc: "", bg: "", fg: "", status: "", slot: "gs-empty", src: "", timeline: [] },
       statusButtons: selReepRaw ? STATUS_ORDER.map((st) => ({
         label: st, border: selReepRaw.status === st ? "#1B2A41" : "rgba(27,42,65,.16)",
         bg: selReepRaw.status === st ? "#1B2A41" : "#fff", fg: selReepRaw.status === st ? "#fff" : "#48566B",
