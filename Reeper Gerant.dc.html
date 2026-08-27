@@ -773,26 +773,43 @@ select,textarea,input{font-family:inherit}
               </div>
 
               <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;padding:20px">
-                <div style="font-family:Georgia,serif;font-size:16px;font-weight:700;margin-bottom:14px">Document et facturation</div>
-                <div style="margin-bottom:16px">
-                  <div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:8px">Contrat signé (PDF)</div>
-                  <sc-if value="{{ hasContractFile }}" hint-placeholder-val="{{ false }}">
-                    <div style="display:flex;align-items:center;gap:10px;background:#F3F6F8;border-radius:9px;padding:10px 13px">
-                      <span style="flex:1;min-width:0;font-size:13px;color:#1B2A41;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📄 {{ contractFileName }}</span>
-                      <button onClick="{{ removeContractFile }}" style="border:none;background:none;color:#D62839;font-size:12px;font-weight:600;flex:none">Retirer</button>
+                <div style="font-family:Georgia,serif;font-size:16px;font-weight:700;margin-bottom:14px">Documents et facturation</div>
+                <sc-for list="{{ documentRows }}" as="d" hint-placeholder-count="2">
+                  <div style="border:1px solid rgba(27,42,65,.08);border-radius:10px;padding:12px 14px;margin-bottom:10px">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                      <span style="font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:#F3F6F8;color:#48566B;flex:none">{{ d.type }}</span>
+                      <span style="flex:1;min-width:0;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ d.title }}</span>
+                      <span style="font-size:11px;color:#8A98A8;flex:none">{{ d.dateLabel }}</span>
                     </div>
-                  </sc-if>
-                  <sc-if value="{{ noContractFile }}" hint-placeholder-val="{{ true }}">
-                    <label style="display:flex;align-items:center;justify-content:center;gap:8px;border:1px dashed rgba(27,42,65,.28);background:#FAFBFC;border-radius:9px;padding:12px;font-size:13px;font-weight:600;color:#1B2A41;cursor:pointer">
-                      📎 Choisir un fichier PDF
-                      <input type="file" accept="application/pdf" onChange="{{ onContractFile }}" style="display:none" />
-                    </label>
-                  </sc-if>
-                  <sc-if value="{{ hasContractFileError }}" hint-placeholder-val="{{ false }}">
-                    <div style="margin-top:8px;font-size:12px;color:#D62839">{{ contractFileError }}</div>
-                  </sc-if>
+                    <sc-if value="{{ d.hasNote }}" hint-placeholder-val="{{ false }}">
+                      <p style="margin:0 0 8px;font-size:12.5px;color:#5A6B7E;line-height:1.5">{{ d.note }}</p>
+                    </sc-if>
+                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                      <a href="{{ d.fileUrl }}" target="_blank" style="font-size:12px;font-weight:600;color:#1B2A41;text-decoration:none;border:1px solid rgba(27,42,65,.16);border-radius:7px;padding:6px 10px">Aperçu</a>
+                      <a href="{{ d.fileUrl }}" download="{{ d.fileName }}" style="font-size:12px;font-weight:600;color:#1B2A41;text-decoration:none;border:1px solid rgba(27,42,65,.16);border-radius:7px;padding:6px 10px">Télécharger</a>
+                      <button onClick="{{ d.onRemove }}" style="border:none;background:none;color:#D62839;font-size:12px;font-weight:600;margin-left:auto">Supprimer</button>
+                    </div>
+                  </div>
+                </sc-for>
+                <sc-if value="{{ documentsEmpty }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-size:12.5px;color:#8A98A8;padding:8px 0">Aucun document pour le moment.</div>
+                </sc-if>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+                  <select value="{{ cNewDocType }}" onChange="{{ onCNewDocType }}" style="border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:10px 12px;font-size:13px;background:#fff;flex:none">
+                    <sc-for list="{{ documentTypeOptions }}" as="t" hint-placeholder-count="5"><option value="{{ t }}">{{ t }}</option></sc-for>
+                  </select>
+                  <input value="{{ cNewDocTitle }}" onChange="{{ onCNewDocTitle }}" placeholder="Titre du document" style="flex:1;min-width:120px;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:10px 12px;font-size:13px" />
                 </div>
+                <input value="{{ cNewDocNote }}" onChange="{{ onCNewDocNote }}" placeholder="Note (facultatif)" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:10px 12px;font-size:13px;margin-top:8px" />
+                <label style="display:flex;align-items:center;justify-content:center;gap:8px;border:1px dashed rgba(27,42,65,.28);background:#FAFBFC;border-radius:9px;padding:12px;font-size:13px;font-weight:600;color:#1B2A41;cursor:pointer;margin-top:8px">
+                  📎 Choisir un fichier et ajouter
+                  <input type="file" accept="application/pdf,image/*" onChange="{{ onCNewDocFile }}" style="display:none" />
+                </label>
+                <sc-if value="{{ hasCNewDocError }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:8px;font-size:12px;color:#D62839">{{ cNewDocError }}</div>
+                </sc-if>
 
+                <div style="border-top:1px solid rgba(27,42,65,.08);margin:18px 0 14px"></div>
                 <div style="font-size:11px;font-weight:700;color:#8A98A8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Factures</div>
                 <sc-for list="{{ invoiceRows }}" as="inv" hint-placeholder-count="2">
                   <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(27,42,65,.06);flex-wrap:wrap">
@@ -896,6 +913,7 @@ const STATUS = {
   Traité: { bg: "#E5F1EA", fg: "#2E6B48", dot: "#3F8F63" }
 };
 const STATUS_ORDER = ["Nouveau", "En cours", "Planifié (travaux)", "Traité"];
+const DOCUMENT_TYPES = ["Contrat", "Devis", "Avenant", "Courrier", "Autre"];
 
 const fmtDateTime = (ts) => {
   const d = new Date(ts);
@@ -941,6 +959,7 @@ class Component extends DCLogic {
     contractQuery: "", contractSel: null, contractDraft: null, contractSaved: false, contractEditOpen: false,
     addCommuneOpen: false, addCommuneName: "", addCommuneError: "",
     cNewProjectName: "", cNewProjectAmount: "", cNewInvoiceLabel: "", cNewInvoiceAmount: "", cNewInvoiceStatus: "En attente", cNewInvoiceDate: "",
+    cNewDocType: "Contrat", cNewDocTitle: "", cNewDocNote: "", cNewDocError: "",
     cNoteText: "", cNoteEditingId: null, cNoteEditText: "",
     shellFitH: null
   };
@@ -1303,20 +1322,30 @@ class Component extends DCLogic {
         this.setState({ cNoteText: "" });
       },
 
-      hasContractFile: !!(curContract && curContract.contractFileUrl),
-      noContractFile: !(curContract && curContract.contractFileUrl),
-      contractFileName: curContract ? curContract.contractFileName : "",
-      onContractFile: (e) => {
+      documentTypeOptions: DOCUMENT_TYPES,
+      cNewDocType: s.cNewDocType, onCNewDocType: (e) => this.setState({ cNewDocType: e.target.value }),
+      cNewDocTitle: s.cNewDocTitle, onCNewDocTitle: (e) => this.setState({ cNewDocTitle: e.target.value }),
+      cNewDocNote: s.cNewDocNote, onCNewDocNote: (e) => this.setState({ cNewDocNote: e.target.value }),
+      hasCNewDocError: !!s.cNewDocError, cNewDocError: s.cNewDocError,
+      onCNewDocFile: (e) => {
         const file = e.target.files[0];
         e.target.value = "";
         if (!file) return;
-        if (file.size > 4 * 1024 * 1024) { this.setState({ contractFileError: "Fichier trop volumineux (max 4 Mo)." }); return; }
+        if (!s.cNewDocTitle.trim()) { this.setState({ cNewDocError: "Merci d'indiquer un titre avant de choisir le fichier." }); return; }
+        if (file.size > 4 * 1024 * 1024) { this.setState({ cNewDocError: "Fichier trop volumineux (max 4 Mo)." }); return; }
         const reader = new FileReader();
-        reader.onload = () => { Store.updateContractInfo(curContract.commune, { contractFileUrl: reader.result, contractFileName: file.name }); this.setState({ contractFileError: "" }); };
+        reader.onload = () => {
+          Store.addContractDocument(curContract.commune, { type: s.cNewDocType, title: s.cNewDocTitle.trim(), note: s.cNewDocNote.trim(), fileUrl: reader.result, fileName: file.name });
+          this.setState({ cNewDocTitle: "", cNewDocNote: "", cNewDocType: "Contrat", cNewDocError: "" });
+        };
         reader.readAsDataURL(file);
       },
-      hasContractFileError: !!s.contractFileError, contractFileError: s.contractFileError,
-      removeContractFile: () => Store.updateContractInfo(curContract.commune, { contractFileUrl: null, contractFileName: null }),
+      documentRows: curContract ? curContract.documents.slice().sort((a, b) => b.uploadedAt - a.uploadedAt).map((d) => ({
+        type: d.type, title: d.title, note: d.note, hasNote: !!d.note, dateLabel: fmtDateShort(d.uploadedAt),
+        fileUrl: d.fileUrl, fileName: d.fileName,
+        onRemove: () => Store.removeContractDocument(curContract.commune, d.id)
+      })) : [],
+      documentsEmpty: !curContract || !curContract.documents.length,
 
       invoiceRows: curContract ? curContract.invoices.slice().sort((a, b) => b.date - a.date).map((inv) => ({
         label: inv.label, amountLabel: fmtChf(inv.amount), dateLabel: fmtDateShort(inv.date), status: inv.status,

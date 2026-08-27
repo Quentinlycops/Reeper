@@ -112,7 +112,7 @@
       budget_projects: (c.budget5 && c.budget5.projects) || [],
       postal_address: c.postalAddress || "", contract_file_url: c.contractFileUrl || null,
       contract_file_name: c.contractFileName || null, satisfaction: c.satisfaction,
-      invoices: c.invoices || [], journal: c.journal || [], updated_at: Date.now()
+      invoices: c.invoices || [], journal: c.journal || [], documents: c.documents || [], updated_at: Date.now()
     };
   }
   function rowToContract(row) {
@@ -122,7 +122,7 @@
       contacts: row.contacts || [], budget5: { total: row.budget_total || 0, projects: row.budget_projects || [] },
       postalAddress: row.postal_address || "", contractFileUrl: row.contract_file_url || null,
       contractFileName: row.contract_file_name || null, satisfaction: row.satisfaction,
-      invoices: row.invoices || [], journal: row.journal || []
+      invoices: row.invoices || [], journal: row.journal || [], documents: row.documents || []
     };
   }
 
@@ -390,7 +390,7 @@
           contractStart: now(), status: "Contrat annuel actif", renewalDate: null,
           contacts: [], budget5: { total: 0, projects: [] },
           postalAddress: "", contractFileUrl: null, contractFileName: null,
-          satisfaction: null, invoices: [], journal: []
+          satisfaction: null, invoices: [], journal: [], documents: []
         });
       }
     });
@@ -402,6 +402,14 @@
       if (!c.budget5.projects) c.budget5.projects = [];
       if (!c.invoices) c.invoices = [];
       if (!c.journal) c.journal = [];
+      if (!c.documents) c.documents = [];
+      if (c.contractFileUrl && !c.documents.some(function (d) { return d.fileUrl === c.contractFileUrl; })) {
+        c.documents.unshift({
+          id: "doc" + (data.seq = (data.seq || 4900) + 1), type: "Contrat",
+          title: c.contractFileName || "Contrat signé", note: "",
+          fileUrl: c.contractFileUrl, fileName: c.contractFileName || "contrat.pdf", uploadedAt: now()
+        });
+      }
     });
     data.accounts.forEach(function (a) {
       if (a.type === "agent") {
@@ -1135,6 +1143,26 @@
     setContractContacts: function (commune, contacts) {
       return this.updateContractInfo(commune, { contacts: contacts });
     },
+    addContractDocument: function (commune, o) {
+      var data = load();
+      var c = data.contracts.find(function (x) { return x.commune === commune; });
+      if (!c) return null;
+      if (!c.documents) c.documents = [];
+      c.documents.unshift({
+        id: "doc" + (data.seq = (data.seq || 4900) + 1), type: o.type || "Autre",
+        title: o.title || "", note: o.note || "", fileUrl: o.fileUrl, fileName: o.fileName, uploadedAt: now()
+      });
+      persist(data);
+      return c;
+    },
+    removeContractDocument: function (commune, docId) {
+      var data = load();
+      var c = data.contracts.find(function (x) { return x.commune === commune; });
+      if (!c) return null;
+      c.documents = (c.documents || []).filter(function (d) { return d.id !== docId; });
+      persist(data);
+      return c;
+    },
     addBudgetProject: function (commune, o) {
       var data = load();
       var c = data.contracts.find(function (x) { return x.commune === commune; });
@@ -1249,7 +1277,7 @@
         commune: name, tier: "Moyenne", annualAmount: 0, contractStart: now(), status: "Pilote en cours", renewalDate: null,
         contacts: [{ role: "principal", name: "", title: "", email: "", phone: "" }, { role: "secours", name: "", title: "", email: "", phone: "" }],
         budget5: { total: 0, projects: [] }, postalAddress: "", contractFileUrl: null, contractFileName: null,
-        satisfaction: null, invoices: [], journal: []
+        satisfaction: null, invoices: [], journal: [], documents: []
       });
       persist(data);
       return { ok: true, commune: name, code: code };
