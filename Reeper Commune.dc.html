@@ -26,10 +26,12 @@ select,textarea,input{font-family:inherit}
   [style*="grid-template-columns"] > *{min-width:0}
 }
 @media print {
+  @page { size: A4; margin: 12mm; }
   body * { visibility: hidden; }
   .rp-export-sheet, .rp-export-sheet * { visibility: visible; }
   .rp-export-sheet { position: absolute !important; top: 0; left: 0; width: 100%; }
   .no-print { display: none !important; }
+  .rp-export-body { padding: 0 !important; }
 }
 </style>
 </helmet>
@@ -1021,7 +1023,7 @@ select,textarea,input{font-family:inherit}
           <div style="flex:1"></div>
           <button onClick="{{ doPrint }}" style="border:none;background:#1B2A41;color:#fff;border-radius:9px;padding:10px 16px;font-size:13px;font-weight:700">🖨️ Imprimer / Enregistrer en PDF</button>
         </div>
-        <div style="max-width:680px;margin:0 auto;padding:48px 32px">
+        <div class="rp-export-body" style="max-width:680px;margin:0 auto;padding:48px 32px">
           <div style="display:flex;align-items:baseline;justify-content:space-between;border-bottom:2px solid #1B2A41;padding-bottom:16px;margin-bottom:24px">
             <span style="display:flex;align-items:baseline;gap:9px">
               <span style="display:flex;align-items:flex-end;gap:3px">
@@ -1051,11 +1053,12 @@ select,textarea,input{font-family:inherit}
               <div style="font-size:14px;margin-top:4px;color:#1B2A41">{{ exportPlace }}</div>
             </div>
           </div>
-          <div style="height:220px;border-radius:8px;overflow:hidden;margin-bottom:24px;border:1px solid rgba(27,42,65,.12)">
-            <reeper-map id="{{ exportMapId }}" center="{{ exportMapCenter }}" zoom="18" markers="{{ exportMapMarkers }}"></reeper-map>
-          </div>
-          <sc-if value="{{ hasExportPhoto }}" hint-placeholder-val="{{ false }}">
-            <img src="{{ exportPhoto }}" style="width:100%;max-height:420px;object-fit:cover;border-radius:8px;margin-bottom:24px" />
+          <sc-if value="{{ hasExportPhotos }}" hint-placeholder-val="{{ false }}">
+            <div style="display:grid;grid-template-columns:{{ exportPhotoCols }};grid-auto-rows:1fr;gap:8px;height:{{ exportPhotoGridHeight }};margin-bottom:24px">
+              <sc-for list="{{ exportPhotos }}" as="p" hint-placeholder-count="1">
+                <img src="{{ p.url }}" style="width:100%;height:100%;object-fit:cover;border-radius:8px" />
+              </sc-for>
+            </div>
           </sc-if>
           <div style="margin-bottom:24px">
             <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:6px">Description</div>
@@ -2525,17 +2528,13 @@ class Component extends DCLogic {
       exportOpen: s.exportOpen,
       openExport: () => this.setState({ exportOpen: true }),
       closeExport: () => this.setState({ exportOpen: false }),
-      doPrint: () => {
-        const el = document.getElementById("rp-export-map");
-        if (el && el.invalidate) el.invalidate();
-        setTimeout(() => window.print(), 120);
-      },
+      doPrint: () => window.print(),
       exportId: cur.id, exportCommune: commune, exportDate: fmtDateTime(cur.createdAt),
       exportCat: cur.cat, exportPlace: cur.place, exportDesc: cur.desc,
-      hasExportPhoto: !!cur.photoUrl, exportPhoto: cur.photoUrl || "",
-      exportMapId: "rp-export-map",
-      exportMapCenter: cur.lat + "," + cur.lon,
-      exportMapMarkers: JSON.stringify([{ id: cur.id, lat: cur.lat, lon: cur.lon, color: "#D62839" }]),
+      hasExportPhotos: selPhotos.length > 0,
+      exportPhotos: selPhotos.map((url) => ({ url })),
+      exportPhotoCols: "repeat(" + Math.max(1, Math.ceil(Math.sqrt(selPhotos.length))) + ",1fr)",
+      exportPhotoGridHeight: selPhotos.length <= 1 ? "320px" : "260px",
 
       hasClosePhoto: !!(s.closePhotoDataUrl || cur.closePhotoUrl), noClosePhoto: !(s.closePhotoDataUrl || cur.closePhotoUrl),
       closePhotoUrl: s.closePhotoDataUrl || cur.closePhotoUrl || "",
