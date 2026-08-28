@@ -39,6 +39,7 @@
       commune: a.commune || null, points: a.points || 0, pending_commune: a.pendingCommune || null,
       is_primary: !!a.primary, redeemed: a.redeemed || [],
       service: a.service || null, notify_by_email: a.notifyByEmail == null ? null : !!a.notifyByEmail,
+      personal_journal: a.personalJournal || [],
       updated_at: Date.now()
     };
   }
@@ -52,7 +53,7 @@
     if (r.commune) a.commune = r.commune;
     if (r.type === "citizen") { a.points = r.points || 0; a.pendingCommune = r.pending_commune; }
     if (r.type === "gerant") a.primary = !!r.is_primary;
-    if (r.type === "agent") { a.service = r.service || undefined; a.notifyByEmail = r.notify_by_email == null ? undefined : !!r.notify_by_email; }
+    if (r.type === "agent") { a.service = r.service || undefined; a.notifyByEmail = r.notify_by_email == null ? undefined : !!r.notify_by_email; a.personalJournal = r.personal_journal || []; }
     return a;
   }
   function reepToRow(r) {
@@ -61,6 +62,7 @@
       status: r.status, commune: r.commune, place: r.place, address: r.address,
       lat: r.lat, lon: r.lon, description: r.desc, photo_url: r.photoUrl, photos: r.photos || [],
       close_photo_url: r.closePhotoUrl, close_note: r.closeNote, agents_in: r.agentsIn || [],
+      assigned_to: r.assignedTo || [],
       reporter_account: r.reporterAccount, created_at: r.createdAt, closed_at: r.closedAt,
       deleted: !!r.deleted, deleted_at: r.deletedAt, timeline: r.timeline || [],
       points_awarded: r.pointsAwarded || 0, updated_at: Date.now()
@@ -72,6 +74,7 @@
       status: row.status, commune: row.commune, place: row.place, address: row.address,
       lat: row.lat, lon: row.lon, desc: row.description, photoUrl: row.photo_url, photos: row.photos || [],
       closePhotoUrl: row.close_photo_url, closeNote: row.close_note, agentsIn: row.agents_in || [],
+      assignedTo: row.assigned_to || [],
       reporterAccount: row.reporter_account, createdAt: row.created_at, closedAt: row.closed_at,
       deleted: !!row.deleted, deletedAt: row.deleted_at, timeline: row.timeline || [],
       pointsAwarded: row.points_awarded || 0
@@ -360,6 +363,7 @@
     });
     (data.reeps || []).forEach(function (r) {
       if (!r.photos) r.photos = r.photoUrl ? [r.photoUrl] : [];
+      if (!r.assignedTo) r.assignedTo = [];
     });
     data.accounts.forEach(function (a) {
       if (a.type === "citizen" && a.points == null) a.points = 0;
@@ -417,6 +421,7 @@
       if (a.type === "agent") {
         if (a.service == null) a.service = "Voirie";
         if (a.notifyByEmail == null) a.notifyByEmail = true;
+        if (!a.personalJournal) a.personalJournal = [];
       }
     });
     if (!data.communeConfigs) data.communeConfigs = [];
@@ -1090,6 +1095,45 @@
       if (status === "Traité" && !r.closedAt) r.closedAt = now();
       persist(data);
       return r;
+    },
+
+    acceptReep: function (id, who) {
+      var data = load();
+      var i = findIndex(data, id);
+      if (i < 0) return null;
+      var r = data.reeps[i];
+      if (r.status !== "Nouveau") return r;
+      r.status = "En cours";
+      r.timeline.push(timelineEntry("Reep accepté", who || "Agent commune", now(), "Nouveau → En cours", true));
+      persist(data);
+      return r;
+    },
+
+    assignReep: function (id, accountKeys, who) {
+      var data = load();
+      var i = findIndex(data, id);
+      if (i < 0) return null;
+      var r = data.reeps[i];
+      var prev = r.assignedTo || [];
+      var next = (accountKeys || []).slice();
+      var added = next.filter(function (k) { return prev.indexOf(k) === -1; });
+      r.assignedTo = next;
+      var names = next.map(function (k) { var a = findAccount(data, k); return a ? a.displayName : k; });
+      r.timeline.push(timelineEntry("Attribution", who || "Agent commune", now(), names.length ? names.join(", ") : "Aucune personne attribuée", true));
+      added.forEach(function (key) {
+        var acc = findAccount(data, key);
+        if (!acc) return;
+        if (!acc.personalJournal) acc.personalJournal = [];
+        acc.personalJournal.unshift({ id: "pj" + (data.seq = (data.seq || 4900) + 1), reepId: r.id, reepTitle: r.title, by: who || "Agent commune", at: now() });
+      });
+      persist(data);
+      return r;
+    },
+
+    personalJournalFor: function (accountKey) {
+      var data = load();
+      var acc = findAccount(data, accountKey);
+      return acc && acc.personalJournal ? acc.personalJournal.slice() : [];
     },
 
     setNote: function (id, note, who) {

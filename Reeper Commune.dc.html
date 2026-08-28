@@ -25,6 +25,12 @@ select,textarea,input{font-family:inherit}
   .rc-page{padding:14px 12px 28px}
   [style*="grid-template-columns"] > *{min-width:0}
 }
+@media print {
+  body * { visibility: hidden; }
+  .rp-export-sheet, .rp-export-sheet * { visibility: visible; }
+  .rp-export-sheet { position: absolute !important; top: 0; left: 0; width: 100%; }
+  .no-print { display: none !important; }
+}
 </style>
 </helmet>
 
@@ -567,6 +573,22 @@ select,textarea,input{font-family:inherit}
             </sc-for>
           </div>
         </div>
+
+        <sc-if value="{{ hasMyAssignments }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:hidden">
+            <div style="padding:16px 20px;border-bottom:1px solid rgba(27,42,65,.08)">
+              <span style="font-family:Georgia,serif;font-size:16px;font-weight:700">Mon journal de bord</span>
+              <div style="font-size:12.5px;color:#8A98A8;margin-top:3px">Reeps qui vous ont été attribués</div>
+            </div>
+            <sc-for list="{{ myAssignments }}" as="j" hint-placeholder-count="3">
+              <button onClick="{{ j.onClick }}" style="display:flex;align-items:center;gap:12px;width:100%;padding:13px 20px;border:none;border-bottom:1px solid rgba(27,42,65,.06);background:#fff;text-align:left;color:#1B2A41" style-hover="background:#FAFBFC">
+                <span style="flex:1;min-width:0;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ j.reepTitle }}</span>
+                <span style="font-size:12px;color:#8A98A8;flex:none">{{ j.byLabel }}</span>
+                <span style="font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#8A98A8;flex:none">{{ j.when }}</span>
+              </button>
+            </sc-for>
+          </div>
+        </sc-if>
       </div>
     </sc-if>
 
@@ -748,6 +770,11 @@ select,textarea,input{font-family:inherit}
           <button onClick="{{ goList }}" style="border:1px solid rgba(27,42,65,.14);background:#fff;border-radius:9px;padding:9px 14px;font-size:13px;font-weight:600;color:#1B2A41">‹ Reeps</button>
           <span style="font-family:ui-monospace,Menlo,monospace;font-size:14px;color:#1B2A41">{{ current.id }}</span>
           <span style="font-size:11px;font-weight:700;padding:6px 11px;border-radius:999px;background:{{ current.bg }};color:{{ current.fg }};white-space:nowrap">{{ current.status }}</span>
+          <div style="flex:1"></div>
+          <sc-if value="{{ isNewReep }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ acceptReep }}" style="border:none;background:#3F8F63;color:#fff;border-radius:9px;padding:10px 16px;font-size:13px;font-weight:700">✓ Accepter</button>
+          </sc-if>
+          <button onClick="{{ openExport }}" style="border:1px solid rgba(27,42,65,.14);background:#fff;border-radius:9px;padding:9px 14px;font-size:13px;font-weight:600;color:#1B2A41">⭳ Exporter le rapport</button>
         </div>
 
         <div style="display:grid;grid-template-columns:{{ detailCols }};gap:18px;align-items:start">
@@ -887,6 +914,31 @@ select,textarea,input{font-family:inherit}
               </sc-if>
             </div>
 
+            <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:hidden">
+              <button onClick="{{ toggleSecAssign }}" style="width:100%;border:none;background:none;padding:16px 20px;display:flex;align-items:center;gap:12px;text-align:left;color:#1B2A41">
+                <span style="flex:1;min-width:0">
+                  <span style="display:block;font-family:Georgia,Cambria,serif;font-size:15.5px;font-weight:700">Attribution</span>
+                  <span style="display:block;font-size:12px;color:#8A98A8;margin-top:2px">{{ assignSummary }}</span>
+                </span>
+                <span style="font-size:12px;color:#8A98A8;flex:none">{{ secAssignChevron }}</span>
+              </button>
+              <sc-if value="{{ secAssignOpen }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:0 20px 20px;border-top:1px solid rgba(27,42,65,.08);padding-top:16px;display:flex;flex-direction:column;gap:14px">
+                  <p style="margin:0;font-size:12.5px;line-height:1.55;color:#8A98A8;text-wrap:pretty">La ou les personnes attribuées reçoivent une entrée dans leur journal de bord personnel. Toute l'équipe de la commune garde la main sur le Reep.</p>
+                  <div style="display:flex;flex-wrap:wrap;gap:8px">
+                    <sc-for list="{{ assignChips }}" as="a" hint-placeholder-count="3">
+                      <button onClick="{{ a.onClick }}" style="display:flex;align-items:center;gap:9px;border:1px solid {{ a.border }};background:{{ a.bg }};color:{{ a.fg }};border-radius:999px;padding:7px 13px;font-size:13px;font-weight:600;white-space:nowrap">
+                        <span style="width:22px;height:22px;border-radius:50%;background:{{ a.avBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">{{ a.initials }}</span>
+                        {{ a.name }}
+                        <span style="opacity:.55;font-weight:400">{{ a.mark }}</span>
+                      </button>
+                    </sc-for>
+                  </div>
+                  <button onClick="{{ saveAssign }}" style="width:100%;padding:13px;border:none;border-radius:10px;background:#1B2A41;color:#fff;font-size:14.5px;font-weight:600">{{ assignSaveLabel }}</button>
+                </div>
+              </sc-if>
+            </div>
+
             <div style="background:#EFF7F1;border:1px solid rgba(63,143,99,.34);border-radius:12px;overflow:hidden">
               <button onClick="{{ toggleSecClose }}" style="width:100%;border:none;background:none;padding:16px 20px;display:flex;align-items:center;gap:12px;text-align:left">
                 <span style="flex:1;min-width:0">
@@ -949,6 +1001,55 @@ select,textarea,input{font-family:inherit}
               </sc-if>
             </div>
           </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ exportOpen }}" hint-placeholder-val="{{ false }}">
+      <div class="rp-export-sheet" style="position:fixed;inset:0;background:#fff;z-index:300;overflow:auto">
+        <div class="no-print" style="padding:14px 24px;border-bottom:1px solid rgba(27,42,65,.12);display:flex;align-items:center;gap:12px;flex-wrap:wrap;position:sticky;top:0;background:#fff;z-index:1">
+          <button onClick="{{ closeExport }}" style="border:1px solid rgba(27,42,65,.14);background:#fff;border-radius:9px;padding:9px 14px;font-size:13px;font-weight:600;color:#1B2A41">‹ Fermer</button>
+          <span style="font-size:12.5px;color:#8A98A8">Destinataire :</span>
+          <button onClick="{{ setAudiencePrestataire }}" style="border:1px solid {{ audiencePrestataireBorder }};background:{{ audiencePrestataireBg }};color:{{ audiencePrestataireFg }};border-radius:9px;padding:8px 13px;font-size:12.5px;font-weight:700">Prestataire externe</button>
+          <button onClick="{{ setAudiencePolice }}" style="border:1px solid {{ audiencePoliceBorder }};background:{{ audiencePoliceBg }};color:{{ audiencePoliceFg }};border-radius:9px;padding:8px 13px;font-size:12.5px;font-weight:700">Police</button>
+          <div style="flex:1"></div>
+          <button onClick="{{ doPrint }}" style="border:none;background:#1B2A41;color:#fff;border-radius:9px;padding:10px 16px;font-size:13px;font-weight:700">🖨️ Imprimer / Enregistrer en PDF</button>
+        </div>
+        <div style="max-width:680px;margin:0 auto;padding:48px 32px">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;border-bottom:2px solid #1B2A41;padding-bottom:16px;margin-bottom:24px">
+            <span style="font-family:Georgia,Cambria,serif;font-size:22px;font-weight:700;color:#1B2A41">Reeper — Rapport de signalement</span>
+            <span style="font-family:ui-monospace,Menlo,monospace;font-size:13px;color:#48566B">{{ exportId }}</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">
+            <div>
+              <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700">Commune</div>
+              <div style="font-size:14px;margin-top:4px;color:#1B2A41">{{ exportCommune }}</div>
+            </div>
+            <div>
+              <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700">Date du signalement</div>
+              <div style="font-size:14px;margin-top:4px;color:#1B2A41">{{ exportDate }}</div>
+            </div>
+            <div>
+              <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700">Catégorie</div>
+              <div style="font-size:14px;margin-top:4px;color:#1B2A41">{{ exportCat }}</div>
+            </div>
+            <div>
+              <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700">Localisation</div>
+              <div style="font-size:14px;margin-top:4px;color:#1B2A41">{{ exportPlace }}</div>
+            </div>
+          </div>
+          <sc-if value="{{ hasExportPhoto }}" hint-placeholder-val="{{ false }}">
+            <img src="{{ exportPhoto }}" style="width:100%;max-height:420px;object-fit:cover;border-radius:8px;margin-bottom:24px" />
+          </sc-if>
+          <div style="margin-bottom:24px">
+            <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:6px">Description</div>
+            <p style="margin:0;font-size:14px;line-height:1.65;color:#1B2A41">{{ exportDesc }}</p>
+          </div>
+          <sc-if value="{{ isAudiencePolice }}" hint-placeholder-val="{{ false }}">
+            <div style="border-top:1px solid rgba(27,42,65,.14);padding-top:14px;margin-top:32px">
+              <p style="margin:0;font-size:11px;line-height:1.6;color:#8A98A8">Ce document est un rapport factuel généré par la plateforme Reeper à la demande de la commune. Il ne constitue pas en lui-même une plainte pénale ; il peut servir de pièce jointe à un dépôt de plainte effectué par la personne lésée ou la commune auprès des autorités compétentes.</p>
+            </div>
+          </sc-if>
         </div>
       </div>
     </sc-if>
@@ -1609,7 +1710,8 @@ class Component extends DCLogic {
   state = {
     screen: "dash", sel: null, filter: "Tous", cat: "Toutes les catégories", view: "Carte",
     preview: false, note: "", closeNote: "", closePhotoDataUrl: null, service: null, status: null, saved: false, closed: false,
-    detailSection: null, deleteReepConfirm: false,
+    detailSection: null, deleteReepConfirm: false, assignSelected: null, assignSaved: false,
+    exportOpen: false, exportAudience: "prestataire",
     agentsIn: [(Store.getSession() || FALLBACK_SESSION).initials], profileOpen: false, configTab: "Catégories", catPath: [], newCatParent: [],
     statMode: "Semaine", chartOpen: false, msgSel: "Paul Meylan", readConvs: [], draft: "", attach: null, asTransfer: true, pickerOpen: false,
     pickQuery: "", shellFitH: null, syncToast: "",
@@ -1635,7 +1737,7 @@ class Component extends DCLogic {
   };
 
   go = (screen) => { this._transition(() => this.setState({ screen, profileOpen: false })); };
-  open = (id) => { this._transition(() => this.setState({ screen: "detail", sel: id, note: "", service: null, status: null, saved: false, closed: false, closePhotoDataUrl: null, agentsIn: [(Store.getSession() || FALLBACK_SESSION).initials], preview: false, xfMode: "service", xfCommune: null, detailSection: null, deleteReepConfirm: false })); };
+  open = (id) => { this._transition(() => this.setState({ screen: "detail", sel: id, note: "", service: null, status: null, saved: false, closed: false, closePhotoDataUrl: null, agentsIn: [(Store.getSession() || FALLBACK_SESSION).initials], preview: false, xfMode: "service", xfCommune: null, detailSection: null, deleteReepConfirm: false, assignSelected: null, assignSaved: false })); };
 
   _transition(fn) {
     if (!document.startViewTransition) { fn(); return; }
@@ -1721,6 +1823,7 @@ class Component extends DCLogic {
     const cur = (s.sel != null && Store.getReep(s.sel)) || REEPS[0] || EMPTY_REEP;
     const status = s.status || cur.status;
     const service = s.service || cur.service;
+    const assignSelectedKeys = s.assignSelected != null ? s.assignSelected : (cur.assignedTo || []);
     const serviceNames = commConfig.services.map((sv) => sv.name);
     const stats = Store.statsForCommune(commune);
     const chartD = Store.chartData(commune, s.statMode);
@@ -2257,6 +2360,12 @@ class Component extends DCLogic {
       activeCount: REEPS.filter((d) => d.status !== "Traité").length,
       miniMarkers: markersFor(REEPS),
 
+      myAssignments: (session.key ? Store.personalJournalFor(session.key) : []).slice(0, 8).map((j) => ({
+        reepTitle: j.reepTitle, byLabel: "par " + j.by, when: fmtDateTime(j.at),
+        onClick: () => this.open(j.reepId)
+      })),
+      hasMyAssignments: !!(session.key && Store.personalJournalFor(session.key).length),
+
       viewOptions: ["Liste", "Carte", "Tableau"], view: s.view,
       onView: (e) => { const v = e.target.value; this._transition(() => this.setState({ view: v, screen: v === "Carte" ? "map" : "list" })); },
       catOptions: ["Toutes les catégories"].concat(Object.keys(Store.TREE)),
@@ -2281,6 +2390,8 @@ class Component extends DCLogic {
 
       current: { ...cur, status, ...STATUS[status], slotBig: "kb-" + cur.id, slotPrev: "kp-" + cur.id, slotAfter: "ka-" + cur.id, hint: "Photo de l'anomalie", src: cur.photoUrl || "", ring: "1px solid rgba(27,42,65,.1)", coords: cur.lat.toFixed(4) + "° N, " + cur.lon.toFixed(4) + "° E", mapCenter: cur.lat + "," + cur.lon },
       detailMarker: markersFor([cur]),
+      isNewReep: cur.status === "Nouveau",
+      acceptReep: () => { Store.acceptReep(cur.id, agentName); this.setState({ status: "En cours", saved: false }); },
       meta: [
         { label: "Signalé par", value: cur.reporterAccount ? (Store.getAccount(cur.reporterAccount) || {}).displayName || "Citoyen" : "Citoyen anonyme" },
         { label: "Reçu le", value: fmtDateTime(cur.createdAt) },
@@ -2334,10 +2445,44 @@ class Component extends DCLogic {
       toggleSecTransfer: () => this.setState({ detailSection: s.detailSection === "transfer" ? null : "transfer" }),
       secCloseOpen: s.detailSection === "close", secCloseChevron: s.detailSection === "close" ? "▴" : "▾",
       toggleSecClose: () => this.setState({ detailSection: s.detailSection === "close" ? null : "close" }),
+      secAssignOpen: s.detailSection === "assign", secAssignChevron: s.detailSection === "assign" ? "▴" : "▾",
+      toggleSecAssign: () => this.setState({ detailSection: s.detailSection === "assign" ? null : "assign" }),
+      assignSummary: assignSelectedKeys.length === 0 ? "Non attribué"
+        : "Attribué à " + assignSelectedKeys.map((k) => (AGENTS.find((a) => a.accountKey === k) || {}).first || "?").join(", "),
+      assignChips: AGENTS.filter((a) => a.accountKey).map((a) => {
+        const on = assignSelectedKeys.includes(a.accountKey);
+        return {
+          initials: a.initials, name: a.first + " " + a.last, avBg: a.avBg, mark: on ? "✓" : "",
+          bg: on ? "#1B2A41" : "#fff", fg: on ? "#fff" : "#1B2A41", border: on ? "#1B2A41" : "rgba(27,42,65,.16)",
+          onClick: () => {
+            const next = on ? assignSelectedKeys.filter((k) => k !== a.accountKey) : assignSelectedKeys.concat([a.accountKey]);
+            this.setState({ assignSelected: next, assignSaved: false });
+          }
+        };
+      }),
+      assignSaveLabel: s.assignSaved ? "Attribution enregistrée ✓" : "Enregistrer l'attribution",
+      saveAssign: () => { Store.assignReep(cur.id, assignSelectedKeys, agentName); this.setState({ assignSaved: true }); },
       history: cur.timeline.slice().reverse().map((h) => ({
         action: h.label, who: h.who, when: fmtDateTime(h.when), note: h.note,
         dot: h.label.indexOf("clôturé") >= 0 ? "#3F8F63" : h.label.indexOf("reçu") >= 0 ? "#D62839" : h.label.indexOf("supprimé") >= 0 ? "#D62839" : "#8A98A8"
       })),
+
+      exportOpen: s.exportOpen,
+      openExport: () => this.setState({ exportOpen: true, exportAudience: "prestataire" }),
+      closeExport: () => this.setState({ exportOpen: false }),
+      doPrint: () => window.print(),
+      isAudiencePolice: s.exportAudience === "police",
+      setAudiencePrestataire: () => this.setState({ exportAudience: "prestataire" }),
+      setAudiencePolice: () => this.setState({ exportAudience: "police" }),
+      audiencePrestataireBg: s.exportAudience === "prestataire" ? "#1B2A41" : "#fff",
+      audiencePrestataireFg: s.exportAudience === "prestataire" ? "#fff" : "#1B2A41",
+      audiencePrestataireBorder: s.exportAudience === "prestataire" ? "#1B2A41" : "rgba(27,42,65,.16)",
+      audiencePoliceBg: s.exportAudience === "police" ? "#1B2A41" : "#fff",
+      audiencePoliceFg: s.exportAudience === "police" ? "#fff" : "#1B2A41",
+      audiencePoliceBorder: s.exportAudience === "police" ? "#1B2A41" : "rgba(27,42,65,.16)",
+      exportId: cur.id, exportCommune: commune, exportDate: fmtDateTime(cur.createdAt),
+      exportCat: cur.cat, exportPlace: cur.place, exportDesc: cur.desc,
+      hasExportPhoto: !!cur.photoUrl, exportPhoto: cur.photoUrl || "",
 
       hasClosePhoto: !!(s.closePhotoDataUrl || cur.closePhotoUrl), noClosePhoto: !(s.closePhotoDataUrl || cur.closePhotoUrl),
       closePhotoUrl: s.closePhotoDataUrl || cur.closePhotoUrl || "",
