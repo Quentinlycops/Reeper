@@ -441,6 +441,16 @@
       if (!cc.statusExtra) cc.statusExtra = [];
       if (!cc.messages) cc.messages = {};
     });
+    // Postal address is a single source of truth shared between Commune >
+    // Configuration > Général and Gérant > Contrats > Coordonnées. The
+    // contract is authoritative; one-time backfill from the commune config
+    // in case it already held a value the contract never had.
+    data.communeConfigs.forEach(function (cc) {
+      var contract = data.contracts.find(function (c) { return c.commune === cc.commune; });
+      if (contract && !contract.postalAddress && cc.general.address) {
+        contract.postalAddress = cc.general.address;
+      }
+    });
     return data;
   }
 
@@ -1388,13 +1398,20 @@
     // --- Commune: per-commune Configuration (Général/Catégories/Services/Statuts/Messages) ---
     getCommuneConfig: function (commune) {
       var data = load();
-      return data.communeConfigs.find(function (c) { return c.commune === commune; }) || defaultCommuneConfig(commune);
+      var cc = data.communeConfigs.find(function (c) { return c.commune === commune; }) || defaultCommuneConfig(commune);
+      var contract = data.contracts.find(function (c) { return c.commune === commune; });
+      if (contract) cc = Object.assign({}, cc, { general: Object.assign({}, cc.general, { address: contract.postalAddress || "" }) });
+      return cc;
     },
     updateGeneralSettings: function (commune, patch) {
       var data = load();
       var cc = data.communeConfigs.find(function (c) { return c.commune === commune; });
       if (!cc) return null;
       Object.assign(cc.general, patch);
+      if (patch.address != null) {
+        var contract = data.contracts.find(function (c) { return c.commune === commune; });
+        if (contract) contract.postalAddress = patch.address;
+      }
       persist(data);
       return cc;
     },

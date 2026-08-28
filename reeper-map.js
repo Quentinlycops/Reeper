@@ -78,7 +78,7 @@
       var self = this;
       var center = this._parseCenter();
       var zoom = parseFloat(this.getAttribute("zoom")) || 15;
-      this._map = L.map(this._container, { zoomControl: true, scrollWheelZoom: true }).setView(center, zoom);
+      this._map = L.map(this._container, { zoomControl: true, scrollWheelZoom: false }).setView(center, zoom);
       L.tileLayer("https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png", {
         maxZoom: 19,
         attribution: "&copy; OpenStreetMap contributors &copy; CARTO"
@@ -86,6 +86,11 @@
       this._layer = L.layerGroup().addTo(this._map);
       this._renderMarkers();
       this._renderDraggable();
+      this._container.addEventListener("wheel", function (e) {
+        if (!(e.ctrlKey || e.metaKey)) return;
+        e.preventDefault();
+        self._map.setZoom(self._map.getZoom() + (e.deltaY < 0 ? 1 : -1));
+      }, { passive: false });
       if (this.hasAttribute("click-to-place")) {
         this._map.on("click", function (e) {
           self._placeDraggable(e.latlng.lat, e.latlng.lng);
@@ -99,6 +104,10 @@
 
     _invalidate() {
       if (this._map) this._map.invalidateSize();
+    }
+
+    invalidate() {
+      this._invalidate();
     }
 
     attributeChangedCallback(name) {

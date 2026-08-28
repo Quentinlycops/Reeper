@@ -781,8 +781,17 @@ select,textarea,input{font-family:inherit}
           <div style="display:flex;flex-direction:column;gap:16px">
             <div style="background:#fff;border:{{ current.ring }};border-radius:12px;overflow:hidden">
               <div style="height:280px;position:relative">
-                <image-slot id="{{ current.slotBig }}" shape="rect" src="{{ current.src }}" placeholder="{{ current.hint }}"></image-slot>
+                <image-slot id="{{ current.slotBig }}" shape="rect" src="{{ current.bigSrc }}" placeholder="{{ current.hint }}"></image-slot>
               </div>
+              <sc-if value="{{ hasMultiPhotos }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;gap:8px;padding:14px 20px 0;overflow-x:auto">
+                  <sc-for list="{{ selPhotoThumbs }}" as="p" hint-placeholder-count="3">
+                    <button onClick="{{ p.onClick }}" style="flex:none;width:56px;height:56px;border-radius:8px;border:{{ p.ring }};padding:0;overflow:hidden;background:#F3F6F8;cursor:pointer">
+                      <img src="{{ p.url }}" style="width:100%;height:100%;object-fit:cover;display:block" />
+                    </button>
+                  </sc-for>
+                </div>
+              </sc-if>
               <div style="padding:18px 20px">
                 <div style="font-size:12px;color:#8A98A8">{{ current.cat }}</div>
                 <h2 style="margin:7px 0 0;font-family:Georgia,serif;font-size:20px;font-weight:700">{{ current.title }}</h2>
@@ -1009,17 +1018,21 @@ select,textarea,input{font-family:inherit}
       <div class="rp-export-sheet" style="position:fixed;inset:0;background:#fff;z-index:300;overflow:auto">
         <div class="no-print" style="padding:14px 24px;border-bottom:1px solid rgba(27,42,65,.12);display:flex;align-items:center;gap:12px;flex-wrap:wrap;position:sticky;top:0;background:#fff;z-index:1">
           <button onClick="{{ closeExport }}" style="border:1px solid rgba(27,42,65,.14);background:#fff;border-radius:9px;padding:9px 14px;font-size:13px;font-weight:600;color:#1B2A41">‹ Fermer</button>
-          <span style="font-size:12.5px;color:#8A98A8">Destinataire :</span>
-          <button onClick="{{ setAudiencePrestataire }}" style="border:1px solid {{ audiencePrestataireBorder }};background:{{ audiencePrestataireBg }};color:{{ audiencePrestataireFg }};border-radius:9px;padding:8px 13px;font-size:12.5px;font-weight:700">Prestataire externe</button>
-          <button onClick="{{ setAudiencePolice }}" style="border:1px solid {{ audiencePoliceBorder }};background:{{ audiencePoliceBg }};color:{{ audiencePoliceFg }};border-radius:9px;padding:8px 13px;font-size:12.5px;font-weight:700">Police</button>
           <div style="flex:1"></div>
           <button onClick="{{ doPrint }}" style="border:none;background:#1B2A41;color:#fff;border-radius:9px;padding:10px 16px;font-size:13px;font-weight:700">🖨️ Imprimer / Enregistrer en PDF</button>
         </div>
         <div style="max-width:680px;margin:0 auto;padding:48px 32px">
           <div style="display:flex;align-items:baseline;justify-content:space-between;border-bottom:2px solid #1B2A41;padding-bottom:16px;margin-bottom:24px">
-            <span style="font-family:Georgia,Cambria,serif;font-size:22px;font-weight:700;color:#1B2A41">Reeper — Rapport de signalement</span>
+            <span style="display:flex;align-items:baseline;gap:9px">
+              <span style="display:flex;align-items:flex-end;gap:3px">
+                <span style="font-family:Georgia,Cambria,serif;font-size:25px;font-weight:700;line-height:1;color:#1B2A41">R</span>
+                <span style="width:7px;height:7px;border-radius:50%;background:#D62839;margin-bottom:3px"></span>
+              </span>
+              <span style="font-family:Georgia,Cambria,serif;font-size:20px;font-weight:700;color:#1B2A41;letter-spacing:-.3px">Reeper</span>
+            </span>
             <span style="font-family:ui-monospace,Menlo,monospace;font-size:13px;color:#48566B">{{ exportId }}</span>
           </div>
+          <div style="font-family:Georgia,Cambria,serif;font-size:17px;font-weight:700;color:#1B2A41;margin-bottom:20px">Rapport de signalement</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">
             <div>
               <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700">Commune</div>
@@ -1038,6 +1051,9 @@ select,textarea,input{font-family:inherit}
               <div style="font-size:14px;margin-top:4px;color:#1B2A41">{{ exportPlace }}</div>
             </div>
           </div>
+          <div style="height:220px;border-radius:8px;overflow:hidden;margin-bottom:24px;border:1px solid rgba(27,42,65,.12)">
+            <reeper-map id="{{ exportMapId }}" center="{{ exportMapCenter }}" zoom="18" markers="{{ exportMapMarkers }}"></reeper-map>
+          </div>
           <sc-if value="{{ hasExportPhoto }}" hint-placeholder-val="{{ false }}">
             <img src="{{ exportPhoto }}" style="width:100%;max-height:420px;object-fit:cover;border-radius:8px;margin-bottom:24px" />
           </sc-if>
@@ -1045,11 +1061,6 @@ select,textarea,input{font-family:inherit}
             <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:6px">Description</div>
             <p style="margin:0;font-size:14px;line-height:1.65;color:#1B2A41">{{ exportDesc }}</p>
           </div>
-          <sc-if value="{{ isAudiencePolice }}" hint-placeholder-val="{{ false }}">
-            <div style="border-top:1px solid rgba(27,42,65,.14);padding-top:14px;margin-top:32px">
-              <p style="margin:0;font-size:11px;line-height:1.6;color:#8A98A8">Ce document est un rapport factuel généré par la plateforme Reeper à la demande de la commune. Il ne constitue pas en lui-même une plainte pénale ; il peut servir de pièce jointe à un dépôt de plainte effectué par la personne lésée ou la commune auprès des autorités compétentes.</p>
-            </div>
-          </sc-if>
         </div>
       </div>
     </sc-if>
@@ -1122,28 +1133,12 @@ select,textarea,input{font-family:inherit}
               </div>
 
               <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;padding:22px 24px">
-                <div style="font-family:Georgia,serif;font-size:16.5px;font-weight:700">Vue principale par défaut</div>
-                <div style="font-size:12.5px;color:#8A98A8;margin-top:5px">Affichage ouvert lorsqu'un agent clique sur « Reeps ».</div>
-                <div style="display:grid;grid-template-columns:{{ viewCardCols }};gap:12px;margin-top:16px">
-                  <sc-for list="{{ defaultViews }}" as="v" hint-placeholder-count="3">
-                    <button onClick="{{ v.onClick }}" style="border:1.5px solid {{ v.border }};background:{{ v.bg }};border-radius:12px;padding:16px 18px;text-align:left;color:#1B2A41;display:flex;flex-direction:column;gap:12px">
-                      <span style="display:flex;align-items:center;gap:9px">
-                        <span style="width:11px;height:11px;border-radius:50%;border:2px solid {{ v.dotBorder }};background:{{ v.dotBg }};box-sizing:border-box;flex:none"></span>
-                        <span style="font-size:14.5px;font-weight:600">{{ v.label }}</span>
-                      </span>
-                      <span style="font-size:12px;line-height:1.5;color:#48566B">{{ v.desc }}</span>
-                    </button>
-                  </sc-for>
-                </div>
-              </div>
-
-              <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;padding:22px 24px">
                 <div style="font-family:Georgia,serif;font-size:16.5px;font-weight:700">Coordonnées de contact</div>
                 <div style="display:grid;grid-template-columns:{{ metaCols2 }};gap:18px;margin-top:18px">
                   <div>
                     <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Adresse postale</div>
                     <textarea value="{{ genAddress }}" onChange="{{ onGenAddress }}" rows="3" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;line-height:1.5;color:#1B2A41;resize:none;outline:none"></textarea>
-                    <div style="font-size:11.5px;color:#8A98A8;margin-top:6px">Facultatif · utilisée dans les documents générés</div>
+                    <div style="font-size:11.5px;color:#8A98A8;margin-top:6px">Partagée avec Gérant &gt; Contrats &gt; Coordonnées — une seule adresse, modifiable des deux côtés.</div>
                   </div>
                   <div>
                     <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Email de contact général</div>
@@ -1163,7 +1158,7 @@ select,textarea,input{font-family:inherit}
                 </div>
               </div>
 
-              <div style="background:#EAF0F4;border-radius:10px;padding:13px 16px;font-size:12.5px;line-height:1.55;color:#48566B">La personnalisation reste volontairement légère : logo, nom, accent, vue par défaut et coordonnées. L'identité Reeper (polices, palette, disposition) est commune à toutes les communes.</div>
+              <div style="background:#EAF0F4;border-radius:10px;padding:13px 16px;font-size:12.5px;line-height:1.55;color:#48566B">La personnalisation reste volontairement légère : logo, nom, accent et coordonnées. L'identité Reeper (polices, palette, disposition) est commune à toutes les communes.</div>
 
               <div style="display:flex;gap:10px">
                 <button onClick="{{ saveGeneral }}" style="border:none;background:#1B2A41;color:#fff;border-radius:10px;padding:13px 20px;font-size:14.5px;font-weight:600">{{ generalSaveLabel }}</button>
@@ -1441,24 +1436,42 @@ select,textarea,input{font-family:inherit}
 
           <sc-if value="{{ isRights }}" hint-placeholder-val="{{ false }}">
             <div style="display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap">
-              <div style="flex:1;min-width:280px;background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:hidden">
-                <div style="display:{{ tableHead }};grid-template-columns:{{ agentCols }};padding:12px 20px;background:#FAFBFC;border-bottom:1px solid rgba(27,42,65,.08);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700">
-                  <span>Agent</span><span>Service</span><span>Rôle</span><span></span>
+              <div style="flex:1;min-width:280px;display:flex;flex-direction:column;gap:12px">
+                <div style="display:flex;gap:10px;flex-wrap:wrap">
+                  <input value="{{ rightsQuery }}" onChange="{{ onRightsQuery }}" placeholder="Rechercher un nom, un e-mail…" style="flex:1;min-width:180px;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:10px 13px;font-size:13.5px;outline:none" />
+                  <select value="{{ rightsService }}" onChange="{{ onRightsService }}" style="border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:9px 13px;font-size:13.5px;background:#fff">
+                    <sc-for list="{{ rightsServiceOptions }}" as="v" hint-placeholder-count="4">
+                      <option value="{{ v }}">{{ v }}</option>
+                    </sc-for>
+                  </select>
+                  <select value="{{ rightsRole }}" onChange="{{ onRightsRole }}" style="border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:9px 13px;font-size:13.5px;background:#fff">
+                    <sc-for list="{{ rightsRoleOptions }}" as="v" hint-placeholder-count="4">
+                      <option value="{{ v }}">{{ v }}</option>
+                    </sc-for>
+                  </select>
                 </div>
-                <sc-for list="{{ agents }}" as="a" hint-placeholder-count="5">
-                  <div style="display:grid;grid-template-columns:{{ agentCols }};gap:{{ tableGap }};align-items:center;padding:13px 20px;border-bottom:1px solid rgba(27,42,65,.06)">
-                    <span style="display:flex;align-items:center;gap:12px;min-width:0">
-                      <span style="width:34px;height:34px;border-radius:50%;background:{{ a.avBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:none">{{ a.initials }}</span>
-                      <span style="min-width:0">
-                        <span style="display:block;font-size:14px;font-weight:600">{{ a.name }}</span>
-                        <span style="display:block;font-size:12px;color:#8A98A8;margin-top:2px">{{ a.email }}</span>
-                      </span>
-                    </span>
-                    <span style="font-size:13px;color:#48566B;display:{{ deskOnly }}">{{ a.service }}</span>
-                    <span style="font-size:11px;font-weight:700;padding:5px 10px;border-radius:999px;background:{{ a.roleBg }};color:{{ a.roleFg }};justify-self:start;white-space:nowrap">{{ a.role }}</span>
-                    <button onClick="{{ a.onEdit }}" style="border:1px solid rgba(27,42,65,.14);background:#fff;border-radius:8px;width:34px;height:34px;font-size:13px;color:#48566B;justify-self:end">✎</button>
+                <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:hidden">
+                  <div style="display:{{ tableHead }};grid-template-columns:{{ agentCols }};padding:12px 20px;background:#FAFBFC;border-bottom:1px solid rgba(27,42,65,.08);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700">
+                    <span>Agent</span><span>Service</span><span>Rôle</span><span></span>
                   </div>
-                </sc-for>
+                  <sc-for list="{{ agents }}" as="a" hint-placeholder-count="5">
+                    <div style="display:grid;grid-template-columns:{{ agentCols }};gap:{{ tableGap }};align-items:center;padding:13px 20px;border-bottom:1px solid rgba(27,42,65,.06)">
+                      <span style="display:flex;align-items:center;gap:12px;min-width:0">
+                        <span style="width:34px;height:34px;border-radius:50%;background:{{ a.avBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:none">{{ a.initials }}</span>
+                        <span style="min-width:0">
+                          <span style="display:block;font-size:14px;font-weight:600">{{ a.name }}</span>
+                          <span style="display:block;font-size:12px;color:#8A98A8;margin-top:2px">{{ a.email }}</span>
+                        </span>
+                      </span>
+                      <span style="font-size:13px;color:#48566B;display:{{ deskOnly }}">{{ a.service }}</span>
+                      <span style="font-size:11px;font-weight:700;padding:5px 10px;border-radius:999px;background:{{ a.roleBg }};color:{{ a.roleFg }};justify-self:start;white-space:nowrap">{{ a.role }}</span>
+                      <button onClick="{{ a.onEdit }}" style="border:1px solid rgba(27,42,65,.14);background:#fff;border-radius:8px;width:34px;height:34px;font-size:13px;color:#48566B;justify-self:end">✎</button>
+                    </div>
+                  </sc-for>
+                  <sc-if value="{{ rightsEmpty }}" hint-placeholder-val="{{ false }}">
+                    <div style="padding:26px 20px;text-align:center;font-size:13px;color:#8A98A8">Aucune personne ne correspond à ces filtres.</div>
+                  </sc-if>
+                </div>
               </div>
 
               <sc-if value="{{ agentSheetOpen }}" hint-placeholder-val="{{ false }}">
@@ -1732,9 +1745,10 @@ const MESSAGE_TRIGGERS = [
 class Component extends DCLogic {
   state = {
     screen: "dash", sel: null, filter: "Tous", cat: "Toutes les catégories", view: "Carte",
-    preview: false, note: "", closeNote: "", closePhotoDataUrl: null, service: null, status: null, saved: false, closed: false,
+    preview: false, note: "", closeNote: "", closePhotoDataUrl: null, service: null, status: null, saved: false, closed: false, selPhotoIdx: 0,
+    rightsQuery: "", rightsService: "Tous", rightsRole: "Tous",
     detailSection: null, deleteReepConfirm: false, assignSelected: null, assignSaved: false,
-    exportOpen: false, exportAudience: "prestataire",
+    exportOpen: false,
     agentsIn: [(Store.getSession() || FALLBACK_SESSION).initials], profileOpen: false, configTab: "Catégories", catPath: [], newCatParent: [],
     statMode: "Semaine", chartOpen: false, msgSel: "Paul Meylan", readConvs: [], draft: "", attach: null, asTransfer: true, pickerOpen: false,
     pickQuery: "", shellFitH: null, syncToast: "",
@@ -1760,7 +1774,7 @@ class Component extends DCLogic {
   };
 
   go = (screen) => { this._transition(() => this.setState({ screen, profileOpen: false })); };
-  open = (id) => { this._transition(() => this.setState({ screen: "detail", sel: id, note: "", service: null, status: null, saved: false, closed: false, closePhotoDataUrl: null, agentsIn: [(Store.getSession() || FALLBACK_SESSION).initials], preview: false, xfMode: "service", xfCommune: null, detailSection: null, deleteReepConfirm: false, assignSelected: null, assignSaved: false })); };
+  open = (id) => { this._transition(() => this.setState({ screen: "detail", sel: id, note: "", service: null, status: null, saved: false, closed: false, closePhotoDataUrl: null, agentsIn: [(Store.getSession() || FALLBACK_SESSION).initials], preview: false, xfMode: "service", xfCommune: null, detailSection: null, deleteReepConfirm: false, assignSelected: null, assignSaved: false, selPhotoIdx: 0 })); };
 
   _transition(fn) {
     if (!document.startViewTransition) { fn(); return; }
@@ -1845,6 +1859,19 @@ class Component extends DCLogic {
     const EMPTY_REEP = { id: "—", title: "—", cat: "—", path: [], leaf: "", place: "—", service: "Voirie", status: "Nouveau", desc: "", lat: Store.COMMUNES[commune].center.lat, lon: Store.COMMUNES[commune].center.lon, photoUrl: null, closePhotoUrl: null, closeNote: "", agentsIn: [], reporterAccount: null, createdAt: Date.now(), closedAt: null, deleted: false, deletedAt: null, timeline: [] };
     const cur = (s.sel != null && Store.getReep(s.sel)) || REEPS[0] || EMPTY_REEP;
     const status = s.status || cur.status;
+    const selPhotos = cur.photos && cur.photos.length ? cur.photos : (cur.photoUrl ? [cur.photoUrl] : []);
+    const selPhotoActiveIdx = Math.min(s.selPhotoIdx || 0, Math.max(0, selPhotos.length - 1));
+    const agentsFiltered = AGENTS.map((a) => ({
+      ...a, name: a.first + " " + a.last,
+      roleBg: ROLE_TAG[a.role].bg, roleFg: ROLE_TAG[a.role].fg,
+      onEdit: () => this.setState({ sheet: a, sheetMail: a.mail, sheetSaved: false, sheetDeleteConfirm: false, sheetDeleteError: "", pwdOld: "", pwdNew1: "", pwdNew2: "", pwdMsg: "" })
+    })).filter((a) => {
+      const q = (s.rightsQuery || "").trim().toLowerCase();
+      if (q && a.name.toLowerCase().indexOf(q) === -1 && a.email.toLowerCase().indexOf(q) === -1) return false;
+      if (s.rightsService !== "Tous" && a.service !== s.rightsService) return false;
+      if (s.rightsRole !== "Tous" && a.role !== s.rightsRole) return false;
+      return true;
+    });
     const service = s.service || cur.service;
     const assignSelectedKeys = s.assignSelected != null ? s.assignSelected : (cur.assignedTo || []);
     const serviceNames = commConfig.services.map((sv) => sv.name);
@@ -2411,10 +2438,15 @@ class Component extends DCLogic {
           border: s.filter === key ? "#1B2A41" : "rgba(27,42,65,.16)" };
       }),
 
-      current: { ...cur, status, ...STATUS[status], slotBig: "kb-" + cur.id, slotPrev: "kp-" + cur.id, slotAfter: "ka-" + cur.id, hint: "Photo de l'anomalie", src: cur.photoUrl || "", ring: "1px solid rgba(27,42,65,.1)", coords: cur.lat.toFixed(4) + "° N, " + cur.lon.toFixed(4) + "° E", mapCenter: cur.lat + "," + cur.lon },
+      current: { ...cur, status, ...STATUS[status], slotBig: "kb-" + cur.id, slotPrev: "kp-" + cur.id, slotAfter: "ka-" + cur.id, hint: "Photo de l'anomalie", src: cur.photoUrl || "", bigSrc: selPhotos[selPhotoActiveIdx] || "", ring: "1px solid rgba(27,42,65,.1)", coords: cur.lat.toFixed(4) + "° N, " + cur.lon.toFixed(4) + "° E", mapCenter: cur.lat + "," + cur.lon },
       detailMarker: markersFor([cur]),
+      hasMultiPhotos: selPhotos.length > 1,
+      selPhotoThumbs: selPhotos.map((url, i) => ({
+        url, ring: i === selPhotoActiveIdx ? "2px solid #1B2A41" : "1px solid rgba(27,42,65,.14)",
+        onClick: () => this.setState({ selPhotoIdx: i })
+      })),
       isCurReepNew: cur.status === "Nouveau",
-      acceptReep: () => { Store.acceptReep(cur.id, agentName); this.setState({ status: "En cours", saved: false }); },
+      acceptReep: () => { Store.acceptReep(cur.id, agentName); this._transition(() => this.setState({ status: "En cours", saved: false })); },
       meta: [
         { label: "Signalé par", value: cur.reporterAccount ? (Store.getAccount(cur.reporterAccount) || {}).displayName || "Citoyen" : "Citoyen anonyme" },
         { label: "Reçu le", value: fmtDateTime(cur.createdAt) },
@@ -2491,21 +2523,19 @@ class Component extends DCLogic {
       })),
 
       exportOpen: s.exportOpen,
-      openExport: () => this.setState({ exportOpen: true, exportAudience: "prestataire" }),
+      openExport: () => this.setState({ exportOpen: true }),
       closeExport: () => this.setState({ exportOpen: false }),
-      doPrint: () => window.print(),
-      isAudiencePolice: s.exportAudience === "police",
-      setAudiencePrestataire: () => this.setState({ exportAudience: "prestataire" }),
-      setAudiencePolice: () => this.setState({ exportAudience: "police" }),
-      audiencePrestataireBg: s.exportAudience === "prestataire" ? "#1B2A41" : "#fff",
-      audiencePrestataireFg: s.exportAudience === "prestataire" ? "#fff" : "#1B2A41",
-      audiencePrestataireBorder: s.exportAudience === "prestataire" ? "#1B2A41" : "rgba(27,42,65,.16)",
-      audiencePoliceBg: s.exportAudience === "police" ? "#1B2A41" : "#fff",
-      audiencePoliceFg: s.exportAudience === "police" ? "#fff" : "#1B2A41",
-      audiencePoliceBorder: s.exportAudience === "police" ? "#1B2A41" : "rgba(27,42,65,.16)",
+      doPrint: () => {
+        const el = document.getElementById("rp-export-map");
+        if (el && el.invalidate) el.invalidate();
+        setTimeout(() => window.print(), 120);
+      },
       exportId: cur.id, exportCommune: commune, exportDate: fmtDateTime(cur.createdAt),
       exportCat: cur.cat, exportPlace: cur.place, exportDesc: cur.desc,
       hasExportPhoto: !!cur.photoUrl, exportPhoto: cur.photoUrl || "",
+      exportMapId: "rp-export-map",
+      exportMapCenter: cur.lat + "," + cur.lon,
+      exportMapMarkers: JSON.stringify([{ id: cur.id, lat: cur.lat, lon: cur.lon, color: "#D62839" }]),
 
       hasClosePhoto: !!(s.closePhotoDataUrl || cur.closePhotoUrl), noClosePhoto: !(s.closePhotoDataUrl || cur.closePhotoUrl),
       closePhotoUrl: s.closePhotoDataUrl || cur.closePhotoUrl || "",
@@ -2573,17 +2603,6 @@ class Component extends DCLogic {
       genName: s.genName != null ? s.genName : commConfig.general.name, onGenName: (e) => this.setState({ genName: e.target.value, genSaved: false }),
       genAddress: s.genAddress != null ? s.genAddress : commConfig.general.address, onGenAddress: (e) => this.setState({ genAddress: e.target.value, genSaved: false }),
       genEmail: s.genEmail != null ? s.genEmail : commConfig.general.email, onGenEmail: (e) => this.setState({ genEmail: e.target.value, genSaved: false }),
-      viewCardCols: mobile ? "1fr" : "repeat(3,1fr)",
-      defaultViews: [
-        { label: "Carte", desc: "Marqueurs géolocalisés, utile pour le terrain." },
-        { label: "Liste", desc: "Fiches détaillées avec photo et statut." },
-        { label: "Tableau", desc: "Colonnes triables, adapté au traitement en volume." }
-      ].map((v) => {
-        const on = commConfig.general.defaultView === v.label;
-        return { ...v, onClick: () => Store.updateGeneralSettings(commune, { defaultView: v.label }) && this.forceUpdate(),
-          border: on ? "#1B2A41" : "rgba(27,42,65,.12)", bg: on ? "#F7F9FB" : "#fff",
-          dotBorder: on ? "#1B2A41" : "rgba(27,42,65,.28)", dotBg: on ? "#1B2A41" : "transparent" };
-      }),
       adminLangs: ["Français", "Deutsch", "English"].map((label) => {
         const on = commConfig.general.adminLang === label;
         return { label, onClick: () => Store.updateGeneralSettings(commune, { adminLang: label }) && this.forceUpdate(),
@@ -2782,11 +2801,13 @@ class Component extends DCLogic {
         this.setState({ msgEditing: null });
       },
 
-      agents: AGENTS.map((a) => ({
-        ...a, name: a.first + " " + a.last,
-        roleBg: ROLE_TAG[a.role].bg, roleFg: ROLE_TAG[a.role].fg,
-        onEdit: () => this.setState({ sheet: a, sheetMail: a.mail, sheetSaved: false, sheetDeleteConfirm: false, sheetDeleteError: "", pwdOld: "", pwdNew1: "", pwdNew2: "", pwdMsg: "" })
-      })),
+      rightsQuery: s.rightsQuery, onRightsQuery: (e) => this.setState({ rightsQuery: e.target.value }),
+      rightsService: s.rightsService, onRightsService: (e) => this.setState({ rightsService: e.target.value }),
+      rightsServiceOptions: ["Tous"].concat(serviceNames),
+      rightsRole: s.rightsRole, onRightsRole: (e) => this.setState({ rightsRole: e.target.value }),
+      rightsRoleOptions: ["Tous", "Administrateur", "Chef de service", "Agent"],
+      agents: agentsFiltered,
+      rightsEmpty: agentsFiltered.length === 0,
       roles: ["Administrateur", "Chef de service", "Agent"],
       agentSheetOpen: !!sheet && !s.replaceOpen,
       sheetTitle: sheet && sheet.isNew ? "Inviter un agent" : "Fiche agent",
