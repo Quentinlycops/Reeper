@@ -89,7 +89,7 @@
       this._container.addEventListener("wheel", function (e) {
         if (!(e.ctrlKey || e.metaKey)) return;
         e.preventDefault();
-        self._map.setZoom(self._map.getZoom() + (e.deltaY < 0 ? 1 : -1));
+        self._map.setZoom(self._map.getZoom() + (e.deltaY < 0 ? 1 : -1), { animate: false });
       }, { passive: false });
       if (this.hasAttribute("click-to-place")) {
         this._map.on("click", function (e) {
