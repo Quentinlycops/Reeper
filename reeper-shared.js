@@ -1234,8 +1234,8 @@
       if (!c) return null;
       if (!c.documents) c.documents = [];
       c.documents.unshift({
-        id: "doc" + (data.seq = (data.seq || 4900) + 1), type: o.type || "Autre",
-        title: o.title || "", note: o.note || "", fileUrl: o.fileUrl, fileName: o.fileName, uploadedAt: now()
+        id: "doc" + (data.seq = (data.seq || 4900) + 1),
+        title: o.title || "", note: o.note || "", fileUrl: o.fileUrl, fileName: o.fileName, fileSize: o.fileSize || 0, uploadedAt: now()
       });
       persist(data);
       return c;

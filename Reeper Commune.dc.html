@@ -1188,34 +1188,40 @@ select,textarea,input{font-family:inherit}
                 <sc-for list="{{ catItems }}" as="c" hint-placeholder-count="6">
                   <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:hidden">
                     <div style="display:flex;align-items:center;gap:14px;padding:14px 18px">
-                      <sc-if value="{{ c.isEditing }}" hint-placeholder-val="{{ false }}">
-                        <input value="{{ c.editValue }}" onChange="{{ c.onEditChange }}" style="flex:1;min-width:0;box-sizing:border-box;border:1px solid rgba(27,42,65,.24);border-radius:8px;padding:9px 11px;font-size:14px;font-weight:600;outline:none">
-                        <button onClick="{{ c.onEditSave }}" style="border:none;background:#3F8F63;color:#fff;border-radius:8px;width:34px;height:34px;font-size:14px;flex:none">✓</button>
-                        <button onClick="{{ c.onEditCancel }}" style="border:1px solid rgba(27,42,65,.14);background:#fff;border-radius:8px;width:34px;height:34px;font-size:14px;color:#48566B;flex:none">×</button>
+                      <button onClick="{{ c.onOpen }}" style="border:none;background:none;padding:0;flex:1;min-width:0;text-align:left;color:#1B2A41;display:flex;align-items:center;gap:10px">
+                        <span style="flex:1;min-width:0">
+                          <span style="display:block;font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ c.label }}</span>
+                          <span style="display:block;font-size:12px;color:#8A98A8;margin-top:3px">{{ c.meta }}</span>
+                        </span>
+                        <span style="color:#B4C0CB;font-size:15px;flex:none">{{ c.chev }}</span>
+                      </button>
+                      <sc-if value="{{ c.isTop }}" hint-placeholder-val="{{ false }}">
+                        <span style="font-size:12.5px;color:#48566B;white-space:nowrap">{{ c.service }}</span>
                       </sc-if>
-                      <sc-if value="{{ c.isView }}" hint-placeholder-val="{{ true }}">
-                        <button onClick="{{ c.onOpen }}" style="border:none;background:none;padding:0;flex:1;min-width:0;text-align:left;color:#1B2A41;display:flex;align-items:center;gap:10px">
-                          <span style="flex:1;min-width:0">
-                            <span style="display:block;font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ c.label }}</span>
-                            <span style="display:block;font-size:12px;color:#8A98A8;margin-top:3px">{{ c.meta }}</span>
-                          </span>
-                          <span style="color:#B4C0CB;font-size:15px;flex:none">{{ c.chev }}</span>
+                      <button onClick="{{ c.onEdit }}" style="border:1px solid rgba(27,42,65,.14);background:#fff;border-radius:8px;width:34px;height:34px;font-size:13px;color:#48566B;flex:none">✎</button>
+                      <sc-if value="{{ c.isTop }}" hint-placeholder-val="{{ false }}">
+                        <button onClick="{{ c.onToggleActive }}" style="border:none;background:{{ c.toggleBg }};border-radius:999px;width:46px;height:26px;padding:3px;box-sizing:border-box;display:flex;align-items:center;justify-content:{{ c.toggleJustify }};flex:none">
+                          <span style="width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25)"></span>
                         </button>
-                        <sc-if value="{{ c.isTop }}" hint-placeholder-val="{{ false }}">
-                          <span style="font-size:12.5px;color:#48566B;white-space:nowrap">{{ c.service }}</span>
-                        </sc-if>
-                        <button onClick="{{ c.onEdit }}" style="border:1px solid rgba(27,42,65,.14);background:#fff;border-radius:8px;width:34px;height:34px;font-size:13px;color:#48566B;flex:none">✎</button>
-                        <sc-if value="{{ c.isTop }}" hint-placeholder-val="{{ false }}">
-                          <button onClick="{{ c.onToggleActive }}" style="border:none;background:{{ c.toggleBg }};border-radius:999px;width:46px;height:26px;padding:3px;box-sizing:border-box;display:flex;align-items:center;justify-content:{{ c.toggleJustify }};flex:none">
-                            <span style="width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25)"></span>
-                          </button>
-                        </sc-if>
                       </sc-if>
                     </div>
                   </div>
                 </sc-for>
               </div>
               <div style="background:#EAF0F4;border-radius:10px;padding:13px 16px;font-size:12.5px;line-height:1.55;color:#48566B">Une catégorie désactivée disparaît du parcours citoyen mais reste visible sur les Reeps déjà reçus.</div>
+
+              <sc-if value="{{ catRenameOpen }}" hint-placeholder-val="{{ false }}">
+                <div style="position:fixed;inset:0;background:rgba(27,42,65,.32);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px" onClick="{{ closeCatRename }}">
+                  <div style="background:#fff;border-radius:14px;padding:20px 22px;max-width:400px;width:100%;box-shadow:0 20px 50px rgba(27,42,65,.28)" onClick="{{ stopProp }}">
+                    <div style="font-family:Georgia,serif;font-size:17px;font-weight:700;margin-bottom:16px">Renommer la catégorie</div>
+                    <input value="{{ catEditLabel }}" onChange="{{ onCatEditLabel }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;outline:none" />
+                    <div style="display:flex;gap:10px;margin-top:16px">
+                      <button onClick="{{ saveCatRename }}" style="border:none;background:#1B2A41;color:#fff;border-radius:10px;padding:12px 18px;font-size:14px;font-weight:600">Enregistrer</button>
+                      <button onClick="{{ closeCatRename }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;color:#48566B;border-radius:10px;padding:12px 16px;font-size:14px;font-weight:600">Annuler</button>
+                    </div>
+                  </div>
+                </div>
+              </sc-if>
             </div>
 
             <sc-if value="{{ newCatOpen }}" hint-placeholder-val="{{ false }}">
@@ -1273,16 +1279,9 @@ select,textarea,input{font-family:inherit}
               <sc-for list="{{ services }}" as="s" hint-placeholder-count="4">
                 <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;padding:16px 18px">
                   <div style="display:flex;align-items:center;gap:14px">
-                    <sc-if value="{{ s.isEditing }}" hint-placeholder-val="{{ false }}">
-                      <input value="{{ s.editValue }}" onChange="{{ s.onEditChange }}" style="flex:1;min-width:0;box-sizing:border-box;border:1px solid rgba(27,42,65,.24);border-radius:8px;padding:9px 11px;font-size:14px;font-weight:600;outline:none">
-                      <button onClick="{{ s.onEditSave }}" style="border:none;background:#3F8F63;color:#fff;border-radius:8px;width:34px;height:34px;font-size:14px;flex:none">✓</button>
-                      <button onClick="{{ s.onEditCancel }}" style="border:1px solid rgba(27,42,65,.14);background:#fff;border-radius:8px;width:34px;height:34px;font-size:14px;color:#48566B;flex:none">×</button>
-                    </sc-if>
-                    <sc-if value="{{ s.isView }}" hint-placeholder-val="{{ true }}">
-                      <span style="flex:1;font-size:15px;font-weight:600">{{ s.name }}</span>
-                      <span style="font-size:12.5px;color:#8A98A8;white-space:nowrap">{{ s.catCount }}</span>
-                      <button onClick="{{ s.onEdit }}" style="border:1px solid rgba(27,42,65,.14);background:#fff;border-radius:8px;width:34px;height:34px;font-size:13px;color:#48566B;flex:none">✎</button>
-                    </sc-if>
+                    <span style="flex:1;font-size:15px;font-weight:600">{{ s.name }}</span>
+                    <span style="font-size:12.5px;color:#8A98A8;white-space:nowrap">{{ s.catCount }}</span>
+                    <button onClick="{{ s.onEdit }}" style="border:1px solid rgba(27,42,65,.14);background:#fff;border-radius:8px;width:34px;height:34px;font-size:13px;color:#48566B;flex:none">✎</button>
                   </div>
                   <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center">
                     <sc-for list="{{ s.emails }}" as="e" hint-placeholder-count="2">
@@ -1295,6 +1294,19 @@ select,textarea,input{font-family:inherit}
               </sc-for>
               <div style="background:#EAF0F4;border-radius:10px;padding:13px 16px;font-size:12.5px;line-height:1.55;color:#48566B">Les adresses de notification sont rattachées au service, jamais à une catégorie : plusieurs catégories peuvent dépendre du même service.</div>
             </div>
+
+            <sc-if value="{{ svcRenameOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="position:fixed;inset:0;background:rgba(27,42,65,.32);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px" onClick="{{ closeSvcRename }}">
+                <div style="background:#fff;border-radius:14px;padding:20px 22px;max-width:400px;width:100%;box-shadow:0 20px 50px rgba(27,42,65,.28)" onClick="{{ stopProp }}">
+                  <div style="font-family:Georgia,serif;font-size:17px;font-weight:700;margin-bottom:16px">Renommer le service</div>
+                  <input value="{{ svcEditValue }}" onChange="{{ onSvcEditValue }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;outline:none" />
+                  <div style="display:flex;gap:10px;margin-top:16px">
+                    <button onClick="{{ saveSvcRename }}" style="border:none;background:#1B2A41;color:#fff;border-radius:10px;padding:12px 18px;font-size:14px;font-weight:600">Enregistrer</button>
+                    <button onClick="{{ closeSvcRename }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;color:#48566B;border-radius:10px;padding:12px 16px;font-size:14px;font-weight:600">Annuler</button>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
 
             <sc-if value="{{ newServiceOpen }}" hint-placeholder-val="{{ false }}">
               <div style="position:fixed;inset:0;background:rgba(27,42,65,.32);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px" onClick="{{ closeNewService }}">
@@ -1401,17 +1413,8 @@ select,textarea,input{font-family:inherit}
                         <span style="font-size:10.5px;font-weight:700;color:#A96A16;background:#FDF6E9;border-radius:999px;padding:2px 8px">Modifié</span>
                       </sc-if>
                     </div>
-                    <sc-if value="{{ m.editing }}" hint-placeholder-val="{{ false }}">
-                      <textarea value="{{ m.draft }}" onChange="{{ m.onDraft }}" rows="3" style="width:100%;box-sizing:border-box;margin-top:9px;border:1px solid rgba(27,42,65,.18);border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.55;color:#1B2A41;font-family:inherit;outline:none;resize:none"></textarea>
-                      <div style="display:flex;gap:8px;margin-top:9px">
-                        <button onClick="{{ m.onSave }}" style="border:none;background:#1B2A41;color:#fff;border-radius:8px;padding:9px 14px;font-size:12.5px;font-weight:600">Enregistrer les modifications</button>
-                        <button onClick="{{ m.onCancel }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;color:#48566B;border-radius:8px;padding:9px 14px;font-size:12.5px;font-weight:600">Annuler</button>
-                      </div>
-                    </sc-if>
-                    <sc-if value="{{ m.notEditing }}" hint-placeholder-val="{{ true }}">
-                      <div style="margin-top:9px;background:#F3F6F8;border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.55;color:#48566B;text-wrap:pretty">{{ m.preview }}</div>
-                      <button onClick="{{ m.onEdit }}" style="margin-top:9px;border:1px solid rgba(27,42,65,.16);background:#fff;color:#1B2A41;border-radius:8px;padding:8px 13px;font-size:12.5px;font-weight:600">✏️ Modifier</button>
-                    </sc-if>
+                    <div style="margin-top:9px;background:#F3F6F8;border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.55;color:#48566B;text-wrap:pretty">{{ m.preview }}</div>
+                    <button onClick="{{ m.onEdit }}" style="margin-top:9px;border:1px solid rgba(27,42,65,.14);background:#fff;border-radius:8px;width:34px;height:34px;font-size:13px;color:#48566B;flex:none">✎</button>
                   </div>
                   <button onClick="{{ m.onToggle }}" style="border:none;background:{{ m.toggleBg }};border-radius:999px;width:46px;height:26px;padding:3px;box-sizing:border-box;display:flex;align-items:center;justify-content:{{ m.toggleJustify }};flex:none;margin-top:2px">
                     <span style="width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25)"></span>
@@ -1420,6 +1423,20 @@ select,textarea,input{font-family:inherit}
               </sc-for>
               <div style="background:#EAF0F4;border-radius:10px;padding:13px 16px;font-size:12.5px;line-height:1.55;color:#48566B">Envoyés uniquement aux citoyens ayant activé les notifications dans leur compte.</div>
             </div>
+
+            <sc-if value="{{ msgRenameOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="position:fixed;inset:0;background:rgba(27,42,65,.32);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px" onClick="{{ closeMsgEdit }}">
+                <div style="background:#fff;border-radius:14px;padding:20px 22px;max-width:480px;width:100%;box-shadow:0 20px 50px rgba(27,42,65,.28)" onClick="{{ stopProp }}">
+                  <div style="font-family:Georgia,serif;font-size:17px;font-weight:700;margin-bottom:6px">Modifier le message</div>
+                  <div style="font-size:12.5px;color:#8A98A8;margin-bottom:14px">{{ msgEditTrigger }}</div>
+                  <textarea value="{{ msgEditDraft }}" onChange="{{ onMsgEditDraft }}" rows="4" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.18);border-radius:10px;padding:12px 14px;font-size:13.5px;line-height:1.55;color:#1B2A41;font-family:inherit;outline:none;resize:none"></textarea>
+                  <div style="display:flex;gap:10px;margin-top:16px">
+                    <button onClick="{{ saveMsgEdit }}" style="border:none;background:#1B2A41;color:#fff;border-radius:10px;padding:12px 18px;font-size:14px;font-weight:600">Enregistrer</button>
+                    <button onClick="{{ closeMsgEdit }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;color:#48566B;border-radius:10px;padding:12px 16px;font-size:14px;font-weight:600">Annuler</button>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
           </sc-if>
 
           <sc-if value="{{ isRights }}" hint-placeholder-val="{{ false }}">
@@ -1706,6 +1723,12 @@ const ROLE_TAG = {
 
 const FALLBACK_SESSION = { type: "agent", key: "", commune: "Nyon", displayName: "", initials: "··", avBg: "#1B2A41", role: "", username: "" };
 
+const MESSAGE_TRIGGERS = [
+  { trigger: "Reep reçu", preview: "Votre Reep RE02-26-XXXXX a bien été transmis au service compétent de la commune de Nyon." },
+  { trigger: "Reep confirmé", preview: "Un autre habitant a confirmé votre Reep. La commune en est informée." },
+  { trigger: "Reep clôturé", preview: "L'intervention a été réalisée. Merci de votre Reep." }
+];
+
 class Component extends DCLogic {
   state = {
     screen: "dash", sel: null, filter: "Tous", cat: "Toutes les catégories", view: "Carte",
@@ -1717,7 +1740,7 @@ class Component extends DCLogic {
     pickQuery: "", shellFitH: null, syncToast: "",
     extra: {}, xfer: {}, refuseKey: null, refuseMode: "back", refuseNote: "", xferService: "Propreté publique",
     query: "", partner: null, partnerService: "", manualMail: "",
-    catEdit: null, catEditLabel: "", msgEditing: null, msgDrafts: {}, sheet: null, sheetMail: true, sheetSaved: false, inviteError: "", newCat: false, newService: false, device: "Bureau",
+    catEdit: null, catEditLabel: "", catEditOrig: "", msgEditing: null, msgDrafts: {}, sheet: null, sheetMail: true, sheetSaved: false, inviteError: "", newCat: false, newService: false, device: "Bureau",
     sheetDeleteConfirm: false, sheetDeleteError: "",
     pwdOld: "", pwdNew1: "", pwdNew2: "", pwdMsg: "", pwdMsgIsError: false,
     replaceOpen: false, replaceForKey: null, replaceCommune: "", replaceMode: "select", replacementKey: "",
@@ -2585,23 +2608,13 @@ class Component extends DCLogic {
           const child = node[k];
           const label = (commConfig.catOverrides[key] && commConfig.catOverrides[key].label) || k;
           const on = isTop ? !commConfig.catsOff.includes(k) : true;
-          const isEditing = s.catEdit === key;
           const childCount = child ? Object.keys(child).length : 0;
           return {
             key, label, isTop, isExtra: false,
             chev: child ? "›" : "",
             meta: (child ? (childCount + (childCount > 1 ? " sous-catégories" : " sous-catégorie")) : "") + (isTop && !on ? " · désactivée" : ""),
             service: isTop ? (Store.SERVICE[k] || "") : "",
-            isEditing, isView: !isEditing,
-            editValue: isEditing ? s.catEditLabel : "",
-            onEditChange: (e) => this.setState({ catEditLabel: e.target.value }),
-            onEdit: () => this.setState({ catEdit: key, catEditLabel: label }),
-            onEditSave: () => {
-              const v = s.catEditLabel.trim();
-              Store.renameCategoryLabel(commune, key, v || label);
-              this.setState({ catEdit: null, catEditLabel: "" });
-            },
-            onEditCancel: () => this.setState({ catEdit: null, catEditLabel: "" }),
+            onEdit: () => this.setState({ catEdit: key, catEditLabel: label, catEditOrig: label }),
             onOpen: child ? () => this.setState({ catPath: path }) : () => {},
             onToggleActive: isTop ? () => Store.setCategoryActive(commune, k, !on) && this.forceUpdate() : () => {},
             toggleBg: on ? "#3F8F63" : "#C6D0D9", toggleJustify: on ? "flex-end" : "flex-start"
@@ -2611,22 +2624,12 @@ class Component extends DCLogic {
           const key = isTop ? e.name : topName + "::" + e.name;
           const label = (commConfig.catOverrides[key] && commConfig.catOverrides[key].label) || e.name;
           const on = isTop ? !commConfig.catsOff.includes(e.name) : true;
-          const isEditing = s.catEdit === key;
           return {
             key, label, isTop, isExtra: true,
             chev: "",
             meta: (isTop && !on ? "désactivée" : "") || "ajoutée",
             service: isTop ? e.service : "",
-            isEditing, isView: !isEditing,
-            editValue: isEditing ? s.catEditLabel : "",
-            onEditChange: (ev) => this.setState({ catEditLabel: ev.target.value }),
-            onEdit: () => this.setState({ catEdit: key, catEditLabel: label }),
-            onEditSave: () => {
-              const v = s.catEditLabel.trim();
-              Store.renameCategoryLabel(commune, key, v || label);
-              this.setState({ catEdit: null, catEditLabel: "" });
-            },
-            onEditCancel: () => this.setState({ catEdit: null, catEditLabel: "" }),
+            onEdit: () => this.setState({ catEdit: key, catEditLabel: label, catEditOrig: label }),
             onOpen: () => {},
             onToggleActive: isTop ? () => Store.setCategoryActive(commune, e.name, !on) && this.forceUpdate() : () => {},
             toggleBg: on ? "#3F8F63" : "#C6D0D9", toggleJustify: on ? "flex-end" : "flex-start"
@@ -2634,6 +2637,15 @@ class Component extends DCLogic {
         });
         return treeItems.concat(extras);
       })(),
+      catRenameOpen: !!s.catEdit,
+      catEditLabel: s.catEditLabel, onCatEditLabel: (e) => this.setState({ catEditLabel: e.target.value }),
+      closeCatRename: () => this.setState({ catEdit: null, catEditLabel: "", catEditOrig: "" }),
+      saveCatRename: () => {
+        if (!s.catEdit) return;
+        const v = s.catEditLabel.trim();
+        Store.renameCategoryLabel(commune, s.catEdit, v || s.catEditOrig);
+        this.setState({ catEdit: null, catEditLabel: "", catEditOrig: "" });
+      },
       catCrumbs: [{ label: "Catégories", path: [] }].concat(s.catPath.map((_, i) => {
         const segPath = s.catPath.slice(0, i + 1);
         const segKey = segPath.join("::");
@@ -2675,14 +2687,9 @@ class Component extends DCLogic {
 
       services: commConfig.services.map((svc) => {
         const catCount = CATS.filter((c) => c.service === svc.name).length + commConfig.catExtra.filter((e) => !e.parentName && e.service === svc.name).length;
-        const isEditing = s.svcEdit === svc.name;
         return {
-          name: svc.name, isEditing, isView: !isEditing,
-          editValue: isEditing ? s.svcEditValue : "",
-          onEditChange: (e) => this.setState({ svcEditValue: e.target.value }),
+          name: svc.name,
           onEdit: () => this.setState({ svcEdit: svc.name, svcEditValue: svc.name }),
-          onEditSave: () => { Store.renameService(commune, svc.name, s.svcEditValue.trim()); this.setState({ svcEdit: null, svcEditValue: "" }); },
-          onEditCancel: () => this.setState({ svcEdit: null, svcEditValue: "" }),
           catCount: catCount + (catCount > 1 ? " catégories rattachées" : catCount === 1 ? " catégorie rattachée" : "Aucune catégorie rattachée"),
           emails: svc.emails.map((e) => ({ value: e, onRemove: () => Store.removeServiceEmail(commune, svc.name, e) && this.forceUpdate() })),
           emailDraft: s.svcEmailDrafts[svc.name] || "",
@@ -2695,6 +2702,14 @@ class Component extends DCLogic {
           }
         };
       }),
+      svcRenameOpen: !!s.svcEdit,
+      svcEditValue: s.svcEditValue, onSvcEditValue: (e) => this.setState({ svcEditValue: e.target.value }),
+      closeSvcRename: () => this.setState({ svcEdit: null, svcEditValue: "" }),
+      saveSvcRename: () => {
+        if (!s.svcEdit) return;
+        Store.renameService(commune, s.svcEdit, s.svcEditValue.trim());
+        this.setState({ svcEdit: null, svcEditValue: "" });
+      },
       newServiceOpen: s.newService,
       closeNewService: () => this.setState({ newService: false, newServiceName: "", newServiceEmails: [], newServiceEmailDraft: "", newServiceError: "" }),
       newServiceName: s.newServiceName, onNewServiceName: (e) => this.setState({ newServiceName: e.target.value }),
@@ -2744,26 +2759,28 @@ class Component extends DCLogic {
         this.setState({ newStatus: false, newStatusName: "", newStatusMap: "En cours", newStatusColor: "#7A6BC4", newStatusError: "" });
       },
 
-      messages: [
-        { trigger: "Reep reçu", preview: "Votre Reep RE02-26-XXXXX a bien été transmis au service compétent de la commune de Nyon." },
-        { trigger: "Reep confirmé", preview: "Un autre habitant a confirmé votre Reep. La commune en est informée." },
-        { trigger: "Reep clôturé", preview: "L'intervention a été réalisée. Merci de votre Reep." }
-      ].map((m) => {
+      messages: MESSAGE_TRIGGERS.map((m) => {
         const saved = commConfig.messages[m.trigger] || {};
         const on = !saved.off;
         const custom = saved.text;
-        const editing = s.msgEditing === m.trigger;
-        const draft = s.msgDrafts[m.trigger] != null ? s.msgDrafts[m.trigger] : (custom || m.preview);
         return { ...m,
           preview: custom || m.preview,
-          isCustom: !!custom, editing, notEditing: !editing, draft,
-          onDraft: (e) => this.setState({ msgDrafts: { ...s.msgDrafts, [m.trigger]: e.target.value } }),
+          isCustom: !!custom,
           onEdit: () => this.setState({ msgEditing: m.trigger, msgDrafts: { ...s.msgDrafts, [m.trigger]: custom || m.preview } }),
-          onSave: () => { Store.setMessageOverride(commune, m.trigger, (s.msgDrafts[m.trigger] || "").trim() || m.preview); this.setState({ msgEditing: null }); },
-          onCancel: () => this.setState({ msgEditing: null }),
           onToggle: () => Store.toggleMessageOff(commune, m.trigger, on) && this.forceUpdate(),
           toggleBg: on ? "#3F8F63" : "#C6D0D9", toggleJustify: on ? "flex-end" : "flex-start" };
       }),
+      msgRenameOpen: !!s.msgEditing,
+      msgEditTrigger: s.msgEditing || "",
+      msgEditDraft: s.msgEditing ? (s.msgDrafts[s.msgEditing] || "") : "",
+      onMsgEditDraft: (e) => this.setState({ msgDrafts: { ...s.msgDrafts, [s.msgEditing]: e.target.value } }),
+      closeMsgEdit: () => this.setState({ msgEditing: null }),
+      saveMsgEdit: () => {
+        if (!s.msgEditing) return;
+        const fallback = (MESSAGE_TRIGGERS.find((m) => m.trigger === s.msgEditing) || {}).preview || "";
+        Store.setMessageOverride(commune, s.msgEditing, (s.msgDrafts[s.msgEditing] || "").trim() || fallback);
+        this.setState({ msgEditing: null });
+      },
 
       agents: AGENTS.map((a) => ({
         ...a, name: a.first + " " + a.last,

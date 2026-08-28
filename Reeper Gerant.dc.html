@@ -739,37 +739,67 @@ select,textarea,input{font-family:inherit}
 
               <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;padding:20px">
                 <div style="font-family:Georgia,serif;font-size:16px;font-weight:700;margin-bottom:14px">Contacts &amp; adresse</div>
-                <sc-for list="{{ contactRows }}" as="ct" hint-placeholder-count="2">
-                  <div style="border:1px solid rgba(27,42,65,.08);border-radius:10px;padding:12px 14px;margin-bottom:10px">
-                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-                      <span style="font-size:11px;font-weight:700;color:#8A98A8;text-transform:uppercase;letter-spacing:.06em;flex:1">{{ ct.roleLabel }}</span>
-                      <sc-if value="{{ ct.removable }}" hint-placeholder-val="{{ false }}">
-                        <button onClick="{{ ct.onRemove }}" style="border:none;background:none;color:#D62839;font-size:12px;font-weight:600">Retirer</button>
-                      </sc-if>
-                    </div>
-                    <div class="rg-2col" style="gap:8px;margin-bottom:8px">
-                      <input value="{{ ct.name }}" onChange="{{ ct.onName }}" placeholder="Nom" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:8px;padding:9px 11px;font-size:13px" />
-                      <input value="{{ ct.title }}" onChange="{{ ct.onTitle }}" placeholder="Fonction" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:8px;padding:9px 11px;font-size:13px" />
-                    </div>
-                    <div class="rg-2col" style="gap:8px">
-                      <input value="{{ ct.email }}" onChange="{{ ct.onEmail }}" placeholder="E-mail" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:8px;padding:9px 11px;font-size:13px" />
-                      <input value="{{ ct.phone }}" onChange="{{ ct.onPhone }}" placeholder="Téléphone" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:8px;padding:9px 11px;font-size:13px" />
-                    </div>
+                <sc-for list="{{ contactsView }}" as="ct" hint-placeholder-count="2">
+                  <div style="margin-bottom:14px">
+                    <div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700">{{ ct.roleLabel }}</div>
+                    <div style="font-size:14px;font-weight:600;margin-top:5px">{{ ct.displayName }}</div>
+                    <div style="font-size:12.5px;color:#48566B;margin-top:2px">{{ ct.displayContact }}</div>
                   </div>
                 </sc-for>
-                <button onClick="{{ addExtraContact }}" style="border:1px dashed rgba(27,42,65,.28);background:#FAFBFC;border-radius:9px;padding:9px 13px;font-size:12.5px;font-weight:600;color:#1B2A41;width:100%;margin-bottom:16px">+ Ajouter un contact</button>
-
-                <div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:6px">Adresse postale</div>
-                <input value="{{ cPostal }}" onChange="{{ onCPostal }}" placeholder="Rue, NPA, localité" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:10px 12px;font-size:13.5px;margin-bottom:16px" />
-
-                <div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:8px">Satisfaction perçue</div>
-                <div style="display:flex;gap:6px;margin-bottom:16px">
-                  <sc-for list="{{ satisfactionStars }}" as="st" hint-placeholder-count="5">
-                    <button onClick="{{ st.onClick }}" style="border:none;background:none;font-size:22px;line-height:1;color:{{ st.color }}">★</button>
-                  </sc-for>
+                <div style="margin-bottom:14px">
+                  <div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:6px">Adresse postale</div>
+                  <div style="font-size:14px;font-weight:600">{{ cPostalLabel }}</div>
                 </div>
+                <div style="margin-bottom:14px">
+                  <div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:6px">Satisfaction perçue</div>
+                  <div style="display:flex;gap:4px">
+                    <sc-for list="{{ satisfactionReadonly }}" as="st" hint-placeholder-count="5">
+                      <span style="font-size:18px;line-height:1;color:{{ st.color }}">★</span>
+                    </sc-for>
+                  </div>
+                </div>
+                <button onClick="{{ openContactsEdit }}" title="Modifier les contacts et l'adresse" style="border:1px solid rgba(27,42,65,.16);background:#fff;border-radius:9px;width:36px;height:36px;font-size:14px;color:#48566B">✎</button>
 
-                <button onClick="{{ saveContractInfo }}" style="width:100%;border:none;background:#1B2A41;color:#fff;border-radius:10px;padding:13px;font-size:13.5px;font-weight:600">{{ contractSaveLabel }}</button>
+                <sc-if value="{{ contactsEditOpen }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:fixed;inset:0;background:rgba(27,42,65,.32);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px">
+                    <div style="background:#fff;border-radius:14px;padding:20px 22px;max-width:520px;width:100%;max-height:82vh;overflow:auto;box-shadow:0 20px 50px rgba(27,42,65,.28)">
+                      <div style="font-family:Georgia,serif;font-size:17px;font-weight:700;margin-bottom:16px">Modifier les contacts et l'adresse</div>
+                      <sc-for list="{{ contactRows }}" as="ct" hint-placeholder-count="2">
+                        <div style="border:1px solid rgba(27,42,65,.08);border-radius:10px;padding:12px 14px;margin-bottom:10px">
+                          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                            <span style="font-size:11px;font-weight:700;color:#8A98A8;text-transform:uppercase;letter-spacing:.06em;flex:1">{{ ct.roleLabel }}</span>
+                            <sc-if value="{{ ct.removable }}" hint-placeholder-val="{{ false }}">
+                              <button onClick="{{ ct.onRemove }}" style="border:none;background:none;color:#D62839;font-size:12px;font-weight:600">Retirer</button>
+                            </sc-if>
+                          </div>
+                          <div class="rg-2col" style="gap:8px;margin-bottom:8px">
+                            <input value="{{ ct.name }}" onChange="{{ ct.onName }}" placeholder="Nom" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:8px;padding:9px 11px;font-size:13px" />
+                            <input value="{{ ct.title }}" onChange="{{ ct.onTitle }}" placeholder="Fonction" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:8px;padding:9px 11px;font-size:13px" />
+                          </div>
+                          <div class="rg-2col" style="gap:8px">
+                            <input value="{{ ct.email }}" onChange="{{ ct.onEmail }}" placeholder="E-mail" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:8px;padding:9px 11px;font-size:13px" />
+                            <input value="{{ ct.phone }}" onChange="{{ ct.onPhone }}" placeholder="Téléphone" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:8px;padding:9px 11px;font-size:13px" />
+                          </div>
+                        </div>
+                      </sc-for>
+                      <button onClick="{{ addExtraContact }}" style="border:1px dashed rgba(27,42,65,.28);background:#FAFBFC;border-radius:9px;padding:9px 13px;font-size:12.5px;font-weight:600;color:#1B2A41;width:100%;margin-bottom:16px">+ Ajouter un contact</button>
+
+                      <div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:6px">Adresse postale</div>
+                      <input value="{{ cPostal }}" onChange="{{ onCPostal }}" placeholder="Rue, NPA, localité" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:10px 12px;font-size:13.5px;margin-bottom:16px" />
+
+                      <div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:8px">Satisfaction perçue</div>
+                      <div style="display:flex;gap:6px;margin-bottom:16px">
+                        <sc-for list="{{ satisfactionStars }}" as="st" hint-placeholder-count="5">
+                          <button onClick="{{ st.onClick }}" style="border:none;background:none;font-size:22px;line-height:1;color:{{ st.color }}">★</button>
+                        </sc-for>
+                      </div>
+                      <div style="display:flex;gap:10px">
+                        <button onClick="{{ saveContactsEdit }}" style="border:none;background:#1B2A41;color:#fff;border-radius:10px;padding:12px 18px;font-size:14px;font-weight:600">Enregistrer</button>
+                        <button onClick="{{ closeContactsEdit }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;color:#48566B;border-radius:10px;padding:12px 16px;font-size:14px;font-weight:600">Annuler</button>
+                      </div>
+                    </div>
+                  </div>
+                </sc-if>
               </div>
             </div>
 
@@ -830,68 +860,52 @@ select,textarea,input{font-family:inherit}
               </div>
 
               <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;padding:20px">
-                <div style="font-family:Georgia,serif;font-size:16px;font-weight:700;margin-bottom:14px">Documents et facturation</div>
+                <div style="font-family:Georgia,serif;font-size:16px;font-weight:700;margin-bottom:6px">Documents</div>
                 <sc-for list="{{ documentRows }}" as="d" hint-placeholder-count="2">
-                  <div style="border:1px solid rgba(27,42,65,.08);border-radius:10px;padding:12px 14px;margin-bottom:10px">
-                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-                      <span style="font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:#F3F6F8;color:#48566B;flex:none">{{ d.type }}</span>
-                      <span style="flex:1;min-width:0;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ d.title }}</span>
-                      <span style="font-size:11px;color:#8A98A8;flex:none">{{ d.dateLabel }}</span>
-                    </div>
-                    <sc-if value="{{ d.hasNote }}" hint-placeholder-val="{{ false }}">
-                      <p style="margin:0 0 8px;font-size:12.5px;color:#5A6B7E;line-height:1.5">{{ d.note }}</p>
-                    </sc-if>
-                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-                      <a href="{{ d.fileUrl }}" target="_blank" style="font-size:12px;font-weight:600;color:#1B2A41;text-decoration:none;border:1px solid rgba(27,42,65,.16);border-radius:7px;padding:6px 10px">Aperçu</a>
-                      <a href="{{ d.fileUrl }}" download="{{ d.fileName }}" style="font-size:12px;font-weight:600;color:#1B2A41;text-decoration:none;border:1px solid rgba(27,42,65,.16);border-radius:7px;padding:6px 10px">Télécharger</a>
-                      <button onClick="{{ d.onRemove }}" style="border:none;background:none;color:#D62839;font-size:12px;font-weight:600;margin-left:auto">Supprimer</button>
+                  <div style="padding:12px 0;border-bottom:1px solid rgba(27,42,65,.07)">
+                    <div style="font-size:13.5px;font-weight:600;color:#1B2A41">{{ d.title }}</div>
+                    <div style="font-size:12px;color:#8A98A8;margin-top:2px">{{ d.infoLine }}</div>
+                    <div style="display:flex;align-items:center;gap:8px;margin-top:7px;flex-wrap:wrap">
+                      <span style="font-size:11.5px;color:#8A98A8">{{ d.fileMeta }}</span>
+                      <div style="flex:1"></div>
+                      <button onClick="{{ d.onView }}" style="border:none;background:none;color:#48566B;font-size:12px;font-weight:600;padding:0;text-decoration:underline">Voir</button>
+                      <span style="color:#C6D0D9;font-size:12px">·</span>
+                      <a href="{{ d.fileUrl }}" download="{{ d.fileName }}" style="color:#48566B;font-size:12px;font-weight:600;text-decoration:underline">Télécharger</a>
+                      <span style="color:#C6D0D9;font-size:12px">·</span>
+                      <button onClick="{{ d.onRemove }}" style="border:none;background:none;color:#D62839;font-size:12px;font-weight:600;padding:0;text-decoration:underline">Retirer</button>
                     </div>
                   </div>
                 </sc-for>
                 <sc-if value="{{ documentsEmpty }}" hint-placeholder-val="{{ false }}">
-                  <div style="font-size:12.5px;color:#8A98A8;padding:8px 0">Aucun document pour le moment.</div>
+                  <div style="font-size:12.5px;color:#8A98A8;padding:12px 0">Aucun document pour le moment.</div>
                 </sc-if>
-                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-                  <select value="{{ cNewDocType }}" onChange="{{ onCNewDocType }}" style="border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:10px 12px;font-size:13px;background:#fff;flex:none">
-                    <sc-for list="{{ documentTypeOptions }}" as="t" hint-placeholder-count="5"><option value="{{ t }}">{{ t }}</option></sc-for>
-                  </select>
-                  <input value="{{ cNewDocTitle }}" onChange="{{ onCNewDocTitle }}" placeholder="Titre du document" style="flex:1;min-width:120px;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:10px 12px;font-size:13px" />
-                </div>
-                <input value="{{ cNewDocNote }}" onChange="{{ onCNewDocNote }}" placeholder="Note (facultatif)" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:10px 12px;font-size:13px;margin-top:8px" />
-                <label style="display:flex;align-items:center;justify-content:center;gap:8px;border:1px dashed rgba(27,42,65,.28);background:#FAFBFC;border-radius:9px;padding:12px;font-size:13px;font-weight:600;color:#1B2A41;cursor:pointer;margin-top:8px">
-                  📎 Choisir un fichier et ajouter
-                  <input type="file" accept="application/pdf,image/*" onChange="{{ onCNewDocFile }}" style="display:none" />
-                </label>
-                <sc-if value="{{ hasCNewDocError }}" hint-placeholder-val="{{ false }}">
-                  <div style="margin-top:8px;font-size:12px;color:#D62839">{{ cNewDocError }}</div>
-                </sc-if>
-
-                <div style="border-top:1px solid rgba(27,42,65,.08);margin:18px 0 14px"></div>
-                <div style="font-size:11px;font-weight:700;color:#8A98A8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Factures</div>
-                <sc-for list="{{ invoiceRows }}" as="inv" hint-placeholder-count="2">
-                  <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(27,42,65,.06);flex-wrap:wrap">
-                    <span style="flex:1;min-width:100px">
-                      <span style="display:block;font-size:13.5px;font-weight:600">{{ inv.label }}</span>
-                      <span style="display:block;font-size:11.5px;color:#8A98A8;margin-top:2px">{{ inv.dateLabel }} · {{ inv.amountLabel }}</span>
-                    </span>
-                    <select value="{{ inv.status }}" onChange="{{ inv.onStatus }}" style="border:1px solid rgba(27,42,65,.16);border-radius:999px;padding:5px 10px;font-size:11px;font-weight:700;background:{{ inv.statusBg }};color:{{ inv.statusFg }}">
-                      <sc-for list="{{ invoiceStatusOptions }}" as="opt" hint-placeholder-count="3"><option value="{{ opt }}">{{ opt }}</option></sc-for>
-                    </select>
-                    <button onClick="{{ inv.onRemove }}" style="border:none;background:none;color:#D62839;font-size:16px;line-height:1">×</button>
-                  </div>
-                </sc-for>
-                <sc-if value="{{ invoicesEmpty }}" hint-placeholder-val="{{ false }}">
-                  <div style="font-size:12.5px;color:#8A98A8;padding:8px 0">Aucune facture enregistrée.</div>
-                </sc-if>
-                <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-                  <input value="{{ cNewInvoiceLabel }}" onChange="{{ onCNewInvoiceLabel }}" placeholder="Libellé" style="flex:1;min-width:100px;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:10px 12px;font-size:13px" />
-                  <input value="{{ cNewInvoiceAmount }}" onChange="{{ onCNewInvoiceAmount }}" placeholder="Montant" type="number" style="width:100px;flex:none;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:10px 12px;font-size:13px" />
-                  <select value="{{ cNewInvoiceStatus }}" onChange="{{ onCNewInvoiceStatus }}" style="border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:10px 12px;font-size:13px;background:#fff;flex:none">
-                    <sc-for list="{{ invoiceStatusOptions }}" as="opt" hint-placeholder-count="3"><option value="{{ opt }}">{{ opt }}</option></sc-for>
-                  </select>
-                  <button onClick="{{ addInvoiceRow }}" style="border:none;background:#1B2A41;color:#fff;border-radius:9px;padding:10px 14px;font-size:13px;font-weight:600;flex:none">+</button>
-                </div>
+                <button onClick="{{ openDocAdd }}" style="width:100%;margin-top:10px;border:1px dashed rgba(27,42,65,.28);background:none;color:#48566B;border-radius:9px;padding:10px;font-size:12.5px;font-weight:600">+ Ajouter un document</button>
               </div>
+
+              <sc-if value="{{ docAddOpen }}" hint-placeholder-val="{{ false }}">
+                <div style="position:fixed;inset:0;background:rgba(27,42,65,.32);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px" onClick="{{ closeDocAdd }}">
+                  <div style="background:#fff;border-radius:14px;padding:20px 22px;max-width:440px;width:100%;box-shadow:0 20px 50px rgba(27,42,65,.28)" onClick="{{ stopProp }}">
+                    <div style="font-family:Georgia,serif;font-size:17px;font-weight:700;margin-bottom:16px">Ajouter un document</div>
+                    <div style="display:flex;flex-direction:column;gap:12px">
+                      <div>
+                        <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Titre</div>
+                        <input value="{{ cNewDocTitle }}" onChange="{{ onCNewDocTitle }}" placeholder="Ex. Devis élagage 2026 (facultatif)" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;outline:none" />
+                      </div>
+                      <div>
+                        <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Note</div>
+                        <input value="{{ cNewDocNote }}" onChange="{{ onCNewDocNote }}" placeholder="Facultatif" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;outline:none" />
+                      </div>
+                      <label style="display:flex;align-items:center;justify-content:center;gap:8px;border:1px dashed rgba(27,42,65,.28);background:#FAFBFC;border-radius:9px;padding:12px;font-size:13px;font-weight:600;color:#1B2A41;cursor:pointer">
+                        📎 Choisir un fichier
+                        <input type="file" accept="application/pdf,image/*" onChange="{{ onCNewDocFile }}" style="display:none" />
+                      </label>
+                      <sc-if value="{{ hasCNewDocError }}" hint-placeholder-val="{{ false }}">
+                        <div style="font-size:12px;color:#D62839">{{ cNewDocError }}</div>
+                      </sc-if>
+                    </div>
+                  </div>
+                </div>
+              </sc-if>
             </div>
           </div>
 
@@ -977,7 +991,6 @@ const STATUS = {
   Traité: { bg: "#E5F1EA", fg: "#2E6B48", dot: "#3F8F63" }
 };
 const STATUS_ORDER = ["Nouveau", "En cours", "Planifié (travaux)", "Traité"];
-const DOCUMENT_TYPES = ["Contrat", "Devis", "Avenant", "Courrier", "Autre"];
 
 const fmtDateTime = (ts) => {
   const d = new Date(ts);
@@ -1012,6 +1025,7 @@ class Component extends DCLogic {
     profileOpen: false,
     selId: null,
     filterCommune: "Toutes", filterCat: "Toutes", filterStatus: "Tous", reepQuery: "", reepSort: "date_desc", selPhotoIdx: 0, reepModalOpen: false,
+    contactsEditOpen: false,
     acctQuery: "", acctFilterCommune: "Toutes", acctFilterType: "Tous",
     pendingDeleteKey: null,
     sheetOpen: false, newType: "agent", newFirst: "", newLast: "", newEmail: "", newCommune: COMMUNE_NAMES[0], newRole: "agent", newError: "",
@@ -1022,8 +1036,8 @@ class Component extends DCLogic {
     activityMode: "journal", activityCommune: "Toutes", activityStatus: "Tous", activityCat: "Toutes", activityPeriod: "Tout", activitySearch: "",
     contractQuery: "", contractSel: null, contractDraft: null, contractSaved: false, contractEditOpen: false,
     addCommuneOpen: false, addCommuneName: "", addCommuneError: "",
-    cNewProjectName: "", cNewProjectAmount: "", cNewInvoiceLabel: "", cNewInvoiceAmount: "", cNewInvoiceStatus: "En attente", cNewInvoiceDate: "",
-    cNewDocType: "Contrat", cNewDocTitle: "", cNewDocNote: "", cNewDocError: "",
+    cNewProjectName: "", cNewProjectAmount: "",
+    cNewDocTitle: "", cNewDocNote: "", cNewDocError: "", docAddOpen: false,
     cNoteText: "", cNoteEditingId: null, cNoteEditText: "", cNoteDueDate: "",
     scrollToJournalId: null, highlightJournalId: null,
     shellFitH: null
@@ -1143,6 +1157,19 @@ class Component extends DCLogic {
     const CONTRACT_TIERS = ["Petite", "Moyenne", "Grande", "Ville"];
     const fmtDateShort = (ts) => ts ? new Date(ts).toLocaleDateString("fr-CH", { day: "2-digit", month: "2-digit", year: "numeric" }) : "—";
     const fmtChf = (n) => (Number(n) || 0).toLocaleString("fr-CH") + " CHF";
+    const fmtFileSize = (bytes) => {
+      if (!bytes) return "";
+      if (bytes < 1024) return bytes + " o";
+      if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + " Ko";
+      return (bytes / (1024 * 1024)).toFixed(1) + " Mo";
+    };
+    const viewDataUrl = (dataUrl) => {
+      fetch(dataUrl).then((r) => r.blob()).then((blob) => {
+        const url = URL.createObjectURL(blob);
+        window.open(url, "_blank");
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+      });
+    };
     const tsToDateInput = (ts) => {
       if (!ts) return "";
       const d = new Date(ts);
@@ -1285,7 +1312,7 @@ class Component extends DCLogic {
       activityTrashCount: activityTrashRaw.length,
       activityFeed: activityFeedAll.map((a) => ({
         label: a.label, who: a.who, note: a.note, commune: a.commune, reepTitle: a.reepTitle, reepId: a.reepId, when: fmtDateTime(a.when),
-        onClick: () => this._transition(() => this.setState({ screen: "reeps", selId: a.reepId }))
+        onClick: () => this._transition(() => this.setState({ screen: "reeps", selId: a.reepId, selPhotoIdx: 0, reepModalOpen: true }))
       })),
       activityFeedEmpty: !activityFeedAll.length,
       activityTrash: activityTrashRaw.map((r) => ({
@@ -1341,6 +1368,23 @@ class Component extends DCLogic {
         contractDraft: { ...cDraft, tier: curContract.tier, annualAmount: curContract.annualAmount, status: curContract.status, contractStart: curContract.contractStart, renewalDate: curContract.renewalDate }
       }),
       saveContractEdit: () => { saveContractInfo(); this.setState({ contractEditOpen: false }); },
+
+      contactsEditOpen: s.contactsEditOpen,
+      openContactsEdit: () => this.setState({ contactsEditOpen: true }),
+      closeContactsEdit: () => this.setState({
+        contactsEditOpen: false,
+        contractDraft: { ...cDraft, contacts: JSON.parse(JSON.stringify(curContract.contacts)), postalAddress: curContract.postalAddress, satisfaction: curContract.satisfaction }
+      }),
+      saveContactsEdit: () => { saveContractInfo(); this.setState({ contactsEditOpen: false }); },
+      contactsView: curContract ? curContract.contacts.map((c) => ({
+        roleLabel: c.role === "principal" ? "Contact principal" : c.role === "secours" ? "Contact de secours" : "Autre contact",
+        displayName: c.name || "—",
+        displayContact: [c.title, c.email, c.phone].filter(Boolean).join(" · ") || "—"
+      })) : [],
+      cPostalLabel: (curContract && curContract.postalAddress) || "—",
+      satisfactionReadonly: [1, 2, 3, 4, 5].map((n) => ({
+        n, color: (curContract && curContract.satisfaction >= n) ? "#E8A33D" : "#D8DEE4"
+      })),
 
       contactRows: (cDraft ? cDraft.contacts : []).map((c, idx) => ({
         role: c.role,
@@ -1403,8 +1447,9 @@ class Component extends DCLogic {
         this.setState({ cNoteText: "", cNoteDueDate: "" });
       },
 
-      documentTypeOptions: DOCUMENT_TYPES,
-      cNewDocType: s.cNewDocType, onCNewDocType: (e) => this.setState({ cNewDocType: e.target.value }),
+      docAddOpen: s.docAddOpen,
+      openDocAdd: () => this.setState({ docAddOpen: true, cNewDocTitle: "", cNewDocNote: "", cNewDocError: "" }),
+      closeDocAdd: () => this.setState({ docAddOpen: false }),
       cNewDocTitle: s.cNewDocTitle, onCNewDocTitle: (e) => this.setState({ cNewDocTitle: e.target.value }),
       cNewDocNote: s.cNewDocNote, onCNewDocNote: (e) => this.setState({ cNewDocNote: e.target.value }),
       hasCNewDocError: !!s.cNewDocError, cNewDocError: s.cNewDocError,
@@ -1412,39 +1457,22 @@ class Component extends DCLogic {
         const file = e.target.files[0];
         e.target.value = "";
         if (!file) return;
-        if (!s.cNewDocTitle.trim()) { this.setState({ cNewDocError: "Merci d'indiquer un titre avant de choisir le fichier." }); return; }
         if (file.size > 4 * 1024 * 1024) { this.setState({ cNewDocError: "Fichier trop volumineux (max 4 Mo)." }); return; }
         const reader = new FileReader();
         reader.onload = () => {
-          Store.addContractDocument(curContract.commune, { type: s.cNewDocType, title: s.cNewDocTitle.trim(), note: s.cNewDocNote.trim(), fileUrl: reader.result, fileName: file.name });
-          this.setState({ cNewDocTitle: "", cNewDocNote: "", cNewDocType: "Contrat", cNewDocError: "" });
+          Store.addContractDocument(curContract.commune, { title: s.cNewDocTitle.trim() || file.name, note: s.cNewDocNote.trim(), fileUrl: reader.result, fileName: file.name, fileSize: file.size });
+          this.setState({ cNewDocTitle: "", cNewDocNote: "", cNewDocError: "", docAddOpen: false });
         };
         reader.readAsDataURL(file);
       },
       documentRows: curContract ? curContract.documents.slice().sort((a, b) => b.uploadedAt - a.uploadedAt).map((d) => ({
-        type: d.type, title: d.title, note: d.note, hasNote: !!d.note, dateLabel: fmtDateShort(d.uploadedAt),
+        title: d.title, infoLine: fmtDateShort(d.uploadedAt) + (d.note ? " — " + d.note : ""),
+        fileMeta: d.fileName + (d.fileSize ? " · " + fmtFileSize(d.fileSize) : ""),
         fileUrl: d.fileUrl, fileName: d.fileName,
+        onView: () => viewDataUrl(d.fileUrl),
         onRemove: () => { Store.removeContractDocument(curContract.commune, d.id); this.forceUpdate(); }
       })) : [],
       documentsEmpty: !curContract || !curContract.documents.length,
-
-      invoiceRows: curContract ? curContract.invoices.slice().sort((a, b) => b.date - a.date).map((inv) => ({
-        label: inv.label, amountLabel: fmtChf(inv.amount), dateLabel: fmtDateShort(inv.date), status: inv.status,
-        statusBg: inv.status === "Payé" ? "#E5F1EA" : inv.status === "En retard" ? "#FDF2F3" : "#FDF0E2",
-        statusFg: inv.status === "Payé" ? "#2E6B48" : inv.status === "En retard" ? "#8A2530" : "#A96A16",
-        onStatus: (e) => { Store.updateInvoice(curContract.commune, inv.id, { status: e.target.value }); this.forceUpdate(); },
-        onRemove: () => { Store.removeInvoice(curContract.commune, inv.id); this.forceUpdate(); }
-      })) : [],
-      invoicesEmpty: !curContract || !curContract.invoices.length,
-      invoiceStatusOptions: ["Payé", "En attente", "En retard"],
-      cNewInvoiceLabel: s.cNewInvoiceLabel, onCNewInvoiceLabel: (e) => this.setState({ cNewInvoiceLabel: e.target.value }),
-      cNewInvoiceAmount: s.cNewInvoiceAmount, onCNewInvoiceAmount: (e) => this.setState({ cNewInvoiceAmount: e.target.value }),
-      cNewInvoiceStatus: s.cNewInvoiceStatus, onCNewInvoiceStatus: (e) => this.setState({ cNewInvoiceStatus: e.target.value }),
-      addInvoiceRow: () => {
-        if (!s.cNewInvoiceLabel.trim()) return;
-        Store.addInvoice(curContract.commune, { label: s.cNewInvoiceLabel.trim(), amount: s.cNewInvoiceAmount, status: s.cNewInvoiceStatus });
-        this.setState({ cNewInvoiceLabel: "", cNewInvoiceAmount: "", cNewInvoiceStatus: "En attente" });
-      },
 
       statCards: (() => {
         const g = Store.statsGlobal();
