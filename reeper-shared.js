@@ -591,7 +591,15 @@
     data.reeps.forEach(function (r) {
       if (r.commune !== commune || !r.id || r.id.indexOf(prefix) !== 0) return;
       var m = /-(\d+)$/.exec(r.id);
-      if (m) { var n = parseInt(m[1], 10); if (n > maxSeq) maxSeq = n; }
+      if (!m) return;
+      var digits = m[1];
+      // A leading-zero 5-digit number can only come from the old scheme's fixed
+      // pad(seq,5) (e.g. "04822") — this scheme only ever produces exactly 4
+      // digits (0001..9999) or 5+ digits with no leading zero (10000..), so this
+      // check reliably ignores pre-fix ids without any date/value-range guessing.
+      if (digits.length === 5 && digits[0] === "0") return;
+      var n = parseInt(digits, 10);
+      if (n > maxSeq) maxSeq = n;
     });
     var seq = maxSeq + 1;
     var year = String(new Date().getFullYear()).slice(-2);
