@@ -771,7 +771,7 @@ select,textarea,input{font-family:inherit}
           <span style="font-family:ui-monospace,Menlo,monospace;font-size:14px;color:#1B2A41">{{ current.id }}</span>
           <span style="font-size:11px;font-weight:700;padding:6px 11px;border-radius:999px;background:{{ current.bg }};color:{{ current.fg }};white-space:nowrap">{{ current.status }}</span>
           <div style="flex:1"></div>
-          <sc-if value="{{ isNewReep }}" hint-placeholder-val="{{ false }}">
+          <sc-if value="{{ isCurReepNew }}" hint-placeholder-val="{{ false }}">
             <button onClick="{{ acceptReep }}" style="border:none;background:#3F8F63;color:#fff;border-radius:9px;padding:10px 16px;font-size:13px;font-weight:700">✓ Accepter</button>
           </sc-if>
           <button onClick="{{ openExport }}" style="border:1px solid rgba(27,42,65,.14);background:#fff;border-radius:9px;padding:9px 14px;font-size:13px;font-weight:600;color:#1B2A41">⭳ Exporter le rapport</button>
@@ -2390,7 +2390,7 @@ class Component extends DCLogic {
 
       current: { ...cur, status, ...STATUS[status], slotBig: "kb-" + cur.id, slotPrev: "kp-" + cur.id, slotAfter: "ka-" + cur.id, hint: "Photo de l'anomalie", src: cur.photoUrl || "", ring: "1px solid rgba(27,42,65,.1)", coords: cur.lat.toFixed(4) + "° N, " + cur.lon.toFixed(4) + "° E", mapCenter: cur.lat + "," + cur.lon },
       detailMarker: markersFor([cur]),
-      isNewReep: cur.status === "Nouveau",
+      isCurReepNew: cur.status === "Nouveau",
       acceptReep: () => { Store.acceptReep(cur.id, agentName); this.setState({ status: "En cours", saved: false }); },
       meta: [
         { label: "Signalé par", value: cur.reporterAccount ? (Store.getAccount(cur.reporterAccount) || {}).displayName || "Citoyen" : "Citoyen anonyme" },
