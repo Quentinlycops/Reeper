@@ -1591,15 +1591,10 @@ function roleTier(roleStr) {
 function agentsForCommune(session) {
   const commune = session.commune;
   const raw = Store.agentsForCommune(commune).slice().sort((a, b) => (a.key === session.key ? -1 : 0) - (b.key === session.key ? -1 : 0));
-  const real = raw.map((a) => {
+  return raw.map((a) => {
     const parts = (a.displayName || "").split(" ");
     return { initials: a.initials, first: parts[0] || a.displayName, last: parts.slice(1).join(" "), email: a.username + "@" + commune.toLowerCase() + ".ch", service: a.service || "Voirie", role: roleTier(a.role), mail: !!a.notifyByEmail, avBg: a.avBg, accountKey: a.key };
   });
-  const cast = [
-    { initials: "PM", first: "Paul", last: "Meylan", email: "p.meylan@" + commune.toLowerCase() + ".ch", service: "Propreté publique", role: "Agent", mail: true, avBg: "#31506F" },
-    { initials: "AD", first: "Aline", last: "Duvoisin", email: "a.duvoisin@" + commune.toLowerCase() + ".ch", service: "Éclairage", role: "Agent", mail: true, avBg: "#5A6B7E" }
-  ];
-  return real.concat(cast);
 }
 
 const ROLE_TAG = {
@@ -2652,11 +2647,10 @@ class Component extends DCLogic {
           this.setState({ sheetSaved: true, inviteError: "", sheet: Object.assign({}, res.account, { isNew: false, accountKey: res.account.key, first: res.account.firstName, last: res.account.lastName }) });
           return;
         }
-        if (sheet.accountKey) {
-          const displayName = (sheet.first + " " + sheet.last).trim();
-          const roleLabel = sheet.role === "Administrateur" ? "Agent commune · Administrateur" : sheet.role === "Chef de service" ? "Chef de service" : "Agent";
-          Store.updateAccount(sheet.accountKey, { displayName, role: roleLabel, initials: ((sheet.first[0] || "") + (sheet.last[0] || "")).toUpperCase(), service: sheet.service, notifyByEmail: s.sheetMail });
-        }
+        if (!sheet.accountKey) { this.setState({ inviteError: "Compte introuvable — impossible d'enregistrer." }); return; }
+        const displayName = (sheet.first + " " + sheet.last).trim();
+        const roleLabel = sheet.role === "Administrateur" ? "Agent commune · Administrateur" : sheet.role === "Chef de service" ? "Chef de service" : "Agent";
+        Store.updateAccount(sheet.accountKey, { displayName, role: roleLabel, initials: ((sheet.first[0] || "") + (sheet.last[0] || "")).toUpperCase(), service: sheet.service, notifyByEmail: s.sheetMail });
         this.setState({ sheetSaved: true, inviteError: "" });
       },
       hasInviteError: !!s.inviteError, inviteError: s.inviteError,
