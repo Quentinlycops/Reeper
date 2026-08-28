@@ -101,10 +101,10 @@
     return { id: row.id, name: row.name, members: row.members || [], createdBy: row.created_by, createdWhen: row.created_when };
   }
   function communeMetaToRow(m) {
-    return { name: m.name, code: m.code, center: m.center, zip: m.zip || [], updated_at: Date.now() };
+    return { name: m.name, code: m.code, center: m.center, zip: m.zip || [], reep_order: m.order || null, updated_at: Date.now() };
   }
   function rowToCommuneMeta(row) {
-    return { name: row.name, code: row.code, center: row.center, zip: row.zip || [] };
+    return { name: row.name, code: row.code, center: row.center, zip: row.zip || [], order: row.reep_order || null };
   }
   function contractToRow(c) {
     return {
@@ -208,12 +208,6 @@
         if (configRows && (configRows.length > 0 || !data.communeConfigs || data.communeConfigs.length === 0)) {
           data.communeConfigs = configRows.map(rowToCommConfig);
         }
-        var maxSeq = data.seq || 4900;
-        data.reeps.forEach(function (r) {
-          var m = /RE02-26-(\d+)/.exec(r.id || "");
-          if (m) maxSeq = Math.max(maxSeq, parseInt(m[1], 10));
-        });
-        data.seq = maxSeq;
         save(data);
         var hasNew = data.reeps.length > oldReepCount || data.messages.length > oldMsgCount;
         try { window.dispatchEvent(new CustomEvent("reeper:sync", { detail: { hasNew: hasNew } })); } catch (e) {}
@@ -383,6 +377,12 @@
     data.communesMeta.forEach(function (m) {
       COMMUNES[m.name] = { center: m.center, zip: m.zip || [] };
       COMMUNE_CODES[m.code] = m.name;
+    });
+    data.communesMeta.forEach(function (m) {
+      if (m.order == null) {
+        var maxOrder = data.communesMeta.reduce(function (mx, x) { return Math.max(mx, x.order || 0); }, 0);
+        m.order = maxOrder + 1;
+      }
     });
     if (!data.contracts) data.contracts = [];
     Object.keys(COMMUNES).forEach(function (name) {
@@ -563,9 +563,40 @@
 
   function persist(data) { save(data); _schedulePush(data); return data; }
 
-  function nextId(data) {
-    data.seq = (data.seq || 4900) + 1;
-    return "RE02-26-" + pad(data.seq, 5);
+  // Reep IDs are numbered per commune: RE<order>-<year>-<seq>, where <order>
+  // is the commune's permanent rank (assigned in the order communes were
+  // created — served communes via communesMeta.order; unserved real-world
+  // communes, ranked after all served ones, by the timestamp of their first
+  // Reep) and <seq> is that commune's own counter starting at 0001, growing
+  // unpadded past 9999. Both are derived from already-synced data (communesMeta
+  // + reeps) rather than a separate stored counter, so two devices computing
+  // them from the same data always agree.
+  function communeReepOrder(data, commune) {
+    var m = data.communesMeta.find(function (x) { return x.name === commune; });
+    if (m && m.order) return m.order;
+    var maxServed = data.communesMeta.reduce(function (mx, x) { return Math.max(mx, x.order || 0); }, 0);
+    var firstSeen = {};
+    data.reeps.forEach(function (r) {
+      if (!r.commune || data.communesMeta.some(function (x) { return x.name === r.commune; })) return;
+      if (!(r.commune in firstSeen) || r.createdAt < firstSeen[r.commune]) firstSeen[r.commune] = r.createdAt;
+    });
+    var unservedNames = Object.keys(firstSeen).sort(function (a, b) { return firstSeen[a] - firstSeen[b]; });
+    var pos = unservedNames.indexOf(commune);
+    return maxServed + (pos >= 0 ? pos + 1 : unservedNames.length + 1);
+  }
+  function nextReepId(data, commune) {
+    var order = communeReepOrder(data, commune);
+    var prefix = "RE" + pad(order, 2) + "-";
+    var maxSeq = 0;
+    data.reeps.forEach(function (r) {
+      if (r.commune !== commune || !r.id || r.id.indexOf(prefix) !== 0) return;
+      var m = /-(\d+)$/.exec(r.id);
+      if (m) { var n = parseInt(m[1], 10); if (n > maxSeq) maxSeq = n; }
+    });
+    var seq = maxSeq + 1;
+    var year = String(new Date().getFullYear()).slice(-2);
+    var seqStr = seq <= 9999 ? pad(seq, 4) : String(seq);
+    return "RE" + pad(order, 2) + "-" + year + "-" + seqStr;
   }
 
   function findIndex(data, id) {
@@ -1009,9 +1040,9 @@
 
     addReep: function (o) {
       var data = load();
-      var id = nextId(data);
-      var createdAt = now();
       var commune = o.commune || communeFromText(o.address) || "Commune à déterminer";
+      var id = nextReepId(data, commune);
+      var createdAt = now();
       var fallbackCenter = COMMUNES[commune] ? COMMUNES[commune].center : { lat: 46.5197, lon: 6.6323 };
       var photos = (o.photoUrls && o.photoUrls.length) ? o.photoUrls.slice() : (o.photoUrl ? [o.photoUrl] : []);
       var reep = {
@@ -1282,7 +1313,8 @@
         n++;
       }
       var center = opts.center || (data.communesMeta[0] ? data.communesMeta[0].center : { lat: 46.5197, lon: 6.6323 });
-      var meta = { name: name, code: code, center: center, zip: opts.zip || [] };
+      var maxOrder = data.communesMeta.reduce(function (mx, x) { return Math.max(mx, x.order || 0); }, 0);
+      var meta = { name: name, code: code, center: center, zip: opts.zip || [], order: maxOrder + 1 };
       data.communesMeta.push(meta);
       COMMUNES[name] = { center: center, zip: meta.zip };
       COMMUNE_CODES[code] = name;
