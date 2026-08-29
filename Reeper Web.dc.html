@@ -239,7 +239,7 @@ input,textarea,select{font-family:inherit}
                   <p style="margin:6px 0 0;font-size:12.5px;line-height:1.5;color:#5A6B7E;max-width:62ch;text-wrap:pretty">Votre navigateur peut détecter la position, ou vous saisissez l'adresse.</p>
                 </div>
                 <div style="height:260px;position:relative;overflow:hidden;border-top:1px solid rgba(27,42,65,.08);border-bottom:1px solid rgba(27,42,65,.08)">
-                  <reeper-map data-role="loc-picker" center="{{ mapCenter }}" zoom="16" draggable-marker click-to-place></reeper-map>
+                  <reeper-map data-role="loc-picker" center="{{ mapCenter }}" zoom="{{ mapZoom }}" draggable-marker click-to-place></reeper-map>
                 </div>
                 <div style="padding:16px 20px 20px">
                   <button onClick="{{ detect }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);background:#fff;border-radius:11px;padding:13px 18px;font-size:13.5px;font-weight:600;color:#1B2A41;display:flex;align-items:center;justify-content:center;gap:8px">📍 {{ detectLabel }}</button>
@@ -259,11 +259,12 @@ input,textarea,select{font-family:inherit}
                     </div>
                     <input value="{{ addrNum }}" onChange="{{ onAddrNum }}" placeholder="N°" style="width:90px;flex:none;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:11px;padding:15px 14px;font-size:14.5px;color:#1B2A41;outline:none">
                   </div>
-                  <sc-if value="{{ hasCommuneGuess }}" hint-placeholder-val="{{ false }}">
-                    <div style="margin-top:9px;font-size:12.5px;color:#5A6B7E">Commune détectée : <strong style="color:#1B2A41">{{ communeGuess }}</strong></div>
-                  </sc-if>
+                  <div style="margin-top:9px">
+                    <label style="display:block;font-size:11px;color:#8A98A8;margin-bottom:5px">Commune (modifiable si la détection se trompe)</label>
+                    <input value="{{ communeGuess }}" onChange="{{ onCommuneGuess }}" placeholder="Nom de la commune" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:11px;padding:12px 14px;font-size:13.5px;color:#1B2A41;outline:none">
+                  </div>
                   <sc-if value="{{ noCommuneGuess }}" hint-placeholder-val="{{ false }}">
-                    <div style="margin-top:9px;font-size:12.5px;color:#8A98A8">Commune non détectée — elle sera déduite de l'adresse saisie.</div>
+                    <div style="margin-top:7px;font-size:12px;color:#8A98A8">Commune non détectée automatiquement — indiquez-la ci-dessus.</div>
                   </sc-if>
                 </div>
               </div>
@@ -683,7 +684,7 @@ class Component extends DCLogic {
     settingsCode: "", settingsMsg: "", settingsMsgIsError: false,
     pwdOld: "", pwdNew1: "", pwdNew2: "", pwdMsg: "", pwdMsgIsError: false,
     photoUrls: [], photoStepError: "",
-    geo: false, geoLat: null, geoLon: null, addrText: "", addrNum: "", addrSuggestions: [], communeGuess: null, geoLoading: false, geoError: "",
+    geo: false, geoLat: null, geoLon: null, addrText: "", addrNum: "", addrSuggestions: [], communeGuess: null, communeManual: false, geoLoading: false, geoError: "",
     cat: null, leaf: null, path: [], desc: "",
     createdId: null, createdCommune: null, createdPoints: 0,
     redeemMsg: ""
@@ -719,7 +720,7 @@ class Component extends DCLogic {
         const { lat, lon } = e.detail;
         this.setState({ geoLat: lat, geoLon: lon, geo: true });
         Store.reverseGeocode(lat, lon).then((res) => {
-          this.setState({ addrText: res.street || res.address, addrNum: res.houseNumber || "", communeGuess: res.commune || res.town || this.state.communeGuess });
+          this.setState({ addrText: res.street || res.address, addrNum: res.houseNumber || "", communeManual: false, communeGuess: res.commune || res.town || this.state.communeGuess });
         }).catch(() => {});
       });
     }
@@ -749,7 +750,8 @@ class Component extends DCLogic {
         const lat = parseFloat(list[0].lat), lon = parseFloat(list[0].lon);
         const a0 = list[0].address || {};
         const town0 = a0.city || a0.town || a0.village || a0.municipality || "";
-        this.setState({ geoLat: lat, geoLon: lon, geo: true, communeGuess: Store.communeFromText(list[0].display_name) || town0 || this.state.communeGuess });
+        const guess = this.state.communeManual ? this.state.communeGuess : (Store.communeFromText(list[0].display_name) || town0 || this.state.communeGuess);
+        this.setState({ geoLat: lat, geoLon: lon, geo: true, communeGuess: guess });
         const el = document.querySelector('reeper-map[data-role="loc-picker"]');
         if (el && el.panTo) el.panTo(lat, lon, 17);
       }).catch(() => {});
@@ -779,10 +781,11 @@ class Component extends DCLogic {
     const session = Store.getSession();
     const loggedIn = !!(session && session.type === "citizen");
     const path = s.path || [];
-    const nyon = Store.COMMUNES.Nyon.center;
+    const romandieDefault = { lat: 46.45, lon: 6.85 };
     const fullAddr = s.addrText.trim() + (s.addrNum.trim() ? " " + s.addrNum.trim() : "");
-    const mapCenterLat = s.geoLat != null ? s.geoLat : nyon.lat;
-    const mapCenterLon = s.geoLon != null ? s.geoLon : nyon.lon;
+    const mapCenterLat = s.geoLat != null ? s.geoLat : romandieDefault.lat;
+    const mapCenterLon = s.geoLon != null ? s.geoLon : romandieDefault.lon;
+    const mapZoom = s.geoLat != null ? 16 : 10;
     const rows = Store.getReeps({}).filter((d) => loggedIn && d.reporterAccount === session.key).map(deco).map((d, i) => ({
       ...d, onClick: () => this.setState({ sel: i }),
       ring: "1px solid rgba(27,42,65,.1)",
@@ -906,7 +909,7 @@ class Component extends DCLogic {
 
       goHome: () => this.go("home"),
       goTrack,
-      startReport: () => this.setState({ view: "report", step: "photo", cat: null, leaf: null, path: [], geo: false, geoLat: null, geoLon: null, addrText: "", addrNum: "", addrSuggestions: [], communeGuess: null, desc: "", photoUrls: [], photoStepError: "", createdPoints: 0 }),
+      startReport: () => this.setState({ view: "report", step: "photo", cat: null, leaf: null, path: [], geo: false, geoLat: null, geoLon: null, addrText: "", addrNum: "", addrSuggestions: [], communeGuess: null, communeManual: false, desc: "", photoUrls: [], photoStepError: "", createdPoints: 0 }),
 
       steps3: [
         { num: "01", title: "Photographiez", body: "Une photo de l'anomalie, depuis votre ordinateur ou votre téléphone." },
@@ -958,10 +961,11 @@ class Component extends DCLogic {
       onPhotoFile: (e) => { this._ingestPhotos(e.target.files); e.target.value = ""; },
 
       mapCenter: mapCenterLat + "," + mapCenterLon,
+      mapZoom,
       addrText: s.addrText,
       onAddrText: (e) => {
         const val = e.target.value;
-        this.setState({ addrText: val, geo: !!val.trim(), communeGuess: Store.communeFromText(val) || s.communeGuess });
+        this.setState({ addrText: val, geo: !!val.trim(), communeGuess: s.communeManual ? s.communeGuess : (Store.communeFromText(val) || s.communeGuess) });
         clearTimeout(this._addrTimer);
         if (val.trim().length >= 2) this._addrTimer = setTimeout(() => this._fetchAddrSuggestions(val.trim()), 350);
         else this.setState({ addrSuggestions: [] });
@@ -977,12 +981,13 @@ class Component extends DCLogic {
       addrSuggestions: s.addrSuggestions.map((a) => ({
         label: a.label,
         onClick: () => {
-          this.setState({ addrText: a.street, geoLat: a.lat, geoLon: a.lon, geo: true, addrSuggestions: [], communeGuess: Store.communeFromText(a.display) || a.town || s.communeGuess });
+          this.setState({ addrText: a.street, geoLat: a.lat, geoLon: a.lon, geo: true, addrSuggestions: [], communeManual: false, communeGuess: Store.communeFromText(a.display) || a.town || s.communeGuess });
           const el = document.querySelector('reeper-map[data-role="loc-picker"]');
           if (el && el.panTo) el.panTo(a.lat, a.lon, 17);
         }
       })),
-      communeGuess: s.communeGuess, hasCommuneGuess: !!s.communeGuess, noCommuneGuess: !s.communeGuess && s.geo,
+      communeGuess: s.communeGuess || "", noCommuneGuess: !s.communeGuess && s.geo,
+      onCommuneGuess: (e) => this.setState({ communeGuess: e.target.value, communeManual: true }),
       detectLabel: s.geoLoading ? "Localisation…" : "Me localiser",
       hasGeoError: !!s.geoError, geoError: s.geoError,
       hasPhotoStepError: !!s.photoStepError, photoStepError: s.photoStepError,
@@ -996,7 +1001,7 @@ class Component extends DCLogic {
             const el = document.querySelector('reeper-map[data-role="loc-picker"]');
             if (el && el.panTo) el.panTo(lat, lon, 17);
             Store.reverseGeocode(lat, lon).then((res) => {
-              this.setState({ addrText: res.street || res.address, addrNum: res.houseNumber || "", communeGuess: res.commune || res.town || s.communeGuess });
+              this.setState({ addrText: res.street || res.address, addrNum: res.houseNumber || "", communeManual: false, communeGuess: res.commune || res.town || s.communeGuess });
             }).catch(() => {
               this.setState({ addrText: lat.toFixed(5) + ", " + lon.toFixed(5) });
             });
@@ -1040,7 +1045,7 @@ class Component extends DCLogic {
         { label: "Adresse", value: fullAddr || "—" }
       ],
 
-      createdId: s.createdId, createdCommune: s.createdCommune || "Nyon",
+      createdId: s.createdId, createdCommune: s.createdCommune || "—",
       hasCreatedPoints: s.createdPoints > 0, createdPoints: s.createdPoints,
       goRewardsFromDone: () => this.setState({ view: "rewards", redeemMsg: "" }),
 

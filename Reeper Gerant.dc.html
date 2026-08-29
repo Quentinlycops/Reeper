@@ -206,7 +206,11 @@ select,textarea,input{font-family:inherit}
                     <span style="display:block;font-size:13.5px;font-weight:600">{{ r.title }}</span>
                     <span style="display:block;font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:#8A98A8;margin-top:3px">{{ r.id }}</span>
                   </span>
-                  <span style="font-size:13px;color:#48566B">{{ r.commune }}</span>
+                  <span style="font-size:13px;color:#48566B">{{ r.commune }}
+                    <sc-if value="{{ r.unserved }}" hint-placeholder-val="{{ false }}">
+                      <span title="Commune sans contrat Reeper" style="display:inline-block;margin-left:5px;font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:999px;background:#FDF2F3;color:#D62839;vertical-align:middle">Non cliente</span>
+                    </sc-if>
+                  </span>
                   <span style="font-size:12.5px;color:#48566B">{{ r.service }}</span>
                   <span style="font-size:11px;font-weight:700;padding:5px 10px;border-radius:999px;background:{{ r.bg }};color:{{ r.fg }};justify-self:start;white-space:nowrap">{{ r.status }}</span>
                 </button>
@@ -237,6 +241,9 @@ select,textarea,input{font-family:inherit}
                 <div style="padding:16px 20px;display:flex;flex-direction:column;gap:12px">
                   <div style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:#8A98A8">{{ selReep.id }}</div>
                   <div style="font-size:13px;color:#48566B">{{ selReep.commune }} · {{ selReep.place }}</div>
+                  <sc-if value="{{ selReepUnserved }}" hint-placeholder-val="{{ false }}">
+                    <span style="display:inline-block;align-self:flex-start;font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;background:#FDF2F3;color:#D62839">Commune sans contrat Reeper</span>
+                  </sc-if>
                   <div style="font-size:11px;font-weight:700;padding:5px 10px;border-radius:999px;background:{{ selReep.bg }};color:{{ selReep.fg }};align-self:flex-start">{{ selReep.status }}</div>
                   <p style="margin:0;font-size:13.5px;line-height:1.6;color:#3E5064">{{ selReep.desc }}</p>
                   <div style="font-size:11.5px;color:#8A98A8">Statut modifiable uniquement par la commune concernée.</div>
@@ -276,6 +283,9 @@ select,textarea,input{font-family:inherit}
               <div style="padding:20px 22px;display:flex;flex-direction:column;gap:14px">
                 <div style="font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#8A98A8">{{ selReep.id }}</div>
                 <div style="font-size:14px;color:#48566B">{{ selReep.commune }} · {{ selReep.place }}</div>
+                <sc-if value="{{ selReepUnserved }}" hint-placeholder-val="{{ false }}">
+                  <span style="display:inline-block;align-self:flex-start;font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;background:#FDF2F3;color:#D62839">Commune sans contrat Reeper</span>
+                </sc-if>
                 <div style="font-size:11px;font-weight:700;padding:5px 10px;border-radius:999px;background:{{ selReep.bg }};color:{{ selReep.fg }};align-self:flex-start">{{ selReep.status }}</div>
                 <p style="margin:0;font-size:14px;line-height:1.65;color:#3E5064">{{ selReep.desc }}</p>
                 <div style="font-size:11.5px;color:#8A98A8">Statut modifiable uniquement par la commune concernée.</div>
@@ -592,7 +602,11 @@ select,textarea,input{font-family:inherit}
                     <span style="display:block;font-size:13.5px;font-weight:600">{{ a.label }}</span>
                     <span style="display:block;font-size:11.5px;color:#8A98A8;margin-top:2px">{{ a.who }} · {{ a.reepTitle }} · {{ a.reepId }}</span>
                   </span>
-                  <span style="font-size:12.5px;color:#48566B">{{ a.commune }}</span>
+                  <span style="font-size:12.5px;color:#48566B">{{ a.commune }}
+                    <sc-if value="{{ a.unserved }}" hint-placeholder-val="{{ false }}">
+                      <span title="Commune sans contrat Reeper" style="display:inline-block;margin-left:4px;font-size:9px;font-weight:700;padding:1px 6px;border-radius:999px;background:#FDF2F3;color:#D62839;vertical-align:middle">Non cliente</span>
+                    </sc-if>
+                  </span>
                   <span style="font-size:12.5px;color:#48566B;line-height:1.5">{{ a.note }}</span>
                   <span style="font-size:12px;color:#8A98A8;white-space:nowrap">{{ a.when }}</span>
                 </button>
@@ -664,7 +678,25 @@ select,textarea,input{font-family:inherit}
             <button onClick="{{ closeContract }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;border-radius:9px;padding:9px 13px;font-size:13px;font-weight:600;color:#1B2A41">‹ Retour</button>
             <h1 style="margin:0;font-family:Georgia,Cambria,serif;font-size:22px;font-weight:700">{{ curContractCommune }}</h1>
             <span style="font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#8A98A8;background:#F3F6F8;border-radius:999px;padding:5px 12px">Code : {{ curContractCode }}</span>
+            <button onClick="{{ openCodeEdit }}" title="Modifier le code commune" style="border:1px solid rgba(27,42,65,.16);background:#fff;border-radius:8px;width:30px;height:30px;font-size:12.5px;color:#48566B;flex:none">✎</button>
           </div>
+
+          <sc-if value="{{ codeEditOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="position:fixed;inset:0;background:rgba(27,42,65,.32);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px" onClick="{{ closeCodeEdit }}">
+              <div style="background:#fff;border-radius:14px;padding:20px 22px;max-width:420px;width:100%;box-shadow:0 20px 50px rgba(27,42,65,.28)" onClick="{{ stopProp }}">
+                <div style="font-family:Georgia,serif;font-size:17px;font-weight:700;margin-bottom:16px">Modifier le code commune</div>
+                <div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:6px">Code</div>
+                <input value="{{ codeEditValue }}" onChange="{{ onCodeEditValue }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:10px 12px;font-size:13.5px;font-family:ui-monospace,Menlo,monospace;text-transform:uppercase;margin-bottom:8px" />
+                <sc-if value="{{ hasCodeEditError }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-size:12.5px;color:#D62839;margin-bottom:8px">{{ codeEditError }}</div>
+                </sc-if>
+                <div style="display:flex;gap:10px;margin-top:8px">
+                  <button onClick="{{ saveCodeEdit }}" style="border:none;background:#1B2A41;color:#fff;border-radius:10px;padding:12px 18px;font-size:14px;font-weight:600">Enregistrer</button>
+                  <button onClick="{{ closeCodeEdit }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;color:#48566B;border-radius:10px;padding:12px 16px;font-size:14px;font-weight:600">Annuler</button>
+                </div>
+              </div>
+            </div>
+          </sc-if>
 
           <div class="rg-2col" style="gap:16px;align-items:start">
             <div style="display:flex;flex-direction:column;gap:16px">
@@ -947,6 +979,28 @@ select,textarea,input{font-family:inherit}
               <div style="font-size:12.5px;color:#8A98A8;padding:8px 0">Aucune note pour le moment.</div>
             </sc-if>
           </div>
+
+          <div style="background:#fff;border:1px solid rgba(214,40,57,.25);border-radius:12px;padding:20px">
+            <div style="font-family:Georgia,serif;font-size:16px;font-weight:700;margin-bottom:6px;color:#D62839">Zone de danger</div>
+            <div style="font-size:12.5px;color:#5A6B7E;margin-bottom:14px">Supprime définitivement cette commune, son contrat et sa configuration. Les Reeps déjà encodés restent conservés (la commune redevient une commune non-cliente). Impossible si des comptes agents y sont encore rattachés.</div>
+            <button onClick="{{ openDeleteCommune }}" style="border:1px solid #D62839;background:#fff;color:#D62839;border-radius:9px;padding:11px 16px;font-size:13px;font-weight:600">Supprimer cette commune</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ deleteCommuneOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position:fixed;inset:0;background:rgba(27,42,65,.4);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px" onClick="{{ closeDeleteCommune }}">
+          <div style="background:#fff;border-radius:14px;padding:22px 24px;max-width:440px;width:100%;box-shadow:0 20px 50px rgba(27,42,65,.28)" onClick="{{ stopProp }}">
+            <div style="font-family:Georgia,serif;font-size:17px;font-weight:700;margin-bottom:10px">Supprimer {{ curContractCommune }} ?</div>
+            <div style="font-size:13px;color:#48566B;line-height:1.55;margin-bottom:16px">Cette action est irréversible : le contrat, la fiche commune et sa configuration seront supprimés. Les Reeps déjà encodés dans cette commune resteront visibles mais sans contrat associé.</div>
+            <sc-if value="{{ hasDeleteCommuneError }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size:12.5px;color:#D62839;margin-bottom:12px">{{ deleteCommuneError }}</div>
+            </sc-if>
+            <div style="display:flex;gap:10px">
+              <button onClick="{{ confirmDeleteCommune }}" style="border:none;background:#D62839;color:#fff;border-radius:10px;padding:12px 18px;font-size:14px;font-weight:600">Supprimer définitivement</button>
+              <button onClick="{{ closeDeleteCommune }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;color:#48566B;border-radius:10px;padding:12px 16px;font-size:14px;font-weight:600">Annuler</button>
+            </div>
+          </div>
         </div>
       </sc-if>
 
@@ -1016,7 +1070,7 @@ const ROLE_TAG = {
 
 function decoReep(r) {
   const c = STATUS[r.status] || STATUS.Nouveau;
-  return { ...r, bg: c.bg, fg: c.fg, dot: c.dot };
+  return { ...r, bg: c.bg, fg: c.fg, dot: c.dot, unserved: !Store.isServedCommune(r.commune) };
 }
 
 class Component extends DCLogic {
@@ -1036,6 +1090,8 @@ class Component extends DCLogic {
     activityMode: "journal", activityCommune: "Toutes", activityStatus: "Tous", activityCat: "Toutes", activityPeriod: "Tout", activitySearch: "",
     contractQuery: "", contractSel: null, contractDraft: null, contractSaved: false, contractEditOpen: false,
     addCommuneOpen: false, addCommuneName: "", addCommuneError: "",
+    codeEditOpen: false, codeEditValue: "", codeEditError: "",
+    deleteCommuneOpen: false, deleteCommuneError: "",
     cNewProjectName: "", cNewProjectAmount: "",
     cNewDocTitle: "", cNewDocNote: "", cNewDocError: "", docAddOpen: false,
     cNoteText: "", cNoteEditingId: null, cNoteEditText: "", cNoteDueDate: "",
@@ -1311,8 +1367,8 @@ class Component extends DCLogic {
       activityModeTrashBg: s.activityMode === "trash" ? "#1B2A41" : "transparent", activityModeTrashFg: s.activityMode === "trash" ? "#fff" : "#5A6B7E",
       activityTrashCount: activityTrashRaw.length,
       activityFeed: activityFeedAll.map((a) => ({
-        label: a.label, who: a.who, note: a.note, commune: a.commune, reepTitle: a.reepTitle, reepId: a.reepId, when: fmtDateTime(a.when),
-        onClick: () => this._transition(() => this.setState({ screen: "reeps", selId: a.reepId, selPhotoIdx: 0, reepModalOpen: true }))
+        label: a.label, who: a.who, note: a.note, commune: a.commune, unserved: !Store.isServedCommune(a.commune), reepTitle: a.reepTitle, reepId: a.reepId, when: fmtDateTime(a.when),
+        onClick: () => this._transition(() => this.setState({ selId: a.reepId, selPhotoIdx: 0, reepModalOpen: true }))
       })),
       activityFeedEmpty: !activityFeedAll.length,
       activityTrash: activityTrashRaw.map((r) => ({
@@ -1337,6 +1393,29 @@ class Component extends DCLogic {
       closeContract,
       curContractCommune: curContract ? curContract.commune : "",
       curContractCode: curContract ? (Store.communeCodeFor(curContract.commune) || "—") : "",
+
+      codeEditOpen: s.codeEditOpen,
+      openCodeEdit: () => this.setState({ codeEditOpen: true, codeEditValue: curContract ? (Store.communeCodeFor(curContract.commune) || "") : "", codeEditError: "" }),
+      closeCodeEdit: () => this.setState({ codeEditOpen: false }),
+      codeEditValue: s.codeEditValue, onCodeEditValue: (e) => this.setState({ codeEditValue: e.target.value, codeEditError: "" }),
+      hasCodeEditError: !!s.codeEditError, codeEditError: s.codeEditError,
+      saveCodeEdit: () => {
+        if (!curContract) return;
+        const res = Store.updateCommuneCode(curContract.commune, s.codeEditValue);
+        if (!res.ok) { this.setState({ codeEditError: res.error }); return; }
+        this.setState({ codeEditOpen: false });
+      },
+
+      deleteCommuneOpen: s.deleteCommuneOpen,
+      openDeleteCommune: () => this.setState({ deleteCommuneOpen: true, deleteCommuneError: "" }),
+      closeDeleteCommune: () => this.setState({ deleteCommuneOpen: false }),
+      hasDeleteCommuneError: !!s.deleteCommuneError, deleteCommuneError: s.deleteCommuneError,
+      confirmDeleteCommune: () => {
+        if (!curContract) return;
+        const res = Store.removeCommune(curContract.commune);
+        if (!res.ok) { this.setState({ deleteCommuneError: res.error }); return; }
+        this._transition(() => this.setState({ deleteCommuneOpen: false, contractSel: null, contractDraft: null }));
+      },
 
       addCommuneOpen: s.addCommuneOpen,
       openAddCommune: () => this.setState({ addCommuneOpen: true, addCommuneName: "", addCommuneError: "" }),
@@ -1527,6 +1606,7 @@ class Component extends DCLogic {
       })),
 
       hasSelReep: !!selReepRaw,
+      selReepUnserved: !!(selReepRaw && selReepRaw.unserved),
       closeSelReep: () => this.setState({ selId: null, selPhotoIdx: 0 }),
       reepModalOpen: s.reepModalOpen && !!selReepRaw,
       closeReepModal: () => this.setState({ reepModalOpen: false }),

@@ -23,6 +23,15 @@
       if (!r.ok) return r.text().then(function (t) { try { console.warn("[reeper-sync] push rejected:", table, r.status, t); } catch (x) {} });
     }).catch(function (e) { try { console.warn("[reeper-sync] push failed:", table, e); } catch (x) {} });
   }
+  function sbDelete(table, col, val) {
+    if (!SYNC_ON) return Promise.resolve();
+    return fetch(SUPABASE_URL + "/rest/v1/" + table + "?" + col + "=eq." + encodeURIComponent(val), {
+      method: "DELETE",
+      headers: sbHeaders({ Prefer: "return=minimal" })
+    }).then(function (r) {
+      if (!r.ok) return r.text().then(function (t) { try { console.warn("[reeper-sync] delete rejected:", table, r.status, t); } catch (x) {} });
+    }).catch(function (e) { try { console.warn("[reeper-sync] delete failed:", table, e); } catch (x) {} });
+  }
   function sbSelectAll(table) {
     if (!SYNC_ON) return Promise.resolve(null);
     return fetch(SUPABASE_URL + "/rest/v1/" + table + "?select=*", { headers: sbHeaders() })
@@ -1389,10 +1398,46 @@
       persist(data);
       return { ok: true, commune: name, code: code };
     },
+    isServedCommune: function (name) {
+      var data = load();
+      return data.communesMeta.some(function (m) { return m.name === name; });
+    },
     communeCodeFor: function (name) {
       var data = load();
       var m = data.communesMeta.find(function (x) { return x.name === name; });
       return m ? m.code : null;
+    },
+    updateCommuneCode: function (name, newCode) {
+      var data = load();
+      var m = data.communesMeta.find(function (x) { return x.name === name; });
+      if (!m) return { ok: false, error: "Entité introuvable." };
+      newCode = String(newCode || "").trim().toUpperCase();
+      if (!newCode) return { ok: false, error: "Code requis." };
+      if (data.communesMeta.some(function (x) { return x.name !== name && x.code === newCode; })) {
+        return { ok: false, error: "Ce code est déjà utilisé par une autre entité." };
+      }
+      if (m.code && COMMUNE_CODES[m.code] === name) delete COMMUNE_CODES[m.code];
+      m.code = newCode;
+      COMMUNE_CODES[newCode] = name;
+      persist(data);
+      return { ok: true, code: newCode };
+    },
+    removeCommune: function (name) {
+      var data = load();
+      var m = data.communesMeta.find(function (x) { return x.name === name; });
+      if (!m) return { ok: false, error: "Entité introuvable." };
+      var hasAgents = data.accounts.some(function (a) { return a.type === "agent" && a.commune === name && a.status === "active"; });
+      if (hasAgents) return { ok: false, error: "Impossible : des comptes agents sont encore rattachés à " + name + ". Supprimez-les d'abord." };
+      data.communesMeta = data.communesMeta.filter(function (x) { return x.name !== name; });
+      data.contracts = data.contracts.filter(function (c) { return c.commune !== name; });
+      data.communeConfigs = data.communeConfigs.filter(function (c) { return c.commune !== name; });
+      delete COMMUNES[name];
+      if (m.code && COMMUNE_CODES[m.code] === name) delete COMMUNE_CODES[m.code];
+      persist(data);
+      sbDelete("communes_meta", "name", name);
+      sbDelete("contracts", "commune", name);
+      sbDelete("commune_config", "commune", name);
+      return { ok: true };
     },
 
     // --- Commune: per-commune Configuration (Général/Catégories/Services/Statuts/Messages) ---
