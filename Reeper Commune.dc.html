@@ -791,7 +791,7 @@ select,textarea,input{font-family:inherit}
         <div style="display:grid;grid-template-columns:{{ detailCols }};gap:18px;align-items:start">
           <div style="display:flex;flex-direction:column;gap:16px">
             <div style="background:#fff;border:{{ current.ring }};border-radius:12px;overflow:hidden">
-              <div style="height:280px;position:relative">
+              <div style="height:280px;position:relative;cursor:pointer" onClick="{{ openLightbox }}">
                 <image-slot id="{{ current.slotBig }}" shape="rect" src="{{ current.bigSrc }}" placeholder="{{ current.hint }}"></image-slot>
               </div>
               <sc-if value="{{ hasMultiPhotos }}" hint-placeholder-val="{{ false }}">
@@ -1074,6 +1074,18 @@ select,textarea,input{font-family:inherit}
             <p style="margin:0;font-size:14px;line-height:1.65;color:#1B2A41">{{ exportDesc }}</p>
           </div>
         </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ lightboxOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="position:fixed;inset:0;background:rgba(10,14,20,.9);z-index:300;display:flex;align-items:center;justify-content:center;padding:30px" onClick="{{ closeLightbox }}">
+        <button onClick="{{ closeLightbox }}" style="position:absolute;top:20px;right:24px;border:none;background:rgba(255,255,255,.12);color:#fff;font-size:20px;width:40px;height:40px;border-radius:999px">×</button>
+        <sc-if value="{{ lightboxHasMulti }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ lightboxPrev }}" style="position:absolute;left:20px;top:50%;transform:translateY(-50%);border:none;background:rgba(255,255,255,.12);color:#fff;font-size:22px;width:46px;height:46px;border-radius:999px">‹</button>
+          <button onClick="{{ lightboxNext }}" style="position:absolute;right:20px;top:50%;transform:translateY(-50%);border:none;background:rgba(255,255,255,.12);color:#fff;font-size:22px;width:46px;height:46px;border-radius:999px">›</button>
+          <span style="position:absolute;bottom:24px;left:50%;transform:translateX(-50%);color:#fff;font-size:13px;background:rgba(255,255,255,.14);border-radius:999px;padding:6px 14px">{{ lightboxCounter }}</span>
+        </sc-if>
+        <img src="{{ lightboxSrc }}" onClick="{{ stopProp }}" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,.5)" />
       </div>
     </sc-if>
 
@@ -1757,7 +1769,7 @@ const MESSAGE_TRIGGERS = [
 class Component extends DCLogic {
   state = {
     screen: "dash", sel: null, filter: "Tous", cat: "Toutes les catégories", view: "Carte",
-    preview: false, note: "", closeNote: "", closePhotoDataUrl: null, service: null, status: null, saved: false, closed: false, selPhotoIdx: 0,
+    preview: false, note: "", closeNote: "", closePhotoDataUrl: null, service: null, status: null, saved: false, closed: false, selPhotoIdx: 0, lightboxOpen: false,
     rightsQuery: "", rightsService: "Tous", rightsRole: "Tous",
     detailSection: null, deleteReepConfirm: false, assignSelected: null, assignSaved: false,
     exportOpen: false,
@@ -1786,7 +1798,7 @@ class Component extends DCLogic {
   };
 
   go = (screen) => { this._transition(() => this.setState({ screen, profileOpen: false })); };
-  open = (id) => { this._transition(() => this.setState({ screen: "detail", sel: id, note: "", service: null, status: null, saved: false, closed: false, closePhotoDataUrl: null, agentsIn: [(Store.getSession() || FALLBACK_SESSION).initials], preview: false, xfMode: "service", xfCommune: null, detailSection: null, deleteReepConfirm: false, assignSelected: null, assignSaved: false, selPhotoIdx: 0 })); };
+  open = (id) => { this._transition(() => this.setState({ screen: "detail", sel: id, note: "", service: null, status: null, saved: false, closed: false, closePhotoDataUrl: null, agentsIn: [(Store.getSession() || FALLBACK_SESSION).initials], preview: false, xfMode: "service", xfCommune: null, detailSection: null, deleteReepConfirm: false, assignSelected: null, assignSaved: false, selPhotoIdx: 0, lightboxOpen: false })); };
 
   _transition(fn) {
     if (!document.startViewTransition) { fn(); return; }
@@ -2513,6 +2525,14 @@ class Component extends DCLogic {
         url, ring: i === selPhotoActiveIdx ? "2px solid #1B2A41" : "1px solid rgba(27,42,65,.14)",
         onClick: () => this.setState({ selPhotoIdx: i })
       })),
+      lightboxOpen: s.lightboxOpen && s.screen === "detail" && selPhotos.length > 0,
+      openLightbox: () => this.setState({ lightboxOpen: true }),
+      closeLightbox: () => this.setState({ lightboxOpen: false }),
+      lightboxSrc: selPhotos[selPhotoActiveIdx] || "",
+      lightboxHasMulti: selPhotos.length > 1,
+      lightboxCounter: (selPhotoActiveIdx + 1) + " / " + selPhotos.length,
+      lightboxPrev: (e) => { e.stopPropagation(); this.setState({ selPhotoIdx: (selPhotoActiveIdx - 1 + selPhotos.length) % selPhotos.length }); },
+      lightboxNext: (e) => { e.stopPropagation(); this.setState({ selPhotoIdx: (selPhotoActiveIdx + 1) % selPhotos.length }); },
       isCurReepNew: cur.status === "Nouveau",
       acceptReep: () => { Store.acceptReep(cur.id, agentName); this._transition(() => this.setState({ status: "En cours", saved: false })); },
       meta: [

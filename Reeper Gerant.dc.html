@@ -226,7 +226,7 @@ select,textarea,input{font-family:inherit}
                   <span style="flex:1;font-family:Georgia,serif;font-size:16.5px;font-weight:700">{{ selReep.title }}</span>
                   <button onClick="{{ closeSelReep }}" style="border:none;background:none;font-size:16px;color:#8A98A8">×</button>
                 </div>
-                <div style="height:200px;position:relative">
+                <div style="height:200px;position:relative;cursor:pointer" onClick="{{ openLightbox }}">
                   <image-slot id="{{ selReep.slot }}" shape="rect" src="{{ selReep.src }}" placeholder="Photo de l'anomalie"></image-slot>
                 </div>
                 <sc-if value="{{ hasMultiPhotos }}" hint-placeholder-val="{{ false }}">
@@ -269,7 +269,7 @@ select,textarea,input{font-family:inherit}
                 <span style="flex:1;font-family:Georgia,serif;font-size:18px;font-weight:700">{{ selReep.title }}</span>
                 <button onClick="{{ closeReepModal }}" style="border:none;background:none;font-size:18px;color:#8A98A8">×</button>
               </div>
-              <div style="height:360px;position:relative">
+              <div style="height:360px;position:relative;cursor:pointer" onClick="{{ openLightbox }}">
                 <image-slot id="{{ selReep.modalSlot }}" shape="rect" src="{{ selReep.src }}" placeholder="Photo de l'anomalie"></image-slot>
               </div>
               <sc-if value="{{ hasMultiPhotos }}" hint-placeholder-val="{{ false }}">
@@ -302,6 +302,18 @@ select,textarea,input{font-family:inherit}
             </div>
           </div>
         </sc-if>
+
+      <sc-if value="{{ lightboxOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position:fixed;inset:0;background:rgba(10,14,20,.9);z-index:300;display:flex;align-items:center;justify-content:center;padding:30px" onClick="{{ closeLightbox }}">
+          <button onClick="{{ closeLightbox }}" style="position:absolute;top:20px;right:24px;border:none;background:rgba(255,255,255,.12);color:#fff;font-size:20px;width:40px;height:40px;border-radius:999px">×</button>
+          <sc-if value="{{ lightboxHasMulti }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ lightboxPrev }}" style="position:absolute;left:20px;top:50%;transform:translateY(-50%);border:none;background:rgba(255,255,255,.12);color:#fff;font-size:22px;width:46px;height:46px;border-radius:999px">‹</button>
+            <button onClick="{{ lightboxNext }}" style="position:absolute;right:20px;top:50%;transform:translateY(-50%);border:none;background:rgba(255,255,255,.12);color:#fff;font-size:22px;width:46px;height:46px;border-radius:999px">›</button>
+            <span style="position:absolute;bottom:24px;left:50%;transform:translateX(-50%);color:#fff;font-size:13px;background:rgba(255,255,255,.14);border-radius:999px;padding:6px 14px">{{ lightboxCounter }}</span>
+          </sc-if>
+          <img src="{{ lightboxSrc }}" onClick="{{ stopProp }}" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,.5)" />
+        </div>
+      </sc-if>
 
       <sc-if value="{{ isAccounts }}" hint-placeholder-val="{{ false }}">
         <div class="rg-content" style="display:flex;flex-direction:column;gap:16px">
@@ -1078,7 +1090,7 @@ class Component extends DCLogic {
     screen: "dash",
     profileOpen: false,
     selId: null,
-    filterCommune: "Toutes", filterCat: "Toutes", filterStatus: "Tous", reepQuery: "", reepSort: "date_desc", selPhotoIdx: 0, reepModalOpen: false,
+    filterCommune: "Toutes", filterCat: "Toutes", filterStatus: "Tous", reepQuery: "", reepSort: "date_desc", selPhotoIdx: 0, reepModalOpen: false, lightboxOpen: false,
     contactsEditOpen: false,
     acctQuery: "", acctFilterCommune: "Toutes", acctFilterType: "Tous",
     pendingDeleteKey: null,
@@ -1607,10 +1619,18 @@ class Component extends DCLogic {
 
       hasSelReep: !!selReepRaw,
       selReepUnserved: !!(selReepRaw && selReepRaw.unserved),
-      closeSelReep: () => this.setState({ selId: null, selPhotoIdx: 0 }),
+      closeSelReep: () => this.setState({ selId: null, selPhotoIdx: 0, lightboxOpen: false }),
       reepModalOpen: s.reepModalOpen && !!selReepRaw,
-      closeReepModal: () => this.setState({ reepModalOpen: false }),
+      closeReepModal: () => this.setState({ reepModalOpen: false, lightboxOpen: false }),
       stopProp: (e) => e.stopPropagation(),
+      lightboxOpen: s.lightboxOpen && !!selReepRaw && selPhotos.length > 0,
+      openLightbox: () => this.setState({ lightboxOpen: true }),
+      closeLightbox: () => this.setState({ lightboxOpen: false }),
+      lightboxSrc: selPhotos[selPhotoActiveIdx] || "",
+      lightboxHasMulti: selPhotos.length > 1,
+      lightboxCounter: (selPhotoActiveIdx + 1) + " / " + selPhotos.length,
+      lightboxPrev: (e) => { e.stopPropagation(); this.setState({ selPhotoIdx: (selPhotoActiveIdx - 1 + selPhotos.length) % selPhotos.length }); },
+      lightboxNext: (e) => { e.stopPropagation(); this.setState({ selPhotoIdx: (selPhotoActiveIdx + 1) % selPhotos.length }); },
       selReep: selReepRaw ? {
         ...selReepRaw,
         slot: "gs-" + selReepRaw.id, modalSlot: "gsm-" + selReepRaw.id, src: selPhotos[selPhotoActiveIdx] || "",

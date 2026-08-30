@@ -544,13 +544,15 @@ input,textarea,select{font-family:inherit}
             </div>
 
             <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:16px;overflow:hidden">
-              <div style="height:300px;position:relative">
+              <div style="height:300px;position:relative;cursor:pointer" onClick="{{ openLightbox }}">
                 <image-slot id="{{ cur.slotBig }}" shape="rect" src="{{ cur.src }}" placeholder="{{ cur.hint }}"></image-slot>
               </div>
-              <sc-if value="{{ cur.hasExtraPhotos }}" hint-placeholder-val="{{ false }}">
+              <sc-if value="{{ cur.hasMultiPhotos }}" hint-placeholder-val="{{ false }}">
                 <div style="display:flex;gap:8px;padding:14px 28px 0;flex-wrap:wrap">
-                  <sc-for list="{{ cur.extraPhotos }}" as="p" hint-placeholder-count="2">
-                    <img src="{{ p.url }}" style="width:64px;height:64px;object-fit:cover;border-radius:9px;border:1px solid rgba(27,42,65,.14)" />
+                  <sc-for list="{{ cur.photoThumbs }}" as="p" hint-placeholder-count="2">
+                    <button onClick="{{ p.onClick }}" style="flex:none;width:64px;height:64px;border-radius:9px;border:{{ p.ring }};padding:0;overflow:hidden;background:#F3F6F8;cursor:pointer">
+                      <img src="{{ p.url }}" style="width:100%;height:100%;object-fit:cover;display:block" />
+                    </button>
                   </sc-for>
                 </div>
               </sc-if>
@@ -577,6 +579,18 @@ input,textarea,select{font-family:inherit}
             </div>
           </div>
           </sc-if>
+        </sc-if>
+
+        <sc-if value="{{ lightboxOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="position:fixed;inset:0;background:rgba(10,14,20,.9);z-index:300;display:flex;align-items:center;justify-content:center;padding:30px" onClick="{{ closeLightbox }}">
+            <button onClick="{{ closeLightbox }}" style="position:absolute;top:20px;right:24px;border:none;background:rgba(255,255,255,.12);color:#fff;font-size:20px;width:40px;height:40px;border-radius:999px">×</button>
+            <sc-if value="{{ lightboxHasMulti }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ lightboxPrev }}" style="position:absolute;left:20px;top:50%;transform:translateY(-50%);border:none;background:rgba(255,255,255,.12);color:#fff;font-size:22px;width:46px;height:46px;border-radius:999px">‹</button>
+              <button onClick="{{ lightboxNext }}" style="position:absolute;right:20px;top:50%;transform:translateY(-50%);border:none;background:rgba(255,255,255,.12);color:#fff;font-size:22px;width:46px;height:46px;border-radius:999px">›</button>
+              <span style="position:absolute;bottom:24px;left:50%;transform:translateX(-50%);color:#fff;font-size:13px;background:rgba(255,255,255,.14);border-radius:999px;padding:6px 14px">{{ lightboxCounter }}</span>
+            </sc-if>
+            <img src="{{ lightboxSrc }}" onClick="{{ stopProp }}" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,.5)" />
+          </div>
         </sc-if>
 
         <sc-if value="{{ isRewards }}" hint-placeholder-val="{{ false }}">
@@ -675,7 +689,7 @@ const deco = (r) => {
 
 class Component extends DCLogic {
   state = {
-    view: "home", step: "photo", sel: 0, profileOpen: false,
+    view: "home", step: "photo", sel: 0, selPhotoIdx: 0, lightboxOpen: false, profileOpen: false,
     account: "", pwd: "", loginError: "", wantTrack: false,
     authTab: "login",
     suFirst: "", suLast: "", suEmail: "", suUsername: "", suPwd: "", suPwd2: "", suCode: "", suPhone: "", suAddress: "",
@@ -787,10 +801,13 @@ class Component extends DCLogic {
     const mapCenterLon = s.geoLon != null ? s.geoLon : romandieDefault.lon;
     const mapZoom = s.geoLat != null ? 16 : 10;
     const rows = Store.getReeps({}).filter((d) => loggedIn && d.reporterAccount === session.key).map(deco).map((d, i) => ({
-      ...d, onClick: () => this.setState({ sel: i }),
+      ...d, onClick: () => this.setState({ sel: i, selPhotoIdx: 0 }),
       ring: "1px solid rgba(27,42,65,.1)",
       shadow: i === s.sel ? "0 6px 18px rgba(27,42,65,.12)" : "none"
     }));
+    const curRow = rows[s.sel] || rows[0];
+    const curPhotos = curRow ? (curRow.photos && curRow.photos.length ? curRow.photos : (curRow.photoUrl ? [curRow.photoUrl] : [])) : [];
+    const curPhotoActiveIdx = Math.min(s.selPhotoIdx || 0, Math.max(0, curPhotos.length - 1));
     const navDef = [["Accueil", "home"], ["Signaler", "report"], ["Mes Reeps", "track"], ["Mentions légales", "legal"]];
 
     const goTrack = () => (loggedIn ? this.go("track") : this.setState({ view: "login", wantTrack: true }));
@@ -1092,13 +1109,24 @@ class Component extends DCLogic {
       signupEmailSubject: s.signupEmailSubject, signupEmailBody: s.signupEmailBody, signupEmailTo: s.signupEmailTo,
       doSignup, afterSignupContinue,
 
-      rows, cur: (() => {
-        const c = rows[s.sel] || rows[0];
-        if (!c) return c;
-        const extra = (c.photos || []).slice(1);
-        return { ...c, hasExtraPhotos: extra.length > 0, extraPhotos: extra.map((url) => ({ url })) };
-      })(),
+      rows, cur: curRow ? {
+        ...curRow, src: curPhotos[curPhotoActiveIdx] || curRow.src,
+        hasMultiPhotos: curPhotos.length > 1,
+        photoThumbs: curPhotos.map((url, i) => ({
+          url, ring: i === curPhotoActiveIdx ? "2px solid #1B2A41" : "1px solid rgba(27,42,65,.14)",
+          onClick: () => this.setState({ selPhotoIdx: i })
+        }))
+      } : curRow,
       hasReeps: rows.length > 0, noReeps: rows.length === 0,
+      stopProp: (e) => e.stopPropagation(),
+      lightboxOpen: s.lightboxOpen && s.view === "track" && curPhotos.length > 0,
+      openLightbox: () => this.setState({ lightboxOpen: true }),
+      closeLightbox: () => this.setState({ lightboxOpen: false }),
+      lightboxSrc: curPhotos[curPhotoActiveIdx] || "",
+      lightboxHasMulti: curPhotos.length > 1,
+      lightboxCounter: (curPhotoActiveIdx + 1) + " / " + curPhotos.length,
+      lightboxPrev: (e) => { e.stopPropagation(); this.setState({ selPhotoIdx: (curPhotoActiveIdx - 1 + curPhotos.length) % curPhotos.length }); },
+      lightboxNext: (e) => { e.stopPropagation(); this.setState({ selPhotoIdx: (curPhotoActiveIdx + 1) % curPhotos.length }); },
 
       legalSections: [
         { title: "Éditeur", body: "Reeper est édité et exploité en Suisse. Les données sont hébergées exclusivement sur territoire suisse." },
