@@ -28,7 +28,7 @@
   }
 
   var stylesheet =
-    ":host{display:block;position:relative;width:100%;height:100%;aspect-ratio:16/10;background:#E9EFF3}" +
+    ":host{display:block;position:relative;isolation:isolate;width:100%;height:100%;aspect-ratio:16/10;background:#E9EFF3}" +
     ".wrap{position:absolute;inset:0}" +
     ".attr{position:absolute;bottom:6px;right:8px;font-size:9.5px;color:#5A6B7E;background:rgba(255,255,255,.8);border-radius:4px;padding:2px 6px;z-index:1000;pointer-events:none}" +
     ".leaflet-container{background:#E9EFF3;font-family:inherit}";
