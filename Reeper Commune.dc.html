@@ -849,164 +849,167 @@ select,textarea,input{font-family:inherit}
           </div>
 
           <div style="display:flex;flex-direction:column;gap:14px">
-            <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:hidden">
-              <button onClick="{{ toggleSecStatus }}" style="width:100%;border:none;background:none;padding:16px 20px;display:flex;align-items:center;gap:12px;text-align:left;color:#1B2A41">
-                <span style="flex:1;min-width:0">
-                  <span style="display:block;font-family:Georgia,Cambria,serif;font-size:15.5px;font-weight:700">Statut</span>
-                  <span style="display:block;font-size:12px;color:#8A98A8;margin-top:2px">{{ current.status }} · {{ service }}</span>
-                </span>
-                <span style="font-size:12px;color:#8A98A8;flex:none">{{ secStatusChevron }}</span>
-              </button>
-              <sc-if value="{{ secStatusOpen }}" hint-placeholder-val="{{ false }}">
-                <div style="padding:0 20px 20px;border-top:1px solid rgba(27,42,65,.08);padding-top:16px;display:flex;flex-direction:column;gap:16px">
-                  <div>
-                    <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Statut</div>
-                    <select value="{{ current.status }}" onChange="{{ onStatusChange }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;color:#1B2A41;background:#fff">
-                      <sc-for list="{{ statusEditable }}" as="c" hint-placeholder-count="4">
-                        <option value="{{ c }}">{{ c }}</option>
-                      </sc-for>
-                    </select>
-                    <div style="font-size:11.5px;color:#8A98A8;margin-top:6px">{{ statusHint }}</div>
-                  </div>
-                  <div>
-                    <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Service assigné</div>
-                    <select value="{{ service }}" onChange="{{ onService }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;color:#1B2A41;background:#fff">
-                      <sc-for list="{{ serviceNames }}" as="c" hint-placeholder-count="4">
-                        <option value="{{ c }}">{{ c }}</option>
-                      </sc-for>
-                    </select>
-                  </div>
-                  <div>
-                    <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Note interne</div>
-                    <textarea value="{{ note }}" onChange="{{ onNote }}" rows="4" placeholder="Contexte, priorité, coordination avec un autre service…" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:12px 13px;font-size:13.5px;line-height:1.5;color:#1B2A41;resize:none;outline:none;background:#fff"></textarea>
-                    <div style="font-size:11.5px;color:#8A98A8;margin-top:6px">Jamais visible du citoyen.</div>
-                  </div>
-                  <button onClick="{{ save }}" style="width:100%;padding:13px;border:none;border-radius:10px;background:#1B2A41;color:#fff;font-size:14.5px;font-weight:600">{{ saveLabel }}</button>
-                </div>
-              </sc-if>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <button onClick="{{ openSecStatus }}" style="padding:12px 10px;border:1px solid rgba(27,42,65,.16);border-radius:10px;background:#fff;color:#1B2A41;font-size:13.5px;font-weight:600">Statut</button>
+              <button onClick="{{ openSecTransfer }}" style="padding:12px 10px;border:1px solid rgba(27,42,65,.16);border-radius:10px;background:#fff;color:#1B2A41;font-size:13.5px;font-weight:600">Transférer</button>
+              <button onClick="{{ openSecAssign }}" style="padding:12px 10px;border:1px solid rgba(27,42,65,.16);border-radius:10px;background:#fff;color:#1B2A41;font-size:13.5px;font-weight:600">Attribuer</button>
+              <button onClick="{{ openSecClose }}" style="padding:12px 10px;border:1px solid rgba(63,143,99,.4);border-radius:10px;background:#fff;color:#2E6B48;font-size:13.5px;font-weight:600">Clôturer</button>
             </div>
 
-            <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:hidden">
-              <button onClick="{{ toggleSecTransfer }}" style="width:100%;border:none;background:none;padding:16px 20px;display:flex;align-items:center;gap:12px;text-align:left;color:#1B2A41">
-                <span style="flex:1;min-width:0">
-                  <span style="display:block;font-family:Georgia,Cambria,serif;font-size:15.5px;font-weight:700">Transférer</span>
-                  <span style="display:block;font-size:12px;color:#8A98A8;margin-top:2px">Vers un autre service ou une autre commune</span>
-                </span>
-                <span style="font-size:12px;color:#8A98A8;flex:none">{{ secTransferChevron }}</span>
-              </button>
-              <sc-if value="{{ secTransferOpen }}" hint-placeholder-val="{{ false }}">
-                <div style="padding:0 20px 20px;border-top:1px solid rgba(27,42,65,.08);padding-top:16px;display:flex;flex-direction:column;gap:12px">
-                  <p style="margin:0;font-size:12.5px;line-height:1.55;color:#8A98A8;text-wrap:pretty">Le destinataire reçoit le Reep et votre note. Jamais visible du citoyen.</p>
-                  <div style="display:flex;background:#EEF2F5;border-radius:9px;padding:3px;gap:2px">
-                    <button onClick="{{ xfModeServiceClick }}" style="flex:1;border:none;background:{{ xfModeServiceBg }};color:{{ xfModeServiceFg }};border-radius:7px;padding:8px;font-size:12px;font-weight:700">Autre service</button>
-                    <button onClick="{{ xfModeCommuneClick }}" style="flex:1;border:none;background:{{ xfModeCommuneBg }};color:{{ xfModeCommuneFg }};border-radius:7px;padding:8px;font-size:12px;font-weight:700">Autre commune</button>
+            <sc-if value="{{ secStatusOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="position:fixed;inset:0;background:rgba(27,42,65,.32);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px" onClick="{{ closeDetailSection }}">
+                <div style="background:#fff;border-radius:14px;padding:20px 22px;max-width:480px;width:100%;max-height:85vh;overflow:auto;box-shadow:0 20px 50px rgba(27,42,65,.28)" onClick="{{ stopProp }}">
+                  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+                    <span style="flex:1;font-family:Georgia,Cambria,serif;font-size:17px;font-weight:700">Statut</span>
+                    <button onClick="{{ closeDetailSection }}" style="border:none;background:none;font-size:18px;color:#8A98A8">×</button>
                   </div>
-                  <sc-if value="{{ xfIsService }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:flex;flex-direction:column;gap:16px">
                     <div>
-                      <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Service destinataire</div>
-                      <select value="{{ xfServ }}" onChange="{{ onXfServ }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;background:#fff">
+                      <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Statut</div>
+                      <select value="{{ current.status }}" onChange="{{ onStatusChange }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;color:#1B2A41;background:#fff">
+                        <sc-for list="{{ statusEditable }}" as="c" hint-placeholder-count="4">
+                          <option value="{{ c }}">{{ c }}</option>
+                        </sc-for>
+                      </select>
+                      <div style="font-size:11.5px;color:#8A98A8;margin-top:6px">{{ statusHint }}</div>
+                    </div>
+                    <div>
+                      <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Service assigné</div>
+                      <select value="{{ service }}" onChange="{{ onService }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;color:#1B2A41;background:#fff">
                         <sc-for list="{{ serviceNames }}" as="c" hint-placeholder-count="4">
                           <option value="{{ c }}">{{ c }}</option>
                         </sc-for>
                       </select>
                     </div>
-                  </sc-if>
-                  <sc-if value="{{ xfIsCommune }}" hint-placeholder-val="{{ false }}">
                     <div>
-                      <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Commune destinataire</div>
-                      <select value="{{ xfCommune }}" onChange="{{ onXfCommune }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;background:#fff">
-                        <sc-for list="{{ otherCommunes }}" as="c" hint-placeholder-count="1">
-                          <option value="{{ c }}">{{ c }}</option>
-                        </sc-for>
-                      </select>
-                      <div style="font-size:11.5px;color:#8A98A8;margin-top:6px">L'administrateur de cette commune est notifié dans sa messagerie.</div>
+                      <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Note interne</div>
+                      <textarea value="{{ note }}" onChange="{{ onNote }}" rows="4" placeholder="Contexte, priorité, coordination avec un autre service…" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:12px 13px;font-size:13.5px;line-height:1.5;color:#1B2A41;resize:none;outline:none;background:#fff"></textarea>
+                      <div style="font-size:11.5px;color:#8A98A8;margin-top:6px">Jamais visible du citoyen.</div>
                     </div>
-                  </sc-if>
-                  <div>
-                    <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Note de transfert</div>
-                    <textarea value="{{ xfNote }}" onChange="{{ onXfNote }}" rows="3" placeholder="Motif du transfert, éléments utiles au destinataire…" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;font-family:inherit;color:#1B2A41;outline:none;resize:none"></textarea>
+                    <button onClick="{{ save }}" style="width:100%;padding:13px;border:none;border-radius:10px;background:#1B2A41;color:#fff;font-size:14.5px;font-weight:600">{{ saveLabel }}</button>
                   </div>
-                  <button onClick="{{ doTransfer }}" style="width:100%;padding:13px;border:1px solid #1B2A41;border-radius:10px;background:#fff;color:#1B2A41;font-size:14.5px;font-weight:600">{{ xfLabel }}</button>
-                  <sc-if value="{{ xfDone }}" hint-placeholder-val="{{ false }}">
-                    <div style="background:#EAF0F4;border-radius:10px;padding:12px 14px;font-size:12.5px;line-height:1.55;color:#3E5064">{{ xfMsg }}</div>
-                  </sc-if>
                 </div>
-              </sc-if>
-            </div>
+              </div>
+            </sc-if>
 
-            <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:hidden">
-              <button onClick="{{ toggleSecAssign }}" style="width:100%;border:none;background:none;padding:16px 20px;display:flex;align-items:center;gap:12px;text-align:left;color:#1B2A41">
-                <span style="flex:1;min-width:0">
-                  <span style="display:block;font-family:Georgia,Cambria,serif;font-size:15.5px;font-weight:700">Attribution</span>
-                  <span style="display:block;font-size:12px;color:#8A98A8;margin-top:2px">{{ assignSummary }}</span>
-                </span>
-                <span style="font-size:12px;color:#8A98A8;flex:none">{{ secAssignChevron }}</span>
-              </button>
-              <sc-if value="{{ secAssignOpen }}" hint-placeholder-val="{{ false }}">
-                <div style="padding:0 20px 20px;border-top:1px solid rgba(27,42,65,.08);padding-top:16px;display:flex;flex-direction:column;gap:14px">
-                  <p style="margin:0;font-size:12.5px;line-height:1.55;color:#8A98A8;text-wrap:pretty">La ou les personnes attribuées reçoivent une entrée dans leur journal de bord personnel. Toute l'équipe de la commune garde la main sur le Reep.</p>
-                  <div style="display:flex;flex-wrap:wrap;gap:8px">
-                    <sc-for list="{{ assignChips }}" as="a" hint-placeholder-count="3">
-                      <button onClick="{{ a.onClick }}" style="display:flex;align-items:center;gap:9px;border:1px solid {{ a.border }};background:{{ a.bg }};color:{{ a.fg }};border-radius:999px;padding:7px 13px;font-size:13px;font-weight:600;white-space:nowrap">
-                        <span style="width:22px;height:22px;border-radius:50%;background:{{ a.avBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">{{ a.initials }}</span>
-                        {{ a.name }}
-                        <span style="opacity:.55;font-weight:400">{{ a.mark }}</span>
-                      </button>
-                    </sc-for>
+            <sc-if value="{{ secTransferOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="position:fixed;inset:0;background:rgba(27,42,65,.32);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px" onClick="{{ closeDetailSection }}">
+                <div style="background:#fff;border-radius:14px;padding:20px 22px;max-width:480px;width:100%;max-height:85vh;overflow:auto;box-shadow:0 20px 50px rgba(27,42,65,.28)" onClick="{{ stopProp }}">
+                  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+                    <span style="flex:1;font-family:Georgia,Cambria,serif;font-size:17px;font-weight:700">Transférer</span>
+                    <button onClick="{{ closeDetailSection }}" style="border:none;background:none;font-size:18px;color:#8A98A8">×</button>
                   </div>
-                  <button onClick="{{ saveAssign }}" style="width:100%;padding:13px;border:none;border-radius:10px;background:#1B2A41;color:#fff;font-size:14.5px;font-weight:600">{{ assignSaveLabel }}</button>
+                  <div style="display:flex;flex-direction:column;gap:12px">
+                    <p style="margin:0;font-size:12.5px;line-height:1.55;color:#8A98A8;text-wrap:pretty">Le destinataire reçoit le Reep et votre note. Jamais visible du citoyen.</p>
+                    <div style="display:flex;background:#EEF2F5;border-radius:9px;padding:3px;gap:2px">
+                      <button onClick="{{ xfModeServiceClick }}" style="flex:1;border:none;background:{{ xfModeServiceBg }};color:{{ xfModeServiceFg }};border-radius:7px;padding:8px;font-size:12px;font-weight:700">Autre service</button>
+                      <button onClick="{{ xfModeCommuneClick }}" style="flex:1;border:none;background:{{ xfModeCommuneBg }};color:{{ xfModeCommuneFg }};border-radius:7px;padding:8px;font-size:12px;font-weight:700">Autre commune</button>
+                    </div>
+                    <sc-if value="{{ xfIsService }}" hint-placeholder-val="{{ true }}">
+                      <div>
+                        <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Service destinataire</div>
+                        <select value="{{ xfServ }}" onChange="{{ onXfServ }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;background:#fff">
+                          <sc-for list="{{ serviceNames }}" as="c" hint-placeholder-count="4">
+                            <option value="{{ c }}">{{ c }}</option>
+                          </sc-for>
+                        </select>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ xfIsCommune }}" hint-placeholder-val="{{ false }}">
+                      <div>
+                        <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Commune destinataire</div>
+                        <select value="{{ xfCommune }}" onChange="{{ onXfCommune }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;background:#fff">
+                          <sc-for list="{{ otherCommunes }}" as="c" hint-placeholder-count="1">
+                            <option value="{{ c }}">{{ c }}</option>
+                          </sc-for>
+                        </select>
+                        <div style="font-size:11.5px;color:#8A98A8;margin-top:6px">L'administrateur de cette commune est notifié dans sa messagerie.</div>
+                      </div>
+                    </sc-if>
+                    <div>
+                      <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Note de transfert</div>
+                      <textarea value="{{ xfNote }}" onChange="{{ onXfNote }}" rows="3" placeholder="Motif du transfert, éléments utiles au destinataire…" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;font-family:inherit;color:#1B2A41;outline:none;resize:none"></textarea>
+                    </div>
+                    <button onClick="{{ doTransfer }}" style="width:100%;padding:13px;border:1px solid #1B2A41;border-radius:10px;background:#fff;color:#1B2A41;font-size:14.5px;font-weight:600">{{ xfLabel }}</button>
+                    <sc-if value="{{ xfDone }}" hint-placeholder-val="{{ false }}">
+                      <div style="background:#EAF0F4;border-radius:10px;padding:12px 14px;font-size:12.5px;line-height:1.55;color:#3E5064">{{ xfMsg }}</div>
+                    </sc-if>
+                  </div>
                 </div>
-              </sc-if>
-            </div>
+              </div>
+            </sc-if>
 
-            <div style="background:#EFF7F1;border:1px solid rgba(63,143,99,.34);border-radius:12px;overflow:hidden">
-              <button onClick="{{ toggleSecClose }}" style="width:100%;border:none;background:none;padding:16px 20px;display:flex;align-items:center;gap:12px;text-align:left">
-                <span style="flex:1;min-width:0">
-                  <span style="display:block;font-family:Georgia,serif;font-size:15.5px;font-weight:700;color:#1F5637">Clôture du Reep</span>
-                  <span style="display:block;font-size:12px;color:#3E7A57;margin-top:2px">Informe le citoyen et archive le Reep</span>
-                </span>
-                <span style="font-size:12px;color:#3E7A57;flex:none">{{ secCloseChevron }}</span>
-              </button>
-              <sc-if value="{{ secCloseOpen }}" hint-placeholder-val="{{ false }}">
-                <div style="padding:0 20px 20px;border-top:1px solid rgba(63,143,99,.2);padding-top:16px;display:flex;flex-direction:column;gap:16px">
-                  <div>
-                    <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#3E7A57;font-weight:700;margin-bottom:9px">Agents intervenus</div>
+            <sc-if value="{{ secAssignOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="position:fixed;inset:0;background:rgba(27,42,65,.32);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px" onClick="{{ closeDetailSection }}">
+                <div style="background:#fff;border-radius:14px;padding:20px 22px;max-width:480px;width:100%;max-height:85vh;overflow:auto;box-shadow:0 20px 50px rgba(27,42,65,.28)" onClick="{{ stopProp }}">
+                  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+                    <span style="flex:1;font-family:Georgia,Cambria,serif;font-size:17px;font-weight:700">Attribuer</span>
+                    <button onClick="{{ closeDetailSection }}" style="border:none;background:none;font-size:18px;color:#8A98A8">×</button>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:14px">
+                    <p style="margin:0;font-size:12.5px;line-height:1.55;color:#8A98A8;text-wrap:pretty">La ou les personnes attribuées reçoivent une entrée dans leur journal de bord personnel. Toute l'équipe de la commune garde la main sur le Reep.</p>
                     <div style="display:flex;flex-wrap:wrap;gap:8px">
-                      <sc-for list="{{ agentChips }}" as="a" hint-placeholder-count="2">
+                      <sc-for list="{{ assignChips }}" as="a" hint-placeholder-count="3">
                         <button onClick="{{ a.onClick }}" style="display:flex;align-items:center;gap:9px;border:1px solid {{ a.border }};background:{{ a.bg }};color:{{ a.fg }};border-radius:999px;padding:7px 13px;font-size:13px;font-weight:600;white-space:nowrap">
-                          <span style="width:22px;height:22px;border-radius:50%;background:{{ a.avBg }};color:{{ a.avFg }};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">{{ a.initials }}</span>
+                          <span style="width:22px;height:22px;border-radius:50%;background:{{ a.avBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">{{ a.initials }}</span>
                           {{ a.name }}
                           <span style="opacity:.55;font-weight:400">{{ a.mark }}</span>
                         </button>
                       </sc-for>
-                      <button onClick="{{ toggleAddAgent }}" style="border:1px dashed rgba(63,143,99,.5);background:none;color:#2E6B48;border-radius:999px;padding:7px 13px;font-size:13px;font-weight:600;white-space:nowrap">+ Ajouter une personne</button>
                     </div>
+                    <button onClick="{{ saveAssign }}" style="width:100%;padding:13px;border:none;border-radius:10px;background:#1B2A41;color:#fff;font-size:14.5px;font-weight:600">{{ assignSaveLabel }}</button>
                   </div>
-                  <div>
-                    <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#3E7A57;font-weight:700;margin-bottom:9px">Photo d'intervention</div>
-                    <div style="width:100%;height:120px;border-radius:10px;overflow:hidden;position:relative">
-                      <div ondragover="{{ onClosePhotoDragOver }}" ondrop="{{ onClosePhotoDrop }}" onClick="{{ onClosePhotoZoneClick }}" style="width:100%;height:100%;cursor:pointer;background:rgba(255,255,255,.6);border:1.5px dashed rgba(63,143,99,.45);border-radius:10px;position:relative">
-                        <sc-if value="{{ hasClosePhoto }}" hint-placeholder-val="{{ false }}">
-                          <img src="{{ closePhotoUrl }}" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:9px" />
-                        </sc-if>
-                        <sc-if value="{{ noClosePhoto }}" hint-placeholder-val="{{ true }}">
-                          <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#2E6B48">
-                            <span style="font-size:13px;font-weight:600">+ Téléverser</span>
-                            <span style="font-size:11px;opacity:.8">photo après intervention</span>
-                          </div>
-                        </sc-if>
-                      </div>
-                      <input type="file" accept="image/png,image/jpeg,image/webp" onChange="{{ onClosePhotoFile }}" id="close-photo-input" style="display:none">
-                    </div>
-                  </div>
-                  <div>
-                    <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#3E7A57;font-weight:700;margin-bottom:9px">Note de clôture</div>
-                    <textarea value="{{ closeNote }}" onChange="{{ onCloseNote }}" rows="3" placeholder="Intervention réalisée, matériel remplacé, remarques…" style="width:100%;box-sizing:border-box;border:1px solid rgba(63,143,99,.32);border-radius:10px;padding:12px 13px;font-size:13.5px;line-height:1.5;color:#1B2A41;resize:none;outline:none;background:#fff"></textarea>
-                  </div>
-                  <button onClick="{{ confirmClose }}" style="width:100%;padding:14px;border:none;border-radius:10px;background:#2E6B48;color:#fff;font-size:14.5px;font-weight:600;box-shadow:0 8px 18px rgba(46,107,72,.22)">{{ closeLabel }}</button>
                 </div>
-              </sc-if>
-            </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ secCloseOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="position:fixed;inset:0;background:rgba(27,42,65,.32);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px" onClick="{{ closeDetailSection }}">
+                <div style="background:#EFF7F1;border-radius:14px;padding:20px 22px;max-width:480px;width:100%;max-height:85vh;overflow:auto;box-shadow:0 20px 50px rgba(27,42,65,.28)" onClick="{{ stopProp }}">
+                  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+                    <span style="flex:1;font-family:Georgia,serif;font-size:17px;font-weight:700;color:#1F5637">Clôturer le Reep</span>
+                    <button onClick="{{ closeDetailSection }}" style="border:none;background:none;font-size:18px;color:#3E7A57">×</button>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:16px">
+                    <div>
+                      <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#3E7A57;font-weight:700;margin-bottom:9px">Agents intervenus</div>
+                      <div style="display:flex;flex-wrap:wrap;gap:8px">
+                        <sc-for list="{{ agentChips }}" as="a" hint-placeholder-count="2">
+                          <button onClick="{{ a.onClick }}" style="display:flex;align-items:center;gap:9px;border:1px solid {{ a.border }};background:{{ a.bg }};color:{{ a.fg }};border-radius:999px;padding:7px 13px;font-size:13px;font-weight:600;white-space:nowrap">
+                            <span style="width:22px;height:22px;border-radius:50%;background:{{ a.avBg }};color:{{ a.avFg }};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">{{ a.initials }}</span>
+                            {{ a.name }}
+                            <span style="opacity:.55;font-weight:400">{{ a.mark }}</span>
+                          </button>
+                        </sc-for>
+                        <button onClick="{{ toggleAddAgent }}" style="border:1px dashed rgba(63,143,99,.5);background:none;color:#2E6B48;border-radius:999px;padding:7px 13px;font-size:13px;font-weight:600;white-space:nowrap">+ Ajouter une personne</button>
+                      </div>
+                    </div>
+                    <div>
+                      <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#3E7A57;font-weight:700;margin-bottom:9px">Photo d'intervention</div>
+                      <div style="width:100%;height:120px;border-radius:10px;overflow:hidden;position:relative">
+                        <div ondragover="{{ onClosePhotoDragOver }}" ondrop="{{ onClosePhotoDrop }}" onClick="{{ onClosePhotoZoneClick }}" style="width:100%;height:100%;cursor:pointer;background:rgba(255,255,255,.6);border:1.5px dashed rgba(63,143,99,.45);border-radius:10px;position:relative">
+                          <sc-if value="{{ hasClosePhoto }}" hint-placeholder-val="{{ false }}">
+                            <img src="{{ closePhotoUrl }}" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:9px" />
+                          </sc-if>
+                          <sc-if value="{{ noClosePhoto }}" hint-placeholder-val="{{ true }}">
+                            <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#2E6B48">
+                              <span style="font-size:13px;font-weight:600">+ Téléverser</span>
+                              <span style="font-size:11px;opacity:.8">photo après intervention</span>
+                            </div>
+                          </sc-if>
+                        </div>
+                        <input type="file" accept="image/png,image/jpeg,image/webp" onChange="{{ onClosePhotoFile }}" id="close-photo-input" style="display:none">
+                      </div>
+                    </div>
+                    <div>
+                      <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#3E7A57;font-weight:700;margin-bottom:9px">Note de clôture</div>
+                      <textarea value="{{ closeNote }}" onChange="{{ onCloseNote }}" rows="3" placeholder="Intervention réalisée, matériel remplacé, remarques…" style="width:100%;box-sizing:border-box;border:1px solid rgba(63,143,99,.32);border-radius:10px;padding:12px 13px;font-size:13.5px;line-height:1.5;color:#1B2A41;resize:none;outline:none;background:#fff"></textarea>
+                    </div>
+                    <button onClick="{{ confirmClose }}" style="width:100%;padding:14px;border:none;border-radius:10px;background:#2E6B48;color:#fff;font-size:14.5px;font-weight:600;box-shadow:0 8px 18px rgba(46,107,72,.22)">{{ closeLabel }}</button>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
 
             <div style="display:flex;flex-direction:column;gap:8px">
               <p style="margin:0;font-size:12px;color:#8A98A8;line-height:1.5">{{ dangerHint }}</p>
@@ -2582,16 +2585,15 @@ class Component extends DCLogic {
         this.setState({ xfDone: true, service: dest, saved: false, extra: { ...s.extra, [boxName]: existing.concat([msg]) } });
       },
       saveLabel: s.saved ? "Modifications enregistrées ✓" : "Enregistrer les modifications",
-      secStatusOpen: s.detailSection === "status", secStatusChevron: s.detailSection === "status" ? "▴" : "▾",
-      toggleSecStatus: () => this.setState({ detailSection: s.detailSection === "status" ? null : "status" }),
-      secTransferOpen: s.detailSection === "transfer", secTransferChevron: s.detailSection === "transfer" ? "▴" : "▾",
-      toggleSecTransfer: () => this.setState({ detailSection: s.detailSection === "transfer" ? null : "transfer" }),
-      secCloseOpen: s.detailSection === "close", secCloseChevron: s.detailSection === "close" ? "▴" : "▾",
-      toggleSecClose: () => this.setState({ detailSection: s.detailSection === "close" ? null : "close" }),
-      secAssignOpen: s.detailSection === "assign", secAssignChevron: s.detailSection === "assign" ? "▴" : "▾",
-      toggleSecAssign: () => this.setState({ detailSection: s.detailSection === "assign" ? null : "assign" }),
-      assignSummary: assignSelectedKeys.length === 0 ? "Non attribué"
-        : "Attribué à " + assignSelectedKeys.map((k) => (AGENTS.find((a) => a.accountKey === k) || {}).first || "?").join(", "),
+      secStatusOpen: s.detailSection === "status",
+      openSecStatus: () => this.setState({ detailSection: "status" }),
+      secTransferOpen: s.detailSection === "transfer",
+      openSecTransfer: () => this.setState({ detailSection: "transfer" }),
+      secCloseOpen: s.detailSection === "close",
+      openSecClose: () => this.setState({ detailSection: "close" }),
+      secAssignOpen: s.detailSection === "assign",
+      openSecAssign: () => this.setState({ detailSection: "assign" }),
+      closeDetailSection: () => this.setState({ detailSection: null }),
       assignChips: AGENTS.filter((a) => a.accountKey).map((a) => {
         const on = assignSelectedKeys.includes(a.accountKey);
         return {
