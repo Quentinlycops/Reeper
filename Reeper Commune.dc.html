@@ -956,6 +956,7 @@ select,textarea,input{font-family:inherit}
                           <span style="opacity:.55;font-weight:400">{{ a.mark }}</span>
                         </button>
                       </sc-for>
+                      <button onClick="{{ toggleAddAssignee }}" style="border:1px dashed rgba(27,42,65,.28);background:none;color:#1B2A41;border-radius:999px;padding:7px 13px;font-size:13px;font-weight:600;white-space:nowrap">+ Ajouter une personne</button>
                     </div>
                     <button onClick="{{ saveAssign }}" style="width:100%;padding:13px;border:none;border-radius:10px;background:#1B2A41;color:#fff;font-size:14.5px;font-weight:600">{{ assignSaveLabel }}</button>
                   </div>
@@ -2594,17 +2595,21 @@ class Component extends DCLogic {
       secAssignOpen: s.detailSection === "assign",
       openSecAssign: () => this.setState({ detailSection: "assign" }),
       closeDetailSection: () => this.setState({ detailSection: null }),
-      assignChips: AGENTS.filter((a) => a.accountKey).map((a) => {
-        const on = assignSelectedKeys.includes(a.accountKey);
-        return {
-          initials: a.initials, name: a.first + " " + a.last, avBg: a.avBg, mark: on ? "✓" : "",
-          bg: on ? "#1B2A41" : "#fff", fg: on ? "#fff" : "#1B2A41", border: on ? "#1B2A41" : "rgba(27,42,65,.16)",
-          onClick: () => {
-            const next = on ? assignSelectedKeys.filter((k) => k !== a.accountKey) : assignSelectedKeys.concat([a.accountKey]);
-            this.setState({ assignSelected: next, assignSaved: false });
-          }
-        };
-      }),
+      assignChips: AGENTS.filter((a) => a.accountKey)
+        .map((a) => {
+          const on = assignSelectedKeys.includes(a.accountKey);
+          return {
+            key: a.accountKey, on,
+            initials: a.initials, name: a.first + " " + a.last, avBg: a.avBg, mark: on ? "✓" : "",
+            bg: on ? "#1B2A41" : "#fff", fg: on ? "#fff" : "#1B2A41", border: on ? "#1B2A41" : "rgba(27,42,65,.16)",
+            onClick: () => {
+              const next = on ? assignSelectedKeys.filter((k) => k !== a.accountKey) : assignSelectedKeys.concat([a.accountKey]);
+              this.setState({ assignSelected: next, assignSaved: false });
+            }
+          };
+        })
+        .filter((a) => a.on || s.addAssignee),
+      toggleAddAssignee: () => this.setState({ addAssignee: !s.addAssignee }),
       assignSaveLabel: s.assignSaved ? "Attribution enregistrée ✓" : "Enregistrer l'attribution",
       saveAssign: () => { Store.assignReep(cur.id, assignSelectedKeys, agentName); this.setState({ assignSaved: true }); },
       history: cur.timeline.slice().reverse().map((h) => ({
