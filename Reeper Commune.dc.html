@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="only light">
 <meta name="theme-color" content="#1B2A41">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./reeper-theme.css">
 <script src="./reeper-shared.js"></script>
 <script src="./reeper-map.js"></script>
 <script src="./support.js"></script>
@@ -1666,6 +1670,66 @@ select,textarea,input{font-family:inherit}
       </div>
     </sc-if>
 
+    <div class="rp-footer">
+      <div class="rp-footer-brand"><span class="rp-footer-dot"></span><b>Reeper</b></div>
+      <div class="rp-footer-cols">
+        <div class="rp-footer-col">
+          <div class="lbl">Adresse</div>
+          <div>Route de Divonne 5<br>1260 Nyon, Suisse</div>
+        </div>
+        <div class="rp-footer-col">
+          <div class="lbl">Coordonnées</div>
+          <div>+41 22 365 14 80</div>
+          <div>info@reeper.ch</div>
+        </div>
+        <div class="rp-footer-col">
+          <div class="lbl">Liens</div>
+          <div><button class="rp-footer-link" onClick="{{ footerGoLegal }}">Mentions légales</button></div>
+          <div><button class="rp-footer-link" onClick="{{ openContact }}">Nous contacter</button></div>
+        </div>
+      </div>
+    </div>
+
+    <sc-if value="{{ contactOpen }}" hint-placeholder-val="{{ false }}">
+      <div class="rp-contact-overlay" onClick="{{ closeContact }}">
+        <div class="rp-contact-modal" onClick="{{ stopProp }}">
+          <div style="font-family:Georgia,Cambria,serif;font-size:18px;font-weight:700;margin-bottom:4px">Nous contacter</div>
+          <sc-if value="{{ ctNotSent }}" hint-placeholder-val="{{ true }}">
+            <p style="margin:2px 0 16px;font-size:12.5px;color:#5A6B7E;line-height:1.55">Une question, un problème technique, ou une suggestion ? Écrivez à l'équipe Reeper.</p>
+            <div class="field">
+              <label>Nom</label>
+              <input value="{{ ctName }}" onChange="{{ onCtName }}" placeholder="Votre nom" />
+            </div>
+            <div class="field">
+              <label>E-mail</label>
+              <input value="{{ ctEmail }}" onChange="{{ onCtEmail }}" placeholder="vous@exemple.ch" />
+            </div>
+            <div class="field">
+              <label>Sujet</label>
+              <select value="{{ ctSubject }}" onChange="{{ onCtSubject }}">
+                <sc-for list="{{ ctSubjectOptions }}" as="o" hint-placeholder-count="4"><option value="{{ o }}">{{ o }}</option></sc-for>
+              </select>
+            </div>
+            <div class="field">
+              <label>Message</label>
+              <textarea value="{{ ctMessage }}" onChange="{{ onCtMessage }}" rows="4" placeholder="Votre message…"></textarea>
+            </div>
+            <sc-if value="{{ hasCtError }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size:12px;color:#D62839;margin-bottom:12px">{{ ctError }}</div>
+            </sc-if>
+            <div style="display:flex;gap:10px">
+              <button onClick="{{ submitContact }}" style="border:none;background:#1B2A41;color:#fff;border-radius:12px;padding:12px 18px;font-size:14px;font-weight:600">Envoyer</button>
+              <button onClick="{{ closeContact }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;color:#48566B;border-radius:12px;padding:12px 16px;font-size:14px;font-weight:600">Annuler</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{ ctSent }}" hint-placeholder-val="{{ false }}">
+            <p style="margin:6px 0 18px;font-size:13.5px;color:#3E5064;line-height:1.6">Merci, votre message a été transmis à l'équipe Reeper. Nous vous répondrons à <strong>{{ ctEmail }}</strong> dans les meilleurs délais.</p>
+            <button onClick="{{ closeContact }}" style="border:none;background:#1B2A41;color:#fff;border-radius:12px;padding:12px 18px;font-size:14px;font-weight:600">Fermer</button>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+
     <sc-if value="{{ showMobileNav }}" hint-placeholder-val="{{ false }}">
       <div data-role="mobile-nav" style="flex:none;background:#fff;border-top:1px solid rgba(27,42,65,.1);padding:8px 4px 12px;display:flex">
         <sc-for list="{{ mobileNav }}" as="n" hint-placeholder-count="4">
@@ -1798,7 +1862,8 @@ class Component extends DCLogic {
     groupSheetOpen: false, groupName: "", groupMemberKeys: [], groupQuery: "",
     contactPickerOpen: false, contactQuery: "", attachContactKey: null, fileNames: [],
     xfMode: "service", xfCommune: null,
-    nrPhotoDataUrl: null, nrPath: [], nrLeaf: null, nrDesc: "", nrAddrText: "", nrAddrNum: "", nrCommune: null, nrCommuneManual: false, nrLat: null, nrLon: null, nrGeoLoading: false, nrGeoError: ""
+    nrPhotoDataUrl: null, nrPath: [], nrLeaf: null, nrDesc: "", nrAddrText: "", nrAddrNum: "", nrCommune: null, nrCommuneManual: false, nrLat: null, nrLon: null, nrGeoLoading: false, nrGeoError: "",
+    contactOpen: false, ctName: "", ctEmail: "", ctSubject: "Question générale", ctMessage: "", ctSent: false, ctError: ""
   };
 
   go = (screen) => { this._transition(() => this.setState({ screen, profileOpen: false })); };
@@ -2046,7 +2111,7 @@ class Component extends DCLogic {
         { label: "Paramètres", onClick: () => this._transition(() => this.setState({ screen: "config", configTab: "Général", profileOpen: false })) },
         { label: "Corbeille", onClick: () => this._transition(() => this.setState({ screen: "trash", profileOpen: false })) },
         { label: "Mentions légales", onClick: () => this._transition(() => this.setState({ screen: "legal", profileOpen: false })) },
-        { label: "Contactez-nous", onClick: () => this.setState({ profileOpen: false }) }
+        { label: "Contactez-nous", onClick: () => this.setState({ profileOpen: false, contactOpen: true, ctSent: false, ctError: "" }) }
       ],
 
       isAdmin,
@@ -2455,9 +2520,26 @@ class Component extends DCLogic {
         { title: "Droits des personnes", body: "Toute personne concernée dispose d'un droit d'accès à ses données (art. 25 LPD) et peut adresser une réclamation au Préposé fédéral à la protection des données et à la transparence (art. 49 ss LPD)." },
         { title: "Propriété intellectuelle", body: "Le contenu, la marque et l'interface Reeper sont protégés par la loi fédérale sur le droit d'auteur (LDA, RS 231.1). Toute reproduction sans autorisation est interdite." },
         { title: "Responsabilité", body: "Reeper transmet les signalements aux communes partenaires. Le traitement, les délais et la priorisation relèvent de la seule responsabilité de la commune concernée." },
-        { title: "Contact", body: "contact@reeper.ch" }
+        { title: "Contact", body: "Reeper Sàrl · Route de Divonne 5, 1260 Nyon · +41 22 365 14 80 · info@reeper.ch" }
       ],
       goList: () => this.go("list"), goMap: () => this.go("map"), goDetail: () => this.open(s.sel),
+
+      footerGoLegal: () => this.go("legal"),
+      contactOpen: s.contactOpen,
+      openContact: () => this.setState({ contactOpen: true, ctSent: false, ctError: "" }),
+      closeContact: () => this.setState({ contactOpen: false }),
+      ctName: s.ctName, onCtName: (e) => this.setState({ ctName: e.target.value, ctError: "" }),
+      ctEmail: s.ctEmail, onCtEmail: (e) => this.setState({ ctEmail: e.target.value, ctError: "" }),
+      ctSubject: s.ctSubject, onCtSubject: (e) => this.setState({ ctSubject: e.target.value }),
+      ctSubjectOptions: ["Question générale", "Problème technique", "Partenariat commune", "Autre"],
+      ctMessage: s.ctMessage, onCtMessage: (e) => this.setState({ ctMessage: e.target.value, ctError: "" }),
+      ctSent: s.ctSent, ctNotSent: !s.ctSent,
+      hasCtError: !!s.ctError, ctError: s.ctError,
+      submitContact: () => {
+        if (!s.ctName.trim() || !s.ctEmail.trim() || !s.ctMessage.trim()) { this.setState({ ctError: "Merci de renseigner votre nom, votre e-mail et votre message." }); return; }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.ctEmail.trim())) { this.setState({ ctError: "Adresse e-mail invalide." }); return; }
+        this.setState({ ctSent: true });
+      },
 
       chartOpen: s.chartOpen,
       closeChart: () => this.setState({ chartOpen: false }),

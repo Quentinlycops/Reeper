@@ -1,0 +1,91 @@
+/* Reeper — thème visuel partagé (Web, Commune, Gérant)
+   Chargé par les 3 apps via <link>. Ne change aucune couleur existante —
+   uniquement la typographie, les rayons, les ombres et les nouveaux
+   composants (footer, formulaire de contact). */
+
+:root{
+  --rp-radius-card: 20px;
+  --rp-radius-btn: 14px;
+  --rp-shadow-sm: 0 10px 24px -14px rgba(27,42,65,.22);
+  --rp-shadow: 0 18px 40px -18px rgba(27,42,65,.26);
+}
+
+body{
+  font-family:'Manrope',"Helvetica Neue",Helvetica,Arial,sans-serif !important;
+}
+
+/* --- Cartes : l'idiome "fond blanc + fine bordure marine" utilisé partout
+   devient plus rond, avec une ombre douce au lieu d'un simple filet. --- */
+[style*="background:#fff;border:1px solid rgba(27,42,65,"],
+[style*="background: #fff;border:1px solid rgba(27,42,65,"],
+[style*="border:1px solid rgba(27,42,65,.1);background:#fff"],
+[style*="border:1px solid rgba(27,42,65,.08);background:#fff"] {
+  border-radius: var(--rp-radius-card) !important;
+  border-color: rgba(27,42,65,.06) !important;
+  box-shadow: var(--rp-shadow-sm) !important;
+}
+
+/* --- Boutons pleins (marine / rouge / vert) : coins plus ronds + ombre
+   colorée au lieu d'un bloc plat. --- */
+[style*="background:#1B2A41;color:#fff"] {
+  border-radius: var(--rp-radius-btn) !important;
+  box-shadow: 0 10px 22px -10px rgba(27,42,65,.45) !important;
+}
+[style*="background:#D62839;color:#fff"] {
+  border-radius: var(--rp-radius-btn) !important;
+  box-shadow: 0 10px 22px -8px rgba(214,40,57,.4) !important;
+}
+[style*="background:#2E6B48;color:#fff"],
+[style*="background:#3F8F63;color:#fff"] {
+  border-radius: var(--rp-radius-btn) !important;
+  box-shadow: 0 10px 22px -8px rgba(46,107,72,.35) !important;
+}
+
+/* --- Champs de saisie : coins plus doux --- */
+input[style*="border:1px solid rgba(27,42,65,.16)"],
+textarea[style*="border:1px solid rgba(27,42,65,.16)"],
+select[style*="border:1px solid rgba(27,42,65,.16)"] {
+  border-radius: 12px !important;
+}
+
+/* ============================= Footer ============================= */
+.rp-footer{
+  border-top:1px solid rgba(27,42,65,.08);
+  margin-top:8px;
+  padding:28px 34px 30px;
+  display:flex; flex-wrap:wrap; gap:24px 40px; justify-content:space-between; align-items:flex-start;
+  font-size:12.5px; color:#5A6B7E; background:#fff;
+}
+.rp-footer .rp-footer-brand{display:flex; align-items:center; gap:8px; flex:none}
+.rp-footer .rp-footer-brand b{font-family:Georgia,Cambria,serif; font-size:15px; color:#1B2A41}
+.rp-footer .rp-footer-dot{width:6px;height:6px;border-radius:999px;background:#D62839;display:inline-block}
+.rp-footer .rp-footer-cols{display:flex; flex-wrap:wrap; gap:32px 44px}
+.rp-footer .rp-footer-col{min-width:160px}
+.rp-footer .rp-footer-col .lbl{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#8A98A8;margin-bottom:8px}
+.rp-footer .rp-footer-col div, .rp-footer .rp-footer-col button, .rp-footer .rp-footer-col a{
+  font-size:12.5px; color:#48566B; line-height:1.7; text-decoration:none;
+}
+.rp-footer button.rp-footer-link{
+  border:none;background:none;padding:0;font-family:inherit;cursor:pointer;color:#1B2A41;font-weight:600;
+}
+.rp-footer button.rp-footer-link:hover{color:#D62839}
+@media (max-width: 700px){
+  .rp-footer{padding:22px 18px 90px; gap:20px}
+}
+
+/* ===================== Formulaire de contact (modale) ===================== */
+.rp-contact-overlay{
+  position:fixed; inset:0; background:rgba(27,42,65,.4); z-index:400;
+  display:flex; align-items:center; justify-content:center; padding:20px;
+}
+.rp-contact-modal{
+  background:#fff; border-radius:22px; padding:26px 26px 24px; max-width:460px; width:100%;
+  max-height:88vh; overflow:auto; box-shadow:var(--rp-shadow);
+}
+.rp-contact-modal .field{margin-bottom:14px}
+.rp-contact-modal label{display:block;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#8A98A8;margin-bottom:6px}
+.rp-contact-modal input, .rp-contact-modal select, .rp-contact-modal textarea{
+  width:100%; box-sizing:border-box; border:1px solid rgba(27,42,65,.16); border-radius:12px;
+  padding:11px 13px; font-size:13.5px; font-family:inherit; color:#1B2A41; outline:none; background:#fff;
+}
+.rp-contact-modal textarea{resize:none}
