@@ -716,8 +716,11 @@ select,textarea,input{font-family:inherit}
         <div style="display:grid;grid-template-columns:{{ detailCols }};gap:18px;align-items:start">
           <div style="display:flex;flex-direction:column;gap:16px">
             <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;padding:18px 20px">
-              <div style="font-family:Georgia,serif;font-size:15.5px;font-weight:700;margin-bottom:12px">Photo</div>
-              <div style="height:220px;border-radius:10px;overflow:hidden;border:1px dashed rgba(27,42,65,.28);position:relative">
+              <div style="display:flex;align-items:center;gap:11px;margin-bottom:14px">
+                <span class="rp-ic rp-ic-red">📷</span>
+                <div style="font-family:Georgia,serif;font-size:15.5px;font-weight:700">Photo</div>
+              </div>
+              <div style="height:220px;border-radius:14px;overflow:hidden;border:1px dashed rgba(27,42,65,.28);position:relative">
                 <div ondragover="{{ onNRPhotoDragOver }}" ondrop="{{ onNRPhotoDrop }}" onClick="{{ onNRPhotoZoneClick }}" style="width:100%;height:100%;cursor:pointer;background:#FAFBFC">
                   <sc-if value="{{ nrHasPhoto }}" hint-placeholder-val="{{ false }}">
                     <img src="{{ nrPhotoUrl }}" style="width:100%;height:100%;object-fit:cover;display:block" />
@@ -733,11 +736,14 @@ select,textarea,input{font-family:inherit}
             </div>
 
             <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;padding:18px 20px">
-              <div style="font-family:Georgia,serif;font-size:15.5px;font-weight:700;margin-bottom:12px">Localisation</div>
-              <div style="height:220px;border-radius:10px;overflow:hidden;margin-bottom:12px">
+              <div style="display:flex;align-items:center;gap:11px;margin-bottom:14px">
+                <span class="rp-ic rp-ic-navy">📍</span>
+                <div style="font-family:Georgia,serif;font-size:15.5px;font-weight:700">Localisation</div>
+              </div>
+              <div style="height:220px;border-radius:14px;overflow:hidden;margin-bottom:12px">
                 <reeper-map data-role="nr-map" center="{{ nrMapCenter }}" zoom="15" draggable-marker click-to-place></reeper-map>
               </div>
-              <button onClick="{{ nrDetect }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);background:#fff;border-radius:10px;padding:11px 14px;font-size:13px;font-weight:600;color:#1B2A41;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px">{{ nrDetectLabel }}</button>
+              <button onClick="{{ nrDetect }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);background:#fff;border-radius:14px;padding:11px 14px;font-size:13px;font-weight:600;color:#1B2A41;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px">{{ nrDetectLabel }}</button>
               <sc-if value="{{ hasNRGeoError }}" hint-placeholder-val="{{ false }}">
                 <div style="margin-bottom:9px;font-size:12px;color:#D62839">{{ nrGeoError }}</div>
               </sc-if>
@@ -750,23 +756,27 @@ select,textarea,input{font-family:inherit}
             </div>
 
             <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;padding:18px 20px">
-              <div style="font-family:Georgia,serif;font-size:15.5px;font-weight:700;margin-bottom:12px">Description</div>
-              <textarea value="{{ nrDesc }}" onChange="{{ onNRDesc }}" rows="4" placeholder="Détails utiles pour le service…" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:12px 13px;font-size:14px;line-height:1.5;resize:none;outline:none"></textarea>
+              <div style="display:flex;align-items:center;gap:11px;margin-bottom:14px">
+                <span class="rp-ic rp-ic-green">💬</span>
+                <div style="font-family:Georgia,serif;font-size:15.5px;font-weight:700">Description</div>
+              </div>
+              <textarea value="{{ nrDesc }}" onChange="{{ onNRDesc }}" rows="4" placeholder="Détails utiles pour le service…" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:12px;padding:12px 13px;font-size:14px;line-height:1.5;resize:none;outline:none"></textarea>
             </div>
           </div>
 
           <div style="display:flex;flex-direction:column;gap:16px">
             <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;padding:18px 20px">
-              <div style="font-family:Georgia,serif;font-size:15.5px;font-weight:700;margin-bottom:12px">Catégorie</div>
+              <div style="display:flex;align-items:center;gap:11px;margin-bottom:14px">
+                <span class="rp-ic rp-ic-purple">🗂️</span>
+                <div style="font-family:Georgia,serif;font-size:15.5px;font-weight:700">Catégorie</div>
+              </div>
               <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
-                <button onClick="{{ nrCatUp }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;border-radius:9px;padding:9px 13px;font-size:13px;font-weight:600;color:{{ nrCatUpFg }}">‹ Retour</button>
+                <button onClick="{{ nrCatUp }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;border-radius:14px;padding:9px 13px;font-size:13px;font-weight:600;color:{{ nrCatUpFg }}">‹ Retour</button>
                 <span style="font-size:13px;color:#5A6B7E">{{ nrCatCrumb }}</span>
               </div>
-              <div style="border:1px solid rgba(27,42,65,.1);border-radius:10px;overflow:hidden">
+              <div style="display:flex;flex-wrap:wrap;gap:9px">
                 <sc-for list="{{ nrCatItems }}" as="c" hint-placeholder-count="6">
-                  <button onClick="{{ c.onClick }}" style="width:100%;border:none;border-bottom:1px solid rgba(27,42,65,.07);background:{{ c.bg }};padding:13px 15px;display:flex;align-items:center;gap:10px;text-align:left;color:#1B2A41;font-size:13.5px;font-weight:{{ c.weight }}">
-                    <span style="flex:1">{{ c.label }}</span><span style="color:#B4C0CB">{{ c.chev }}</span>
-                  </button>
+                  <button onClick="{{ c.onClick }}" class="rp-chip" style="background:{{ c.chipBg }};color:{{ c.chipFg }};font-weight:{{ c.weight }}">{{ c.label }}<span class="chev">{{ c.chev }}</span></button>
                 </sc-for>
               </div>
               <sc-if value="{{ nrCatPicked }}" hint-placeholder-val="{{ false }}">
@@ -2488,7 +2498,7 @@ class Component extends DCLogic {
         return Object.keys(node).map((k) => {
           const child = node[k];
           const on = !child && s.nrLeaf === k;
-          return { label: k, chev: child ? "›" : "", bg: on ? "#F3F6F8" : "#fff", weight: on ? 600 : 400,
+          return { label: k, chev: child ? "›" : "", chipBg: on ? "#1B2A41" : "#F3F6F8", chipFg: on ? "#fff" : "#1B2A41", weight: on ? 700 : 600,
             onClick: child
               ? () => self.setState({ nrPath: s.nrPath.concat([k]), nrLeaf: null })
               : () => self.setState({ nrLeaf: k }) };
