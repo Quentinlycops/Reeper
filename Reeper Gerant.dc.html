@@ -126,7 +126,10 @@ select,textarea,input{font-family:inherit}
           </div>
 
           <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:hidden">
-            <div style="padding:16px 20px;border-bottom:1px solid rgba(27,42,65,.08);font-family:Georgia,serif;font-size:16px;font-weight:700">À venir</div>
+            <div style="padding:16px 20px;border-bottom:1px solid rgba(27,42,65,.08);display:flex;align-items:center;gap:11px">
+              <span class="rp-ic rp-ic-purple" style="width:30px;height:30px;font-size:14px">📅</span>
+              <span style="font-family:Georgia,serif;font-size:16px;font-weight:700">À venir</span>
+            </div>
             <sc-for list="{{ upcomingDeadlines }}" as="u" hint-placeholder-count="2">
               <button onClick="{{ u.onClick }}" style="width:100%;display:flex;align-items:center;gap:12px;padding:13px 20px;border:none;border-bottom:1px solid rgba(27,42,65,.06);background:#fff;text-align:left" style-hover="background:#FAFBFC">
                 <span style="width:64px;flex:none;font-size:12.5px;font-weight:700;color:#54459B">{{ u.dateLabel }}</span>
@@ -141,7 +144,10 @@ select,textarea,input{font-family:inherit}
 
           <div class="rg-2col" style="gap:18px;align-items:start">
             <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:hidden">
-              <div style="padding:16px 20px;border-bottom:1px solid rgba(27,42,65,.08);font-family:Georgia,serif;font-size:16px;font-weight:700">Reeps par commune</div>
+              <div style="padding:16px 20px;border-bottom:1px solid rgba(27,42,65,.08);display:flex;align-items:center;gap:11px">
+                <span class="rp-ic rp-ic-navy" style="width:30px;height:30px;font-size:14px">🏘️</span>
+                <span style="font-family:Georgia,serif;font-size:16px;font-weight:700">Reeps par commune</span>
+              </div>
               <div style="padding:6px 0">
                 <sc-for list="{{ byCommuneRows }}" as="c" hint-placeholder-count="3">
                   <div style="display:flex;align-items:center;gap:12px;padding:11px 20px">
@@ -153,7 +159,10 @@ select,textarea,input{font-family:inherit}
               </div>
             </div>
             <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:hidden">
-              <div style="padding:16px 20px;border-bottom:1px solid rgba(27,42,65,.08);font-family:Georgia,serif;font-size:16px;font-weight:700">Reeps par statut</div>
+              <div style="padding:16px 20px;border-bottom:1px solid rgba(27,42,65,.08);display:flex;align-items:center;gap:11px">
+                <span class="rp-ic rp-ic-red" style="width:30px;height:30px;font-size:14px">📊</span>
+                <span style="font-family:Georgia,serif;font-size:16px;font-weight:700">Reeps par statut</span>
+              </div>
               <div style="padding:6px 0">
                 <sc-for list="{{ byStatusRows }}" as="c" hint-placeholder-count="4">
                   <div style="display:flex;align-items:center;gap:12px;padding:11px 20px">
@@ -897,7 +906,10 @@ select,textarea,input{font-family:inherit}
               </div>
 
               <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;padding:20px">
-                <div style="font-family:Georgia,serif;font-size:16px;font-weight:700;margin-bottom:14px">Statistiques d'usage</div>
+                <div style="display:flex;align-items:center;gap:11px;margin-bottom:14px">
+                  <span class="rp-ic rp-ic-red">📊</span>
+                  <div style="font-family:Georgia,serif;font-size:16px;font-weight:700">Statistiques d'usage</div>
+                </div>
                 <div class="rg-2col" style="gap:12px;margin-bottom:16px">
                   <div>
                     <div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700">Total Reeps</div>
