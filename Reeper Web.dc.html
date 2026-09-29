@@ -274,7 +274,7 @@ input,textarea,select{font-family:inherit}
                   </div>
                   <div style="margin-top:9px">
                     <label style="display:block;font-size:11px;color:#8A98A8;margin-bottom:5px">Commune (modifiable si la détection se trompe)</label>
-                    <input value="{{ communeGuess }}" onChange="{{ onCommuneGuess }}" placeholder="Nom de la commune" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:11px;padding:12px 14px;font-size:13.5px;color:#1B2A41;outline:none">
+                    <input value="{{ communeGuess }}" onChange="{{ onCommuneGuess }}" onBlur="{{ onCommuneGuessBlur }}" placeholder="Nom de la commune" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:11px;padding:12px 14px;font-size:13.5px;color:#1B2A41;outline:none">
                   </div>
                   <sc-if value="{{ noCommuneGuess }}" hint-placeholder-val="{{ false }}">
                     <div style="margin-top:7px;font-size:12px;color:#8A98A8">Commune non détectée automatiquement — indiquez-la ci-dessus.</div>
@@ -838,15 +838,25 @@ class Component extends DCLogic {
     files.forEach((f) => this._ingestPhoto(f));
   }
 
-  _forwardGeocode(query) {
+  _forwardGeocode(query, skipCommune) {
     const gen = (this._geoGen = (this._geoGen || 0) + 1);
-    fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=ch&addressdetails=1&q=" + encodeURIComponent(query))
+    const knownCommune = !skipCommune && this.state.communeGuess;
+    const fullQuery = knownCommune ? query + ", " + knownCommune : query;
+    fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&countrycodes=ch&addressdetails=1&viewbox=6.05,46.65,6.95,46.20&q=" + encodeURIComponent(fullQuery))
       .then((r) => r.json()).then((list) => {
-        if (gen !== this._geoGen || !list || !list[0]) return;
-        const lat = parseFloat(list[0].lat), lon = parseFloat(list[0].lon);
-        const a0 = list[0].address || {};
+        if (gen !== this._geoGen) return;
+        if (!list || !list[0]) {
+          // La recherche précise (avec la commune) n'a rien donné : on retente sans elle
+          // avant d'abandonner, pour ne pas bloquer un utilisateur qui a bien tout saisi.
+          if (knownCommune) this._forwardGeocode(query, true);
+          return;
+        }
+        const served = Object.keys(Store.COMMUNES);
+        const best = list.find((item) => served.indexOf((item.address || {}).city || (item.address || {}).town || (item.address || {}).village || (item.address || {}).municipality || "") !== -1) || list[0];
+        const lat = parseFloat(best.lat), lon = parseFloat(best.lon);
+        const a0 = best.address || {};
         const town0 = a0.city || a0.town || a0.village || a0.municipality || "";
-        const guess = this.state.communeManual ? this.state.communeGuess : (Store.communeFromText(list[0].display_name) || town0 || this.state.communeGuess);
+        const guess = this.state.communeManual ? this.state.communeGuess : (Store.communeFromText(best.display_name) || town0 || this.state.communeGuess);
         this.setState({ geoLat: lat, geoLon: lon, geo: true, communeGuess: guess });
         const el = document.querySelector('reeper-map[data-role="loc-picker"]');
         if (el && el.panTo) el.panTo(lat, lon, 17);
@@ -855,7 +865,7 @@ class Component extends DCLogic {
 
   _fetchAddrSuggestions(query) {
     const gen = (this._suggGen = (this._suggGen || 0) + 1);
-    var url = "https://nominatim.openstreetmap.org/search?format=jsonv2&limit=8&countrycodes=ch&addressdetails=1&accept-language=fr&viewbox=6.05,46.62,6.55,46.22&q=" + encodeURIComponent(query);
+    var url = "https://nominatim.openstreetmap.org/search?format=jsonv2&limit=15&countrycodes=ch&addressdetails=1&accept-language=fr&viewbox=6.05,46.65,6.95,46.20&q=" + encodeURIComponent(query);
     fetch(url)
       .then((r) => r.json()).then((list) => {
         if (gen !== this._suggGen) return;
@@ -1038,11 +1048,21 @@ class Component extends DCLogic {
       })),
       send: () => {
         if (!s.photoUrls.length) { this.setState({ photoStepError: "Ajoutez au moins une photo avant d'envoyer." }); this._scrollTo("sec-photo"); return; }
-        if (s.geoLat == null || s.geoLon == null) { this.setState({ geoError: "Indiquez une localisation avant d'envoyer." }); this._scrollTo("sec-loc"); return; }
         const commune = s.communeGuess || Store.communeFromText(s.addrText) || null;
+        let lat = s.geoLat, lon = s.geoLon;
+        if (lat == null || lon == null) {
+          // Le géocodage précis a échoué (adresse ambiguë, rue mal référencée…) : si la
+          // commune est connue, on utilise son centre comme position approximative plutôt
+          // que de bloquer l'envoi — l'adresse textuelle reste, elle, celle saisie.
+          if (commune && Store.COMMUNES[commune]) {
+            lat = Store.COMMUNES[commune].center.lat; lon = Store.COMMUNES[commune].center.lon;
+          } else if (!s.addrText.trim() || !commune) {
+            this.setState({ geoError: "Indiquez une rue et une commune avant d'envoyer." }); this._scrollTo("sec-loc"); return;
+          }
+        }
         const created = Store.addReep({
           path, leaf: s.leaf, address: fullAddr || "Adresse non précisée",
-          lat: s.geoLat, lon: s.geoLon, desc: s.desc, photoUrls: s.photoUrls,
+          lat, lon, desc: s.desc, photoUrls: s.photoUrls,
           commune, reporterAccount: loggedIn ? session.key : null
         });
         this.setState({ step: "done", createdId: created.id, createdCommune: created.commune, createdPoints: created.pointsAwarded || 0 });
@@ -1087,6 +1107,13 @@ class Component extends DCLogic {
       })),
       communeGuess: s.communeGuess || "", noCommuneGuess: !s.communeGuess && s.geo,
       onCommuneGuess: (e) => this.setState({ communeGuess: e.target.value, communeManual: true }),
+      onCommuneGuessBlur: () => {
+        const commune = (s.communeGuess || "").trim();
+        const street = (s.addrText || "").trim();
+        if (commune && street && (s.geoLat == null || s.geoLon == null)) {
+          this._forwardGeocode(street + (s.addrNum.trim() ? " " + s.addrNum.trim() : ""));
+        }
+      },
       detectLabel: s.geoLoading ? "Localisation…" : "Me localiser",
       hasGeoError: !!s.geoError, geoError: s.geoError,
       hasPhotoStepError: !!s.photoStepError, photoStepError: s.photoStepError,
