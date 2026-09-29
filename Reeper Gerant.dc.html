@@ -717,7 +717,10 @@ select,textarea,input{font-family:inherit}
           <div class="rg-2col" style="gap:16px;align-items:start">
             <div style="display:flex;flex-direction:column;gap:16px">
               <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;padding:20px">
-                <div style="font-family:Georgia,serif;font-size:16px;font-weight:700;margin-bottom:14px">Informations contractuelles</div>
+                <div style="display:flex;align-items:center;gap:11px;margin-bottom:14px">
+                  <span class="rp-ic rp-ic-navy">📄</span>
+                  <div style="font-family:Georgia,serif;font-size:16px;font-weight:700">Informations contractuelles</div>
+                </div>
                 <div class="rg-2col" style="gap:12px;margin-bottom:12px">
                   <div>
                     <div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:6px">Palier</div>
@@ -786,7 +789,10 @@ select,textarea,input{font-family:inherit}
               </div>
 
               <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;padding:20px">
-                <div style="font-family:Georgia,serif;font-size:16px;font-weight:700;margin-bottom:14px">Contacts &amp; adresse</div>
+                <div style="display:flex;align-items:center;gap:11px;margin-bottom:14px">
+                  <span class="rp-ic rp-ic-navy">☎️</span>
+                  <div style="font-family:Georgia,serif;font-size:16px;font-weight:700">Contacts &amp; adresse</div>
+                </div>
                 <sc-for list="{{ contactsView }}" as="ct" hint-placeholder-count="2">
                   <div style="margin-bottom:14px">
                     <div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700">{{ ct.roleLabel }}</div>
@@ -853,7 +859,10 @@ select,textarea,input{font-family:inherit}
 
             <div style="display:flex;flex-direction:column;gap:16px">
               <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;padding:20px">
-                <div style="font-family:Georgia,serif;font-size:16px;font-weight:700;margin-bottom:14px">Suivi financier — 5%</div>
+                <div style="display:flex;align-items:center;gap:11px;margin-bottom:14px">
+                  <span class="rp-ic rp-ic-green">💰</span>
+                  <div style="font-family:Georgia,serif;font-size:16px;font-weight:700">Suivi financier — 5%</div>
+                </div>
                 <div style="margin-bottom:12px">
                   <div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:6px">Montant total alloué (CHF)</div>
                   <div style="font-family:Georgia,Cambria,serif;font-size:22px;font-weight:700">{{ budgetTotalLabel }}</div>
@@ -908,7 +917,10 @@ select,textarea,input{font-family:inherit}
               </div>
 
               <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;padding:20px">
-                <div style="font-family:Georgia,serif;font-size:16px;font-weight:700;margin-bottom:6px">Documents</div>
+                <div style="display:flex;align-items:center;gap:11px;margin-bottom:6px">
+                  <span class="rp-ic rp-ic-purple">📁</span>
+                  <div style="font-family:Georgia,serif;font-size:16px;font-weight:700">Documents</div>
+                </div>
                 <sc-for list="{{ documentRows }}" as="d" hint-placeholder-count="2">
                   <div style="padding:12px 0;border-bottom:1px solid rgba(27,42,65,.07)">
                     <div style="font-size:13.5px;font-weight:600;color:#1B2A41">{{ d.title }}</div>
@@ -958,7 +970,10 @@ select,textarea,input{font-family:inherit}
           </div>
 
           <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;padding:20px">
-            <div style="font-family:Georgia,serif;font-size:16px;font-weight:700;margin-bottom:14px">Journal de suivi</div>
+            <div style="display:flex;align-items:center;gap:11px;margin-bottom:14px">
+              <span class="rp-ic rp-ic-navy">📝</span>
+              <div style="font-family:Georgia,serif;font-size:16px;font-weight:700">Journal de suivi</div>
+            </div>
             <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
               <textarea value="{{ cNoteText }}" onChange="{{ onCNoteText }}" rows="2" placeholder="Ajouter une note (appel, décision, problème rencontré…)" style="flex:1;min-width:200px;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:11px 13px;font-size:13.5px;font-family:inherit;resize:none"></textarea>
               <button onClick="{{ addNote }}" style="border:none;background:#1B2A41;color:#fff;border-radius:9px;padding:0 18px;font-size:13px;font-weight:600;flex:none">Ajouter</button>
