@@ -520,7 +520,8 @@ select,textarea,input{font-family:inherit}
 
         <div style="display:grid;grid-template-columns:{{ dashCols }};gap:18px;align-items:start">
           <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:hidden">
-            <div style="padding:16px 20px;border-bottom:1px solid rgba(27,42,65,.08);display:flex;align-items:center">
+            <div style="padding:16px 20px;border-bottom:1px solid rgba(27,42,65,.08);display:flex;align-items:center;gap:11px">
+              <span class="rp-ic rp-ic-red" style="width:30px;height:30px;font-size:14px">📌</span>
               <span style="font-family:Georgia,serif;font-size:16px;font-weight:700;flex:1;white-space:nowrap">Reeps</span>
               <button onClick="{{ goList }}" style="border:none;background:none;padding:0;font-size:13px;font-weight:600;color:#D62839">Voir tous</button>
             </div>
@@ -553,7 +554,8 @@ select,textarea,input{font-family:inherit}
           </div>
 
           <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:hidden">
-            <div style="padding:16px 20px;border-bottom:1px solid rgba(27,42,65,.08);display:flex;align-items:center">
+            <div style="padding:16px 20px;border-bottom:1px solid rgba(27,42,65,.08);display:flex;align-items:center;gap:11px">
+              <span class="rp-ic rp-ic-navy" style="width:30px;height:30px;font-size:14px">🗺️</span>
               <span style="font-family:Georgia,serif;font-size:16px;font-weight:700;flex:1">Carte</span>
               <button onClick="{{ goMap }}" style="border:none;background:none;padding:0;font-size:13px;font-weight:600;color:#D62839">Ouvrir</button>
             </div>
@@ -564,7 +566,10 @@ select,textarea,input{font-family:inherit}
           </div>
 
           <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;padding:16px 20px 6px">
-            <div style="font-family:Georgia,serif;font-size:16px;font-weight:700;margin-bottom:15px">Activité récente</div>
+            <div style="display:flex;align-items:center;gap:11px;margin-bottom:15px">
+              <span class="rp-ic rp-ic-purple" style="width:30px;height:30px;font-size:14px">🕐</span>
+              <div style="font-family:Georgia,serif;font-size:16px;font-weight:700">Activité récente</div>
+            </div>
             <sc-for list="{{ feed }}" as="a" hint-placeholder-count="5">
               <button onClick="{{ a.onClick }}" style="display:flex;gap:12px;align-items:flex-start;width:100%;border:none;background:none;padding:0;text-align:left;cursor:{{ a.cursor }}">
                 <div style="display:flex;flex-direction:column;align-items:center;flex:none;width:11px">
@@ -1136,7 +1141,10 @@ select,textarea,input{font-family:inherit}
             <div style="display:flex;flex-direction:column;gap:16px;max-width:900px">
 
               <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;padding:22px 24px">
-                <div style="font-family:Georgia,serif;font-size:16.5px;font-weight:700">Identité de la commune</div>
+                <div style="display:flex;align-items:center;gap:11px">
+                  <span class="rp-ic rp-ic-navy">🏛️</span>
+                  <div style="font-family:Georgia,serif;font-size:16.5px;font-weight:700">Identité de la commune</div>
+                </div>
                 <div style="display:grid;grid-template-columns:{{ metaCols2 }};gap:20px;margin-top:18px">
                   <div>
                     <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Logo de la commune</div>
@@ -1179,7 +1187,10 @@ select,textarea,input{font-family:inherit}
               </div>
 
               <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;padding:22px 24px">
-                <div style="font-family:Georgia,serif;font-size:16.5px;font-weight:700">Coordonnées de contact</div>
+                <div style="display:flex;align-items:center;gap:11px">
+                  <span class="rp-ic rp-ic-navy">☎️</span>
+                  <div style="font-family:Georgia,serif;font-size:16.5px;font-weight:700">Coordonnées de contact</div>
+                </div>
                 <div style="display:grid;grid-template-columns:{{ metaCols2 }};gap:18px;margin-top:18px">
                   <div>
                     <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Adresse postale</div>
@@ -1195,7 +1206,10 @@ select,textarea,input{font-family:inherit}
               </div>
 
               <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;padding:22px 24px">
-                <div style="font-family:Georgia,serif;font-size:16.5px;font-weight:700">Langue de l'interface admin</div>
+                <div style="display:flex;align-items:center;gap:11px">
+                  <span class="rp-ic rp-ic-purple">🌐</span>
+                  <div style="font-family:Georgia,serif;font-size:16.5px;font-weight:700">Langue de l'interface admin</div>
+                </div>
                 <div style="font-size:12.5px;color:#8A98A8;margin-top:5px">Langue d'affichage pour vos agents, indépendante des langues proposées aux citoyens.</div>
                 <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap">
                   <sc-for list="{{ adminLangs }}" as="l" hint-placeholder-count="3">
