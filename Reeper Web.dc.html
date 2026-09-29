@@ -200,16 +200,21 @@ input,textarea,select{font-family:inherit}
 
             <div style="display:flex;flex-direction:column;gap:18px">
               <div id="sec-photo" class="rp-card-pad rp-sec" style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:14px;padding:18px 20px">
-                <div style="display:flex;align-items:center;gap:8px">
-                  <h2 style="margin:0;font-family:Georgia,Cambria,serif;font-size:19px;font-weight:700">Photos de l'anomalie</h2>
-                  <span style="font-size:10px;font-weight:700;letter-spacing:.04em;color:#D62839;background:#FDF2F3;border-radius:999px;padding:2px 8px">Obligatoire</span>
+                <div style="display:flex;align-items:center;gap:12px">
+                  <span class="rp-ic rp-ic-red">📷</span>
+                  <div style="flex:1;min-width:0">
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <h2 style="margin:0;font-family:Georgia,Cambria,serif;font-size:17.5px;font-weight:700">Photos</h2>
+                      <span style="font-size:10px;font-weight:700;letter-spacing:.04em;color:#D62839;background:#FDF2F3;border-radius:999px;padding:2px 8px">Obligatoire</span>
+                    </div>
+                    <p style="margin:3px 0 0;font-size:12.5px;line-height:1.5;color:#5A6B7E;max-width:62ch;text-wrap:pretty">Une photo suffit, jusqu'à {{ photoMax }} possibles.</p>
+                  </div>
                 </div>
-                <p style="margin:6px 0 12px;font-size:12.5px;line-height:1.5;color:#5A6B7E;max-width:62ch;text-wrap:pretty">Une photo suffit, jusqu'à {{ photoMax }} possibles.</p>
 
                 <sc-if value="{{ hasPhotos }}" hint-placeholder-val="{{ false }}">
-                  <div class="photo-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px">
+                  <div class="photo-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px;margin-bottom:10px">
                     <sc-for list="{{ photoThumbs }}" as="p" hint-placeholder-count="2">
-                      <div style="position:relative;height:72px;border-radius:9px;overflow:hidden;border:1px solid rgba(27,42,65,.14)">
+                      <div style="position:relative;height:72px;border-radius:14px;overflow:hidden;border:1px solid rgba(27,42,65,.14)">
                         <img src="{{ p.url }}" style="width:100%;height:100%;object-fit:cover;display:block" />
                         <button onClick="{{ p.onRemove }}" title="Retirer" style="position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;border:none;background:rgba(27,42,65,.75);color:#fff;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center">×</button>
                       </div>
@@ -218,9 +223,9 @@ input,textarea,select{font-family:inherit}
                 </sc-if>
 
                 <sc-if value="{{ canAddPhoto }}" hint-placeholder-val="{{ true }}">
-                  <div class="photo-actions" style="display:flex;gap:8px">
-                    <button onClick="{{ onCameraZoneClick }}" title="Prendre une photo" style="width:44px;height:44px;flex:none;border:none;background:#F3F6F8;border-radius:11px;display:flex;align-items:center;justify-content:center;color:#1B2A41;font-size:18px" style-hover="background:#EAEFF3">📷</button>
-                    <button onClick="{{ onPhotoZoneClick }}" title="Choisir depuis mes fichiers" style="width:44px;height:44px;flex:none;border:none;background:#F3F6F8;border-radius:11px;display:flex;align-items:center;justify-content:center;color:#1B2A41;font-size:21px;font-weight:600;line-height:1" style-hover="background:#EAEFF3">+</button>
+                  <div class="photo-actions" style="display:flex;gap:8px;margin-top:14px">
+                    <button onClick="{{ onCameraZoneClick }}" title="Prendre une photo" style="width:44px;height:44px;flex:none;border:none;background:#F3F6F8;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#1B2A41;font-size:18px" style-hover="background:#EAEFF3">📷</button>
+                    <button onClick="{{ onPhotoZoneClick }}" title="Choisir depuis mes fichiers" style="width:44px;height:44px;flex:none;border:none;background:#F3F6F8;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#1B2A41;font-size:21px;font-weight:600;line-height:1" style-hover="background:#EAEFF3">+</button>
                   </div>
                 </sc-if>
                 <sc-if value="{{ photoLimitReached }}" hint-placeholder-val="{{ false }}">
@@ -235,18 +240,21 @@ input,textarea,select{font-family:inherit}
               </div>
 
               <div id="sec-loc" class="rp-sec" style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:14px;overflow:visible">
-                <div style="padding:18px 20px 12px">
-                  <div style="display:flex;align-items:center;gap:8px">
-                    <h2 style="margin:0;font-family:Georgia,Cambria,serif;font-size:19px;font-weight:700">Où se trouve l'anomalie ?</h2>
-                    <span style="font-size:10px;font-weight:700;letter-spacing:.04em;color:#D62839;background:#FDF2F3;border-radius:999px;padding:2px 8px">Obligatoire</span>
+                <div style="padding:18px 20px 12px;display:flex;align-items:center;gap:12px">
+                  <span class="rp-ic rp-ic-navy">📍</span>
+                  <div style="flex:1;min-width:0">
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <h2 style="margin:0;font-family:Georgia,Cambria,serif;font-size:17.5px;font-weight:700">Adresse</h2>
+                      <span style="font-size:10px;font-weight:700;letter-spacing:.04em;color:#D62839;background:#FDF2F3;border-radius:999px;padding:2px 8px">Obligatoire</span>
+                    </div>
+                    <p style="margin:3px 0 0;font-size:12.5px;line-height:1.5;color:#5A6B7E;max-width:62ch;text-wrap:pretty">Votre navigateur peut détecter la position, ou vous saisissez l'adresse.</p>
                   </div>
-                  <p style="margin:6px 0 0;font-size:12.5px;line-height:1.5;color:#5A6B7E;max-width:62ch;text-wrap:pretty">Votre navigateur peut détecter la position, ou vous saisissez l'adresse.</p>
                 </div>
                 <div style="height:260px;position:relative;overflow:hidden;border-top:1px solid rgba(27,42,65,.08);border-bottom:1px solid rgba(27,42,65,.08)">
                   <reeper-map data-role="loc-picker" center="{{ mapCenter }}" zoom="{{ mapZoom }}" draggable-marker click-to-place></reeper-map>
                 </div>
                 <div style="padding:16px 20px 20px">
-                  <button onClick="{{ detect }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);background:#fff;border-radius:11px;padding:13px 18px;font-size:13.5px;font-weight:600;color:#1B2A41;display:flex;align-items:center;justify-content:center;gap:8px">📍 {{ detectLabel }}</button>
+                  <button onClick="{{ detect }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);background:#fff;border-radius:14px;padding:13px 18px;font-size:13.5px;font-weight:600;color:#1B2A41;display:flex;align-items:center;justify-content:center;gap:8px">📍 {{ detectLabel }}</button>
                   <sc-if value="{{ hasGeoError }}" hint-placeholder-val="{{ false }}">
                     <div style="margin-top:9px;font-size:12px;color:#D62839">{{ geoError }}</div>
                   </sc-if>
@@ -274,17 +282,20 @@ input,textarea,select{font-family:inherit}
               </div>
 
               <div id="sec-cat" class="rp-card-pad rp-sec" style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:14px;padding:18px 20px">
-                <h2 style="margin:0;font-family:Georgia,Cambria,serif;font-size:19px;font-weight:700">De quoi s'agit-il ?</h2>
-                <p style="margin:6px 0 12px;font-size:12.5px;line-height:1.5;color:#5A6B7E;max-width:62ch;text-wrap:pretty">Choisissez la famille, puis la nature exacte.</p>
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+                  <span class="rp-ic rp-ic-purple">🗂️</span>
+                  <div style="flex:1;min-width:0">
+                    <h2 style="margin:0;font-family:Georgia,Cambria,serif;font-size:17.5px;font-weight:700">De quoi s'agit-il ?</h2>
+                    <p style="margin:3px 0 0;font-size:12.5px;line-height:1.5;color:#5A6B7E;max-width:62ch;text-wrap:pretty">Choisissez la famille, puis la nature exacte.</p>
+                  </div>
+                </div>
                 <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
-                  <button onClick="{{ catUp }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;border-radius:9px;padding:8px 12px;font-size:12.5px;font-weight:600;color:{{ catUpFg }}">‹ Retour</button>
+                  <button onClick="{{ catUp }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;border-radius:14px;padding:8px 12px;font-size:12.5px;font-weight:600;color:{{ catUpFg }}">‹ Retour</button>
                   <span style="font-size:13px;color:#5A6B7E">{{ catCrumb }}</span>
                 </div>
-                <div class="rp-2col" style="border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:hidden">
+                <div style="display:flex;flex-wrap:wrap;gap:9px">
                   <sc-for list="{{ catItems }}" as="c" hint-placeholder-count="6">
-                    <button onClick="{{ c.onClick }}" style="border:none;border-bottom:1px solid rgba(27,42,65,.07);border-right:1px solid rgba(27,42,65,.07);background:{{ c.bg }};padding:13px 16px;display:flex;align-items:center;gap:10px;text-align:left;color:#1B2A41;font-size:13.5px;font-weight:{{ c.weight }}" style-hover="background:#FAFBFC">
-                      <span style="flex:1">{{ c.label }}</span><span style="color:#B4C0CB">{{ c.chev }}</span>
-                    </button>
+                    <button onClick="{{ c.onClick }}" class="rp-chip" style="background:{{ c.chipBg }};color:{{ c.chipFg }};font-weight:{{ c.weight }}">{{ c.label }}<span class="chev">{{ c.chev }}</span></button>
                   </sc-for>
                 </div>
                 <sc-if value="{{ catPicked }}" hint-placeholder-val="{{ false }}">
@@ -293,8 +304,13 @@ input,textarea,select{font-family:inherit}
               </div>
 
               <div id="sec-desc" class="rp-card-pad rp-sec" style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:14px;padding:18px 20px">
-                <h2 style="margin:0;font-family:Georgia,Cambria,serif;font-size:19px;font-weight:700">Décrivez en quelques mots</h2>
-                <p style="margin:6px 0 12px;font-size:12.5px;line-height:1.5;color:#5A6B7E;max-width:62ch;text-wrap:pretty">Facultatif, mais utile : depuis quand, quelle ampleur, quel risque pour les passants.</p>
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+                  <span class="rp-ic rp-ic-green">💬</span>
+                  <div style="flex:1;min-width:0">
+                    <h2 style="margin:0;font-family:Georgia,Cambria,serif;font-size:17.5px;font-weight:700">Décrivez en quelques mots</h2>
+                    <p style="margin:3px 0 0;font-size:12.5px;line-height:1.5;color:#5A6B7E;max-width:62ch;text-wrap:pretty">Facultatif, mais utile : depuis quand, quelle ampleur, quel risque pour les passants.</p>
+                  </div>
+                </div>
                 <textarea value="{{ desc }}" onChange="{{ onDesc }}" rows="4" placeholder="Ex. Le lampadaire est éteint depuis lundi, le trottoir est très sombre le soir." style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:11px;padding:14px 15px;font-size:14px;line-height:1.6;color:#1B2A41;outline:none;resize:none"></textarea>
                 <sc-if value="{{ hasEmergencyWarning }}" hint-placeholder-val="{{ false }}">
                   <div style="margin-top:12px;background:#FDF2F3;border:1px solid rgba(214,40,57,.3);border-radius:11px;padding:13px 16px;font-size:13px;line-height:1.55;color:#8A2530">En cas de danger immédiat (fuite d'eau importante, incendie, gaz, explosion), n'attendez pas Reeper : appelez directement la Police (117), les Pompiers (118) ou l'Ambulance (144).</div>
@@ -1105,7 +1121,7 @@ class Component extends DCLogic {
         return Object.keys(node).map((k) => {
           const child = node[k];
           const on = !child && s.leaf === k;
-          return { label: k, chev: child ? "›" : "", bg: on ? "#F3F6F8" : "#fff", weight: on ? 600 : 400,
+          return { label: k, chev: child ? "›" : "", chipBg: on ? "#1B2A41" : "#F3F6F8", chipFg: on ? "#fff" : "#1B2A41", weight: on ? 700 : 600,
             onClick: child
               ? () => self._transition(() => self.setState({ path: path.concat([k]), leaf: null }))
               : () => { self.setState({ leaf: k, cat: path[0] || k }); self._scrollTo("sec-desc"); } };

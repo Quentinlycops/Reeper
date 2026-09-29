@@ -48,6 +48,19 @@ select[style*="border:1px solid rgba(27,42,65,.16)"] {
   border-radius: 12px !important;
 }
 
+/* --- En-têtes de section (icône colorée + libellé) --- */
+.rp-ic{width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:17px;flex:none}
+.rp-ic-red{background:#FDF2F3;color:#D62839}
+.rp-ic-navy{background:#F3F6F8;color:#1B2A41}
+.rp-ic-green{background:#EFF7F1;color:#3F8F63}
+.rp-ic-purple{background:#EDE9F5;color:#7A6BC4}
+
+/* --- Pastilles cliquables (remplacent les listes plates) --- */
+.rp-chip{padding:11px 15px;border-radius:14px;font-size:12.5px;font-weight:700;background:#F3F6F8;color:#1B2A41;border:none;cursor:pointer;text-align:left}
+.rp-chip.on{background:#1B2A41;color:#fff}
+.rp-chip .chev{color:#B4C0CB;margin-left:6px}
+.rp-chip.on .chev{color:rgba(255,255,255,.6)}
+
 /* ============================= Footer ============================= */
 .rp-footer{
   border-top:1px solid rgba(27,42,65,.08);
