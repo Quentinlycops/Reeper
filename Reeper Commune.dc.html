@@ -39,7 +39,7 @@ select,textarea,input{font-family:inherit}
 </style>
 </helmet>
 
-<div class="rc-page" style="height:100vh;box-sizing:border-box;background:#F3F6F8;display:flex;flex-direction:column">
+<div class="rc-page" style="min-height:100vh;box-sizing:border-box;background:#F3F6F8;display:flex;flex-direction:column">
 
     <sc-if value="{{ hasSyncToast }}" hint-placeholder-val="{{ false }}">
       <div style="position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:300;background:#1B2A41;color:#fff;border-radius:11px;padding:13px 18px;display:flex;align-items:center;gap:12px;box-shadow:0 12px 30px rgba(27,42,65,.3);font-size:13.5px;font-weight:600">
@@ -459,7 +459,7 @@ select,textarea,input{font-family:inherit}
     </sc-if>
 
     <sc-if value="{{ isDash }}" hint-placeholder-val="{{ true }}">
-      <div style="flex:1;padding:{{ pagePad }};display:flex;flex-direction:column;gap:20px;overflow:auto">
+      <div style="padding:{{ pagePad }};display:flex;flex-direction:column;gap:20px">
         <div>
           <h1 style="margin:0;font-family:Georgia,Cambria,serif;font-size:23px;font-weight:700;letter-spacing:-.3px">Tableau de bord</h1>
           <div style="font-size:12.5px;color:#8A98A8;margin-top:3px">Semaine du 10 au 16 août 2026</div>
@@ -650,7 +650,7 @@ select,textarea,input{font-family:inherit}
     </sc-if>
 
     <sc-if value="{{ isList }}" hint-placeholder-val="{{ false }}">
-      <div style="flex:1;padding:{{ pagePad }};display:flex;flex-direction:column;gap:16px;overflow:auto">
+      <div style="padding:{{ pagePad }};display:flex;flex-direction:column;gap:16px">
         <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
           <div style="flex:1">
             <h1 style="margin:0;font-family:Georgia,Cambria,serif;font-size:23px;font-weight:700;letter-spacing:-.3px">Reeps</h1>
@@ -683,7 +683,7 @@ select,textarea,input{font-family:inherit}
     </sc-if>
 
     <sc-if value="{{ isTrash }}" hint-placeholder-val="{{ false }}">
-      <div style="flex:1;padding:{{ pagePad }};display:flex;flex-direction:column;gap:16px;overflow:auto">
+      <div style="padding:{{ pagePad }};display:flex;flex-direction:column;gap:16px">
         <div>
           <h1 style="margin:0;font-family:Georgia,Cambria,serif;font-size:23px;font-weight:700;letter-spacing:-.3px">Corbeille</h1>
           <div style="font-size:12.5px;color:#8A98A8;margin-top:3px">{{ trashCount }} Reeps supprimés · commune de {{ communeName }}</div>
@@ -710,7 +710,7 @@ select,textarea,input{font-family:inherit}
     </sc-if>
 
     <sc-if value="{{ isNewReep }}" hint-placeholder-val="{{ false }}">
-      <div style="flex:1;padding:{{ pagePad }};display:flex;flex-direction:column;gap:16px;overflow:auto">
+      <div style="padding:{{ pagePad }};display:flex;flex-direction:column;gap:16px">
         <div style="display:flex;align-items:center;gap:14px">
           <button onClick="{{ goDash }}" style="border:1px solid rgba(27,42,65,.14);background:#fff;border-radius:9px;padding:9px 14px;font-size:13px;font-weight:600;color:#1B2A41">‹ Annuler</button>
           <h1 style="margin:0;font-family:Georgia,Cambria,serif;font-size:22px;font-weight:700">Nouveau Reep</h1>
@@ -793,7 +793,7 @@ select,textarea,input{font-family:inherit}
     </sc-if>
 
     <sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
-      <div style="flex:1;padding:{{ pagePad }};display:flex;flex-direction:column;gap:16px;overflow:auto">
+      <div style="padding:{{ pagePad }};display:flex;flex-direction:column;gap:16px">
         <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
           <button onClick="{{ goList }}" style="border:1px solid rgba(27,42,65,.14);background:#fff;border-radius:9px;padding:9px 14px;font-size:13px;font-weight:600;color:#1B2A41">‹ Reeps</button>
           <span style="font-family:ui-monospace,Menlo,monospace;font-size:14px;color:#1B2A41">{{ current.id }}</span>
@@ -1124,7 +1124,7 @@ select,textarea,input{font-family:inherit}
             </sc-for>
           </div>
         </div>
-        <div style="flex:1;min-width:0;padding:{{ pagePad }};overflow:auto;display:flex;flex-direction:column;gap:18px">
+        <div style="flex:1;min-width:0;padding:{{ pagePad }};display:flex;flex-direction:column;gap:18px">
           <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
             <div style="flex:1">
               <h1 style="margin:0;font-family:Georgia,Cambria,serif;font-size:22px;font-weight:700;letter-spacing:-.3px">{{ configTitle }}</h1>
@@ -1676,7 +1676,7 @@ select,textarea,input{font-family:inherit}
     </sc-if>
 
     <sc-if value="{{ isLegal }}" hint-placeholder-val="{{ false }}">
-      <div style="flex:1;padding:{{ pagePad }};overflow:auto;display:flex;flex-direction:column;gap:20px">
+      <div style="padding:{{ pagePad }};display:flex;flex-direction:column;gap:20px">
         <div style="display:flex;align-items:center;gap:14px">
           <button onClick="{{ goDash }}" style="border:1px solid rgba(27,42,65,.14);background:#fff;border-radius:9px;padding:9px 14px;font-size:13px;font-weight:600;color:#1B2A41">‹ Retour</button>
         </div>

@@ -37,7 +37,7 @@ select,textarea,input{font-family:inherit}
   .rg-header{padding:0 14px;gap:10px;height:60px}
   .rg-title{display:none}
   .rg-nav{display:none}
-  .rg-mobile-nav{display:flex;position:sticky;bottom:0;z-index:20}
+  .rg-mobile-nav{display:flex}
   .rg-content{padding:14px 12px 30px}
   .rg-grid3{grid-template-columns:minmax(0,1fr);gap:12px}
   .rg-2col{grid-template-columns:minmax(0,1fr)}
@@ -53,7 +53,7 @@ select,textarea,input{font-family:inherit}
 
 <div class="rg-page" style="min-height:100vh;box-sizing:border-box;background:#F3F6F8;display:flex;flex-direction:column">
 
-    <div class="rg-header" style="background:#fff;border-bottom:1px solid rgba(27,42,65,.1);display:flex;align-items:center;position:sticky;top:0;z-index:20">
+    <div class="rg-header" style="background:#fff;border-bottom:1px solid rgba(27,42,65,.1);display:flex;align-items:center;position:relative;z-index:5">
       <button onClick="{{ goSite }}" title="Retour à l'accueil du site" style="border:none;background:none;padding:6px 4px;display:flex;align-items:flex-end;gap:8px;min-height:44px" style-hover="opacity:.72">
         <span style="display:flex;align-items:flex-end;gap:3px">
           <span style="font-family:Georgia,Cambria,serif;font-size:25px;font-weight:700;line-height:1;color:#1B2A41">R</span>
