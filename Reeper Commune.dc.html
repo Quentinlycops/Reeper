@@ -24,9 +24,8 @@ body{margin:0;background:#E7ECF0;font-family:"Helvetica Neue",Helvetica,Arial,sa
 a{color:#1B2A41}a:hover{color:#D62839}
 button{font-family:inherit;cursor:pointer}
 select,textarea,input{font-family:inherit}
-.rc-page{padding:40px 40px 64px}
+.rc-page{padding:0}
 @media (max-width: 900px) {
-  .rc-page{padding:14px 12px 28px}
   [style*="grid-template-columns"] > *{min-width:0}
 }
 @media print {
@@ -40,9 +39,7 @@ select,textarea,input{font-family:inherit}
 </style>
 </helmet>
 
-<div class="rc-page" style="min-height:100vh;box-sizing:border-box;background:#E7ECF0;background-image:repeating-radial-gradient(circle at 20% 30%, rgba(27,42,65,.05) 0 1px, transparent 1px 28px);display:flex;flex-direction:column;align-items:flex-start;gap:24px">
-
-  <div data-role="shell" style="width:{{ shellW }};max-width:1600px;background:#F3F6F8;border:1px solid rgba(27,42,65,.14);border-radius:14px;overflow:hidden;box-shadow:0 18px 44px rgba(27,42,65,.14);display:flex;flex-direction:column;height:{{ shellH }}">
+<div class="rc-page" style="height:100vh;box-sizing:border-box;background:#F3F6F8;display:flex;flex-direction:column">
 
     <sc-if value="{{ hasSyncToast }}" hint-placeholder-val="{{ false }}">
       <div style="position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:300;background:#1B2A41;color:#fff;border-radius:11px;padding:13px 18px;display:flex;align-items:center;gap:12px;box-shadow:0 12px 30px rgba(27,42,65,.3);font-size:13.5px;font-weight:600">
@@ -1769,7 +1766,6 @@ select,textarea,input{font-family:inherit}
         </sc-for>
       </div>
     </sc-if>
-  </div>
 </div>
 
 </x-dc>
@@ -1872,7 +1868,7 @@ class Component extends DCLogic {
     exportOpen: false,
     agentsIn: [(Store.getSession() || FALLBACK_SESSION).initials], profileOpen: false, configTab: "Catégories", catPath: [], newCatParent: [],
     statMode: "Semaine", chartOpen: false, msgSel: "Paul Meylan", readConvs: [], draft: "", attach: null, asTransfer: true, pickerOpen: false,
-    pickQuery: "", shellFitH: null, syncToast: "",
+    pickQuery: "", syncToast: "",
     extra: {}, xfer: {}, refuseKey: null, refuseMode: "back", refuseNote: "", xferService: "Propreté publique",
     query: "", partner: null, partnerService: "", manualMail: "",
     catEdit: null, catEditLabel: "", catEditOrig: "", msgEditing: null, msgDrafts: {}, sheet: null, sheetMail: true, sheetSaved: false, inviteError: "", newCat: false, newService: false, device: "Bureau",
@@ -1909,8 +1905,7 @@ class Component extends DCLogic {
     if (!session || session.type !== "agent") { window.location.href = "./Reeper Web.dc.html"; return; }
     this._wireMap();
     this._syncDevice();
-    this._syncShellHeight();
-    window.addEventListener("resize", this._onResize = () => { this._syncDevice(); this._syncShellHeight(); });
+    window.addEventListener("resize", this._onResize = () => { this._syncDevice(); });
     Store.startAutoSync();
     window.addEventListener("reeper:sync", this._onSync = (e) => {
       if (e.detail && e.detail.hasNew) {
@@ -1922,7 +1917,7 @@ class Component extends DCLogic {
       }
     });
   }
-  componentDidUpdate() { this._wireMap(); this._syncShellHeight(); }
+  componentDidUpdate() { this._wireMap(); }
   componentWillUnmount() {
     if (this._onResize) window.removeEventListener("resize", this._onResize);
     if (this._onSync) window.removeEventListener("reeper:sync", this._onSync);
@@ -1933,16 +1928,6 @@ class Component extends DCLogic {
     const device = w < 640 ? "Mobile" : w < 1024 ? "Tablette" : "Bureau";
     if (device !== this.state.device) this.setState({ device });
   }
-  _syncShellHeight() {
-    const shell = document.querySelector('[data-role="shell"]');
-    if (!shell) return;
-    const top = shell.getBoundingClientRect().top;
-    const bottomPad = window.innerWidth <= 900 ? 28 : 64;
-    const h = Math.max(400, Math.round(window.innerHeight - top - bottomPad));
-    const px = h + "px";
-    if (px !== this.state.shellFitH) this.setState({ shellFitH: px });
-  }
-
   _wireMap() {
     const admin = document.querySelector('reeper-map[data-role="admin-map"]');
     if (admin && !admin.dataset.wired) {
@@ -2105,8 +2090,6 @@ class Component extends DCLogic {
         bg: dev === label ? "#fff" : "transparent", fg: dev === label ? "#1B2A41" : "#8A98A8",
         shadow: dev === label ? "0 1px 3px rgba(27,42,65,.18)" : "none"
       })),
-      shellW: mobile ? "100%" : tablet ? "900px" : "100%",
-      shellH: s.shellFitH || (mobile ? "880px" : tablet ? "1000px" : "900px"),
       hasSyncToast: !!s.syncToast, syncToast: s.syncToast,
       dismissSyncToast: () => this.setState({ syncToast: "" }),
       headPad: mobile ? "0 14px" : "0 28px",

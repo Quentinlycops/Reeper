@@ -22,7 +22,7 @@
 body{margin:0;background:#E7ECF0;font-family:"Helvetica Neue",Helvetica,Arial,sans-serif}
 button{font-family:inherit;cursor:pointer}
 select,textarea,input{font-family:inherit}
-.rg-page{padding:40px}
+.rg-page{padding:0}
 .rg-header{padding:0 28px;gap:18px;height:70px}
 .rg-nav{gap:4px}
 .rg-nav button{padding:10px 15px}
@@ -34,11 +34,10 @@ select,textarea,input{font-family:inherit}
 .rg-nav{display:flex}
 .rg-mobile-nav{display:none}
 @media (max-width: 900px) {
-  .rg-page{padding:12px}
   .rg-header{padding:0 14px;gap:10px;height:60px}
   .rg-title{display:none}
   .rg-nav{display:none}
-  .rg-mobile-nav{display:flex}
+  .rg-mobile-nav{display:flex;position:sticky;bottom:0;z-index:20}
   .rg-content{padding:14px 12px 30px}
   .rg-grid3{grid-template-columns:minmax(0,1fr);gap:12px}
   .rg-2col{grid-template-columns:minmax(0,1fr)}
@@ -52,11 +51,9 @@ select,textarea,input{font-family:inherit}
 </style>
 </helmet>
 
-<div class="rg-page" style="min-height:100vh;box-sizing:border-box;background:#E7ECF0;background-image:repeating-radial-gradient(circle at 20% 30%, rgba(27,42,65,.05) 0 1px, transparent 1px 28px);display:flex;justify-content:center">
+<div class="rg-page" style="min-height:100vh;box-sizing:border-box;background:#F3F6F8;display:flex;flex-direction:column">
 
-  <div data-role="shell" style="width:100%;max-width:1600px;background:#F3F6F8;border:1px solid rgba(27,42,65,.14);border-radius:14px;overflow:hidden;box-shadow:0 18px 44px rgba(27,42,65,.14);display:flex;flex-direction:column;height:{{ shellH }}">
-
-    <div class="rg-header" style="background:#fff;border-bottom:1px solid rgba(27,42,65,.1);display:flex;align-items:center;position:relative;z-index:5">
+    <div class="rg-header" style="background:#fff;border-bottom:1px solid rgba(27,42,65,.1);display:flex;align-items:center;position:sticky;top:0;z-index:20">
       <button onClick="{{ goSite }}" title="Retour à l'accueil du site" style="border:none;background:none;padding:6px 4px;display:flex;align-items:flex-end;gap:8px;min-height:44px" style-hover="opacity:.72">
         <span style="display:flex;align-items:flex-end;gap:3px">
           <span style="font-family:Georgia,Cambria,serif;font-size:25px;font-weight:700;line-height:1;color:#1B2A41">R</span>
@@ -104,7 +101,7 @@ select,textarea,input{font-family:inherit}
       </div>
     </div>
 
-    <div style="flex:1;overflow:auto">
+    <div>
 
       <sc-if value="{{ isDash }}" hint-placeholder-val="{{ true }}">
         <div class="rg-content" style="display:flex;flex-direction:column;gap:20px">
@@ -1133,7 +1130,6 @@ select,textarea,input{font-family:inherit}
         </button>
       </sc-for>
     </div>
-  </div>
 </div>
 
 </x-dc>
@@ -1198,20 +1194,16 @@ class Component extends DCLogic {
     cNewDocTitle: "", cNewDocNote: "", cNewDocError: "", docAddOpen: false,
     cNoteText: "", cNoteEditingId: null, cNoteEditText: "", cNoteDueDate: "",
     scrollToJournalId: null, highlightJournalId: null,
-    shellFitH: null,
     contactOpen: false, ctName: "", ctEmail: "", ctSubject: "Question générale", ctMessage: "", ctSent: false, ctError: ""
   };
 
   componentDidMount() {
     const session = Store.getSession();
     if (!session || session.type !== "gerant") { window.location.href = "./Reeper Web.dc.html"; return; }
-    this._syncShellHeight();
-    window.addEventListener("resize", this._onResize = () => this._syncShellHeight());
     Store.startAutoSync();
     window.addEventListener("reeper:sync", this._onSync = () => this.forceUpdate());
   }
   componentDidUpdate() {
-    this._syncShellHeight();
     if (this.state.scrollToJournalId) {
       const id = this.state.scrollToJournalId;
       const el = document.querySelector('[data-journal-id="' + id + '"]');
@@ -1223,22 +1215,12 @@ class Component extends DCLogic {
     }
   }
   componentWillUnmount() {
-    if (this._onResize) window.removeEventListener("resize", this._onResize);
     if (this._onSync) window.removeEventListener("reeper:sync", this._onSync);
   }
   _transition(fn) {
     if (!document.startViewTransition) { fn(); return; }
     const t = document.startViewTransition(fn);
     [t.ready, t.updateCallbackDone, t.finished].forEach((p) => p && p.catch(() => {}));
-  }
-  _syncShellHeight() {
-    const shell = document.querySelector('[data-role="shell"]');
-    if (!shell) return;
-    const top = shell.getBoundingClientRect().top;
-    const bottomPad = window.innerWidth <= 900 ? 12 : 40;
-    const h = Math.max(400, Math.round(window.innerHeight - top - bottomPad));
-    const px = h + "px";
-    if (px !== this.state.shellFitH) this.setState({ shellFitH: px });
   }
 
   renderVals() {
@@ -1450,7 +1432,6 @@ class Component extends DCLogic {
         });
       },
 
-      shellH: s.shellFitH || "900px",
       isDash: s.screen === "dash", isReeps: s.screen === "reeps", isAccounts: s.screen === "accounts", isMsg: s.screen === "msg", isActivity: s.screen === "activity",
 
       activityCommune: s.activityCommune, onActivityCommune: (e) => this.setState({ activityCommune: e.target.value }),
