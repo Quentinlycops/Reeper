@@ -662,6 +662,34 @@ input,textarea,select{font-family:inherit}
           </div>
         </sc-if>
 
+        <sc-if value="{{ isAbout }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:40px 40px 56px;display:flex;justify-content:center">
+            <div style="width:680px;max-width:100%">
+              <div style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#D62839;font-weight:700;margin-bottom:10px">Qui sommes-nous ?</div>
+              <h2 style="margin:0 0 22px;font-family:Georgia,Cambria,serif;font-size:30px;font-weight:700;text-wrap:balance">À propos de Reeper</h2>
+              <div style="display:flex;flex-direction:column;gap:18px">
+                <sc-for list="{{ aboutParagraphs }}" as="p" hint-placeholder-count="4">
+                  <p style="margin:0;font-size:14.5px;line-height:1.75;color:#3E5064;text-wrap:pretty">{{ p }}</p>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isMission }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:40px 40px 56px;display:flex;justify-content:center">
+            <div style="width:680px;max-width:100%">
+              <div style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#D62839;font-weight:700;margin-bottom:10px">Notre mission</div>
+              <h2 style="margin:0 0 22px;font-family:Georgia,Cambria,serif;font-size:26px;font-weight:700;line-height:1.35;text-wrap:balance">La commune dans la poche des citoyens.<br>Les bons signalements dans les bons services.</h2>
+              <div style="display:flex;flex-direction:column;gap:18px">
+                <sc-for list="{{ missionParagraphs }}" as="p" hint-placeholder-count="4">
+                  <p style="margin:0;font-size:14.5px;line-height:1.75;color:#3E5064;text-wrap:pretty">{{ p }}</p>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
         <div class="rp-footer">
           <div class="rp-footer-brand"><span class="rp-footer-dot"></span><b>Reeper</b></div>
           <div class="rp-footer-cols">
@@ -676,6 +704,8 @@ input,textarea,select{font-family:inherit}
             </div>
             <div class="rp-footer-col">
               <div class="lbl">Liens</div>
+              <div><button class="rp-footer-link" onClick="{{ footerGoAbout }}">Qui sommes-nous ?</button></div>
+              <div><button class="rp-footer-link" onClick="{{ footerGoMission }}">Notre mission</button></div>
               <div><button class="rp-footer-link" onClick="{{ footerGoLegal }}">Mentions légales</button></div>
               <div><button class="rp-footer-link" onClick="{{ openContact }}">Nous contacter</button></div>
             </div>
@@ -976,6 +1006,8 @@ class Component extends DCLogic {
         });
       },
       isLegal: s.view === "legal",
+      isAbout: s.view === "about",
+      isMission: s.view === "mission",
       isRewards: s.view === "rewards",
       pointsPerReep: Store.POINTS_PER_REEP,
       hasRedeemMsg: !!s.redeemMsg, redeemMsg: s.redeemMsg,
@@ -1269,7 +1301,21 @@ class Component extends DCLogic {
         { title: "Contact", body: "Reeper Sàrl · Route de Divonne 5, 1260 Nyon · +41 22 365 14 80 · info@reeper.ch" }
       ],
 
+      aboutParagraphs: [
+        "Reeper est né d'un constat simple : le lien entre les habitants d'une commune et les services qui la gèrent reste souvent fragmenté. Après plusieurs années de terrain, c'est cette observation qui a donné naissance au projet.",
+        "Reeper est aujourd'hui porté depuis le district de Nyon, en Suisse romande — un ancrage local volontaire, pensé pour construire un outil au plus près des communes qu'il souhaite servir.",
+        "Le développement de la plateforme est mené avec des partenaires suisses spécialisés, dans le respect des exigences légales et techniques propres aux collectivités publiques de ce pays.",
+        "Reeper reste une jeune entreprise. Mais elle est construite avec une conviction claire : la technologie, utilisée simplement, peut recréer un lien de confiance entre les citoyens et leur commune — sans complexité inutile, sans promesse excessive, une étape à la fois."
+      ],
+      missionParagraphs: [
+        "Notre mission est simple : faire en sorte que signaler une anomalie dans l'espace public devienne un geste aussi naturel qu'envoyer un message — et que chaque commune puisse voir, comprendre et agir sur l'état réel de son territoire, à travers les yeux de celles et ceux qui le traversent chaque jour.",
+        "Nous croyons qu'un territoire mieux écouté est un territoire mieux géré. Et que cette écoute ne doit jamais être compliquée — ni pour l'habitant qui signale, ni pour la commune qui reçoit.",
+        "Cette mission s'accompagne d'un engagement concret : pour chaque contrat annuel signé avec une commune partenaire, Reeper participe activement au financement d'un projet local dédié aux enfants, aux jeunes ou à l'amélioration du cadre de vie. Une manière de rappeler que Reeper n'est pas qu'un outil — c'est un partenaire investi dans les territoires qu'il sert.",
+        "Notre ambition, à terme, est de devenir une référence suisse de la collaboration numérique entre citoyens et collectivités publiques."
+      ],
       footerGoLegal: () => this.go("legal"),
+      footerGoAbout: () => this.go("about"),
+      footerGoMission: () => this.go("mission"),
       contactOpen: s.contactOpen,
       openContact: () => this.setState({ contactOpen: true, ctSent: false, ctError: "" }),
       closeContact: () => this.setState({ contactOpen: false }),
