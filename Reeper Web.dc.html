@@ -279,6 +279,7 @@ input,textarea,select{font-family:inherit}
                   <sc-if value="{{ noCommuneGuess }}" hint-placeholder-val="{{ false }}">
                     <div style="margin-top:7px;font-size:12px;color:#8A98A8">Commune non détectée automatiquement — indiquez-la ci-dessus.</div>
                   </sc-if>
+                  <button onClick="{{ validateAddress }}" style="width:100%;box-sizing:border-box;border:none;background:{{ validateAddressBg }};color:#fff;border-radius:11px;padding:13px 16px;font-size:13.5px;font-weight:700;margin-top:12px">{{ validateAddressLabel }}</button>
                 </div>
               </div>
 
@@ -1112,6 +1113,28 @@ class Component extends DCLogic {
         const street = (s.addrText || "").trim();
         if (commune && street && (s.geoLat == null || s.geoLon == null)) {
           this._forwardGeocode(street + (s.addrNum.trim() ? " " + s.addrNum.trim() : ""));
+        }
+      },
+      validateAddressLabel: (s.geoLat != null && s.geoLon != null) ? "✓ Adresse prise en compte" : "📍 Valider cette adresse",
+      validateAddressBg: (s.geoLat != null && s.geoLon != null) ? "#3F8F63" : "#1B2A41",
+      validateAddress: () => {
+        const street = (s.addrText || "").trim();
+        const commune = (s.communeGuess || "").trim();
+        if (!street) { this.setState({ geoError: "Indiquez au moins une rue." }); this._scrollTo("sec-loc"); return; }
+        if (!commune) { this.setState({ geoError: "Indiquez la commune." }); this._scrollTo("sec-loc"); return; }
+        if (s.geoLat == null || s.geoLon == null) {
+          // Garantit une position exploitable tout de suite (centre de la commune si connue),
+          // pendant qu'on tente en parallèle un géocodage plus précis de la rue exacte.
+          if (Store.COMMUNES[commune]) {
+            this.setState({ geoLat: Store.COMMUNES[commune].center.lat, geoLon: Store.COMMUNES[commune].center.lon, geo: true, geoError: "" });
+            const el = document.querySelector('reeper-map[data-role="loc-picker"]');
+            if (el && el.panTo) el.panTo(Store.COMMUNES[commune].center.lat, Store.COMMUNES[commune].center.lon, 14);
+          } else {
+            this.setState({ geo: true, geoError: "" });
+          }
+          this._forwardGeocode(street + (s.addrNum.trim() ? " " + s.addrNum.trim() : ""));
+        } else {
+          this.setState({ geoError: "" });
         }
       },
       detectLabel: s.geoLoading ? "Localisation…" : "Me localiser",

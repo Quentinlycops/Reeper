@@ -758,6 +758,7 @@ select,textarea,input{font-family:inherit}
               </div>
               <label style="display:block;font-size:11px;color:#8A98A8;margin-bottom:5px">Commune (modifiable si la détection se trompe)</label>
               <input value="{{ nrCommune }}" onChange="{{ onNRCommune }}" onBlur="{{ onNRCommuneBlur }}" placeholder="Nom de la commune" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:12px 13px;font-size:14px;outline:none">
+              <button onClick="{{ nrValidateAddress }}" style="width:100%;box-sizing:border-box;border:none;background:{{ nrValidateAddressBg }};color:#fff;border-radius:10px;padding:12px 16px;font-size:13px;font-weight:700;margin-top:12px">{{ nrValidateAddressLabel }}</button>
             </div>
 
             <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;padding:18px 20px">
@@ -2495,6 +2496,26 @@ class Component extends DCLogic {
         const street = (s.nrAddrText || "").trim();
         if (commune && street && (s.nrLat == null || s.nrLon == null)) {
           this._forwardGeocodeNR(street + (s.nrAddrNum.trim() ? " " + s.nrAddrNum.trim() : ""));
+        }
+      },
+      nrValidateAddressLabel: (s.nrLat != null && s.nrLon != null) ? "✓ Adresse prise en compte" : "📍 Valider cette adresse",
+      nrValidateAddressBg: (s.nrLat != null && s.nrLon != null) ? "#3F8F63" : "#1B2A41",
+      nrValidateAddress: () => {
+        const street = (s.nrAddrText || "").trim();
+        const commune = (s.nrCommune || "").trim();
+        if (!street) { this.setState({ nrGeoError: "Indiquez au moins une rue." }); return; }
+        if (!commune) { this.setState({ nrGeoError: "Indiquez la commune." }); return; }
+        if (s.nrLat == null || s.nrLon == null) {
+          if (Store.COMMUNES[commune]) {
+            this.setState({ nrLat: Store.COMMUNES[commune].center.lat, nrLon: Store.COMMUNES[commune].center.lon, nrGeoError: "" });
+            const el = document.querySelector('reeper-map[data-role="nr-map"]');
+            if (el && el.panTo) el.panTo(Store.COMMUNES[commune].center.lat, Store.COMMUNES[commune].center.lon, 14);
+          } else {
+            this.setState({ nrGeoError: "" });
+          }
+          this._forwardGeocodeNR(street + (s.nrAddrNum.trim() ? " " + s.nrAddrNum.trim() : ""));
+        } else {
+          this.setState({ nrGeoError: "" });
         }
       },
       nrDetectLabel: s.nrGeoLoading ? "Localisation…" : "📍 Me localiser",
