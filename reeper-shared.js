@@ -232,7 +232,7 @@
     if (!SYNC_ON || _syncStarted) return;
     _syncStarted = true;
     syncPull();
-    setInterval(syncPull, 120000);
+    setInterval(syncPull, 86400000);
     window.addEventListener("focus", function () { syncPull(); });
     document.addEventListener("visibilitychange", function () { if (!document.hidden) syncPull(); });
   }
