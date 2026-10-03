@@ -3,6 +3,10 @@
 
   var LS_KEY = "reeper_store_v1";
 
+  // Version test : connexion sans mot de passe. Mettre à false pour réactiver
+  // la vérification (les mots de passe existants sont conservés tels quels).
+  var PASSWORDLESS = true;
+
   // --- Supabase sync (shared data across devices) ---------------------------
   var SUPABASE_URL = "https://pkrwypwpmfdtpzphqjop.supabase.co";
   var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrcnd5cHdwbWZkdHB6cGhxam9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc1NzQ3NzEsImV4cCI6MjEwMzE1MDc3MX0.9IuieaGdsEtMX5BSi2y5B7RkY2q9Npciu2xMnxdiI7A";
@@ -744,6 +748,7 @@
   var Store = {
     TREE: TREE, SERVICE: SERVICE, SERVICE_NAMES: SERVICE_NAMES, COMMUNES: COMMUNES, COMMUNE_CODES: COMMUNE_CODES,
     REEPER_SUPPORT_KEY: REEPER_SUPPORT_KEY,
+    PASSWORDLESS: PASSWORDLESS,
     SYNC_ON: SYNC_ON, startAutoSync: startAutoSync, syncPull: syncPull, flushPush: flushPush,
     POINTS_PER_REEP: POINTS_PER_REEP, REWARDS: REWARDS,
 
@@ -801,10 +806,10 @@
         if (data.accounts[i].username.toLowerCase() === uname) { found = data.accounts[i]; break; }
       }
       if (!found) return Promise.resolve({ ok: false, error: "Identifiants incorrects." });
-      return verifyPassword(password, found.password).then(function (match) {
+      return (PASSWORDLESS ? Promise.resolve(true) : verifyPassword(password, found.password)).then(function (match) {
         if (!match) return { ok: false, error: "Identifiants incorrects." };
         if (found.status === "pending") return { ok: false, error: "Ce compte est en attente de validation par l'administrateur de la commune." };
-        var upgrade = isHashedPassword(found.password) ? Promise.resolve() : hashPassword(password).then(function (h) { found.password = h; });
+        var upgrade = (PASSWORDLESS || isHashedPassword(found.password)) ? Promise.resolve() : hashPassword(password).then(function (h) { found.password = h; });
         return upgrade.then(function () {
           data.session = { accountKey: found.key, at: now() };
           persist(data);

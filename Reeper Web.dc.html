@@ -377,6 +377,7 @@ input,textarea,select{font-family:inherit}
                     </sc-for>
                   </select>
                 </div>
+                <sc-if value="{{ showPwdFields }}" hint-placeholder-val="{{ true }}">
                 <div style="margin-top:14px">
                   <div style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Mot de passe</div>
                   <div style="position:relative">
@@ -384,6 +385,7 @@ input,textarea,select{font-family:inherit}
                     <button onClick="{{ togglePwdVisible }}" type="button" style="position:absolute;top:0;right:0;bottom:0;width:40px;border:none;background:none;color:#8A98A8;font-size:12.5px;font-weight:600">{{ pwdToggleLabel }}</button>
                   </div>
                 </div>
+                </sc-if>
                 <sc-if value="{{ hasLoginError }}" hint-placeholder-val="{{ false }}">
                   <div style="margin-top:10px;font-size:12.5px;color:#D62839">{{ loginError }}</div>
                 </sc-if>
@@ -408,6 +410,7 @@ input,textarea,select{font-family:inherit}
                     <div style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Adresse e-mail</div>
                     <input value="{{ suEmail }}" onChange="{{ onSuEmail }}" placeholder="marie.dubois@exemple.ch" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:13px 15px;font-size:14px;outline:none">
                   </div>
+                  <sc-if value="{{ showPwdFields }}" hint-placeholder-val="{{ true }}">
                   <div>
                     <div style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Mot de passe</div>
                     <div style="position:relative">
@@ -419,6 +422,7 @@ input,textarea,select{font-family:inherit}
                     <div style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Confirmer le mot de passe</div>
                     <input id="su-pwd2" type="{{ suPwdFieldType }}" value="{{ suPwd2 }}" onChange="{{ onSuPwd2 }}" onKeyDown="{{ onSuPwdKeyDown }}" placeholder="Confirmer le mot de passe" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:13px 15px;font-size:14px;outline:none">
                   </div>
+                  </sc-if>
                   <div style="border-top:1px solid rgba(27,42,65,.08);padding-top:14px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700">Facultatif</div>
                   <div>
                     <div style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:7px">Identifiant</div>
@@ -1250,6 +1254,7 @@ class Component extends DCLogic {
       pwdToggleLabel: s.pwdVisible ? "Masquer" : "Afficher",
       togglePwdVisible: () => this.setState({ pwdVisible: !s.pwdVisible }),
       onLoginSubmit: (e) => { e.preventDefault(); doLogin(); },
+      showPwdFields: !Store.PASSWORDLESS,
       hasLoginError: !!s.loginError, loginError: s.loginError,
       doLogin,
 
