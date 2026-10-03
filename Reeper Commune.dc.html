@@ -1718,6 +1718,227 @@ select,textarea,input{font-family:inherit}
       </div>
     </sc-if>
 
+    <sc-if value="{{ isStats }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:{{ pagePad }};display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
+          <div style="flex:1;min-width:220px">
+            <h1 style="margin:0;font-family:Georgia,Cambria,serif;font-size:23px;font-weight:700;letter-spacing:-.3px">Statistiques</h1>
+            <div style="font-size:12.5px;color:#8A98A8;margin-top:3px">{{ sxScopeLabel }}</div>
+          </div>
+          <button onClick="{{ openSxExport }}" style="border:none;background:#1B2A41;color:#fff;border-radius:10px;padding:11px 18px;font-size:13.5px;font-weight:700">📄 Exporter en PDF</button>
+        </div>
+
+        <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:14px">
+          <div style="display:grid;grid-template-columns:{{ sxFilterCols }};gap:12px">
+            <label style="display:flex;flex-direction:column;gap:6px;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700">Période
+              <select value="{{ sxPeriod }}" onChange="{{ onSxPeriod }}" style="border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:10px 12px;font-size:13.5px;background:#fff;color:#1B2A41;text-transform:none;letter-spacing:0;font-weight:500">
+                <sc-for list="{{ sxPeriodOptions }}" as="o" hint-placeholder-count="6"><option value="{{ o }}">{{ o }}</option></sc-for>
+              </select>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:6px;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700">Regroupement
+              <select value="{{ sxGroup }}" onChange="{{ onSxGroup }}" style="border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:10px 12px;font-size:13.5px;background:#fff;color:#1B2A41;text-transform:none;letter-spacing:0;font-weight:500">
+                <sc-for list="{{ sxGroupOptions }}" as="o" hint-placeholder-count="3"><option value="{{ o }}">{{ o }}</option></sc-for>
+              </select>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:6px;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700">Catégorie
+              <select value="{{ sxCat }}" onChange="{{ onSxCat }}" style="border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:10px 12px;font-size:13.5px;background:#fff;color:#1B2A41;text-transform:none;letter-spacing:0;font-weight:500">
+                <sc-for list="{{ sxCatOptions }}" as="o" hint-placeholder-count="5"><option value="{{ o }}">{{ o }}</option></sc-for>
+              </select>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:6px;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700">Service
+              <select value="{{ sxService }}" onChange="{{ onSxService }}" disabled="{{ sxServiceLocked }}" style="border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:10px 12px;font-size:13.5px;background:#fff;color:#1B2A41;text-transform:none;letter-spacing:0;font-weight:500">
+                <sc-for list="{{ sxServiceOptions }}" as="o" hint-placeholder-count="4"><option value="{{ o }}">{{ o }}</option></sc-for>
+              </select>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:6px;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700">Statut
+              <select value="{{ sxStatus }}" onChange="{{ onSxStatus }}" style="border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:10px 12px;font-size:13.5px;background:#fff;color:#1B2A41;text-transform:none;letter-spacing:0;font-weight:500">
+                <sc-for list="{{ sxStatusOptions }}" as="o" hint-placeholder-count="5"><option value="{{ o }}">{{ o }}</option></sc-for>
+              </select>
+            </label>
+          </div>
+          <sc-if value="{{ sxCustom }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;gap:12px;flex-wrap:wrap">
+              <label style="display:flex;flex-direction:column;gap:6px;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700">Du
+                <input type="date" value="{{ sxFrom }}" onChange="{{ onSxFrom }}" style="border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:9px 12px;font-size:13.5px;color:#1B2A41" />
+              </label>
+              <label style="display:flex;flex-direction:column;gap:6px;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700">Au
+                <input type="date" value="{{ sxTo }}" onChange="{{ onSxTo }}" style="border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:9px 12px;font-size:13.5px;color:#1B2A41" />
+              </label>
+            </div>
+          </sc-if>
+          <div style="font-size:12px;color:#8A98A8">{{ sxRangeLabel }}</div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:{{ sxKpiCols }};gap:12px">
+          <sc-for list="{{ sxKpis }}" as="k" hint-placeholder-count="4">
+            <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;padding:16px 18px">
+              <div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700">{{ k.label }}</div>
+              <div style="font-family:Georgia,Cambria,serif;font-size:28px;font-weight:700;margin-top:8px;color:#1B2A41">{{ k.value }}</div>
+              <div style="font-size:12px;color:#8A98A8;margin-top:3px">{{ k.hint }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;padding:18px 20px">
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px">
+            <span class="rp-ic rp-ic-navy">📊</span>
+            <div style="flex:1;min-width:160px">
+              <div style="font-family:Georgia,Cambria,serif;font-size:15.5px;font-weight:700">Reeps par période</div>
+              <div style="font-size:12px;color:#8A98A8;margin-top:2px">{{ sxGroupLabel }}</div>
+            </div>
+            <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:#48566B"><span style="width:10px;height:10px;border-radius:3px;background:#1B2A41"></span>Reçus</span>
+            <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:#48566B"><span style="width:10px;height:10px;border-radius:3px;background:#3F8F63"></span>Traités</span>
+          </div>
+          <sc-if value="{{ sxHasData }}" hint-placeholder-val="{{ true }}">
+            <div style="overflow-x:auto">
+              <div style="display:flex;align-items:flex-end;gap:6px;height:190px;min-width:{{ sxChartMinW }}">
+                <sc-for list="{{ sxBars }}" as="b" hint-placeholder-count="8">
+                  <div title="{{ b.tip }}" style="flex:1;min-width:14px;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px">
+                    <div style="font-size:10.5px;color:#48566B;font-weight:600;height:13px">{{ b.recvLabel }}</div>
+                    <div style="width:100%;display:flex;align-items:flex-end;justify-content:center;gap:2px;height:130px">
+                      <div style="flex:1;max-width:22px;background:#1B2A41;border-radius:4px 4px 0 0;height:{{ b.recvH }}"></div>
+                      <div style="flex:1;max-width:22px;background:#3F8F63;border-radius:4px 4px 0 0;height:{{ b.treatH }}"></div>
+                    </div>
+                    <div style="font-size:10px;color:#8A98A8;height:13px;white-space:nowrap">{{ b.label }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ sxNoData }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:30px 10px;text-align:center;font-size:13px;color:#8A98A8">Aucun Reep pour ces critères.</div>
+          </sc-if>
+        </div>
+
+        <div style="display:grid;grid-template-columns:{{ sxBreakCols }};gap:12px">
+          <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;padding:18px 20px">
+            <div style="font-family:Georgia,Cambria,serif;font-size:15px;font-weight:700;margin-bottom:12px">Par catégorie</div>
+            <sc-for list="{{ sxByCat }}" as="r" hint-placeholder-count="4">
+              <div style="margin-bottom:11px">
+                <div style="display:flex;justify-content:space-between;gap:8px;font-size:12.5px;color:#1B2A41"><span>{{ r.label }}</span><b>{{ r.count }} <span style="font-weight:400;color:#8A98A8">· {{ r.pct }}</span></b></div>
+                <div style="height:6px;background:#EEF2F5;border-radius:999px;margin-top:5px;overflow:hidden"><div style="height:100%;width:{{ r.w }};background:#1B2A41;border-radius:999px"></div></div>
+              </div>
+            </sc-for>
+            <sc-if value="{{ sxNoData }}" hint-placeholder-val="{{ false }}"><div style="font-size:12.5px;color:#8A98A8">—</div></sc-if>
+          </div>
+          <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;padding:18px 20px">
+            <div style="font-family:Georgia,Cambria,serif;font-size:15px;font-weight:700;margin-bottom:12px">Par service</div>
+            <sc-for list="{{ sxByService }}" as="r" hint-placeholder-count="4">
+              <div style="margin-bottom:11px">
+                <div style="display:flex;justify-content:space-between;gap:8px;font-size:12.5px;color:#1B2A41"><span>{{ r.label }}</span><b>{{ r.count }} <span style="font-weight:400;color:#8A98A8">· {{ r.pct }}</span></b></div>
+                <div style="height:6px;background:#EEF2F5;border-radius:999px;margin-top:5px;overflow:hidden"><div style="height:100%;width:{{ r.w }};background:#7A6BC4;border-radius:999px"></div></div>
+              </div>
+            </sc-for>
+            <sc-if value="{{ sxNoData }}" hint-placeholder-val="{{ false }}"><div style="font-size:12.5px;color:#8A98A8">—</div></sc-if>
+          </div>
+          <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;padding:18px 20px">
+            <div style="font-family:Georgia,Cambria,serif;font-size:15px;font-weight:700;margin-bottom:12px">Par statut</div>
+            <sc-for list="{{ sxByStatus }}" as="r" hint-placeholder-count="4">
+              <div style="margin-bottom:11px">
+                <div style="display:flex;justify-content:space-between;gap:8px;font-size:12.5px;color:#1B2A41"><span>{{ r.label }}</span><b>{{ r.count }} <span style="font-weight:400;color:#8A98A8">· {{ r.pct }}</span></b></div>
+                <div style="height:6px;background:#EEF2F5;border-radius:999px;margin-top:5px;overflow:hidden"><div style="height:100%;width:{{ r.w }};background:{{ r.color }};border-radius:999px"></div></div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:hidden">
+          <div style="padding:16px 20px;font-family:Georgia,Cambria,serif;font-size:15px;font-weight:700">Détail par période</div>
+          <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;padding:11px 20px;background:#FAFBFC;border-top:1px solid rgba(27,42,65,.08);border-bottom:1px solid rgba(27,42,65,.08);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700">
+            <span>Période</span><span>Reçus</span><span>Traités</span><span>Taux de traitement</span>
+          </div>
+          <sc-for list="{{ sxTable }}" as="t" hint-placeholder-count="5">
+            <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;padding:11px 20px;border-bottom:1px solid rgba(27,42,65,.06);font-size:13px;color:#1B2A41">
+              <span>{{ t.full }}</span><span>{{ t.recv }}</span><span>{{ t.treat }}</span><span>{{ t.rate }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ sxExportOpen }}" hint-placeholder-val="{{ false }}">
+      <div class="rp-export-sheet" style="position:fixed;inset:0;background:#fff;z-index:300;overflow:auto;-webkit-print-color-adjust:exact;print-color-adjust:exact">
+        <div class="no-print" style="padding:14px 24px;border-bottom:1px solid rgba(27,42,65,.12);display:flex;align-items:center;gap:12px;flex-wrap:wrap;position:sticky;top:0;background:#fff;z-index:1">
+          <button onClick="{{ closeSxExport }}" style="border:1px solid rgba(27,42,65,.14);background:#fff;border-radius:9px;padding:9px 14px;font-size:13px;font-weight:600;color:#1B2A41">‹ Fermer</button>
+          <div style="flex:1"></div>
+          <button onClick="{{ doPrint }}" style="border:none;background:#1B2A41;color:#fff;border-radius:9px;padding:10px 16px;font-size:13px;font-weight:700">🖨️ Imprimer / Enregistrer en PDF</button>
+        </div>
+        <div class="rp-export-body" style="max-width:760px;margin:0 auto;padding:44px 32px">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;border-bottom:2px solid #1B2A41;padding-bottom:16px;margin-bottom:22px">
+            <span style="display:flex;align-items:baseline;gap:9px">
+              <span style="display:flex;align-items:flex-end;gap:3px">
+                <span style="font-family:Georgia,Cambria,serif;font-size:25px;font-weight:700;line-height:1;color:#1B2A41">R</span>
+                <span style="width:7px;height:7px;border-radius:50%;background:#D62839;margin-bottom:3px"></span>
+              </span>
+              <span style="font-family:Georgia,Cambria,serif;font-size:20px;font-weight:700;color:#1B2A41;letter-spacing:-.3px">Reeper</span>
+            </span>
+            <span style="font-size:12px;color:#48566B">Commune de {{ communeName }}</span>
+          </div>
+          <div style="font-family:Georgia,Cambria,serif;font-size:19px;font-weight:700;color:#1B2A41;margin-bottom:6px">Rapport statistique des signalements</div>
+          <div style="font-size:12.5px;color:#48566B;line-height:1.6;margin-bottom:20px">{{ sxRangeLabel }}<br>{{ sxFilterSummary }}</div>
+
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px">
+            <sc-for list="{{ sxKpis }}" as="k" hint-placeholder-count="4">
+              <div style="border:1px solid rgba(27,42,65,.2);border-radius:8px;padding:11px 13px">
+                <div style="font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#5A6B7E;font-weight:700">{{ k.label }}</div>
+                <div style="font-family:Georgia,Cambria,serif;font-size:22px;font-weight:700;margin-top:5px;color:#1B2A41">{{ k.value }}</div>
+                <div style="font-size:10.5px;color:#5A6B7E;margin-top:2px">{{ k.hint }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#5A6B7E;font-weight:700;margin-bottom:8px">Évolution — {{ sxGroupLabel }}</div>
+          <div style="display:flex;align-items:flex-end;gap:5px;height:150px;margin-bottom:22px;border-bottom:1px solid rgba(27,42,65,.25)">
+            <sc-for list="{{ sxBars }}" as="b" hint-placeholder-count="8">
+              <div style="flex:1;min-width:8px;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px">
+                <div style="font-size:9.5px;color:#48566B;font-weight:600;min-height:11px">{{ b.recvLabel }}</div>
+                <div style="width:100%;display:flex;align-items:flex-end;justify-content:center;gap:2px;height:100px">
+                  <div style="flex:1;max-width:18px;background:#1B2A41;height:{{ b.recvH }}"></div>
+                  <div style="flex:1;max-width:18px;background:#3F8F63;height:{{ b.treatH }}"></div>
+                </div>
+                <div style="font-size:9px;color:#5A6B7E;height:11px;white-space:nowrap">{{ b.label }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-bottom:22px">
+            <div>
+              <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#5A6B7E;font-weight:700;margin-bottom:8px">Par catégorie</div>
+              <sc-for list="{{ sxByCat }}" as="r" hint-placeholder-count="4">
+                <div style="display:flex;justify-content:space-between;gap:6px;font-size:11.5px;color:#1B2A41;padding:4px 0;border-bottom:1px solid rgba(27,42,65,.1)"><span>{{ r.label }}</span><b>{{ r.count }} · {{ r.pct }}</b></div>
+              </sc-for>
+            </div>
+            <div>
+              <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#5A6B7E;font-weight:700;margin-bottom:8px">Par service</div>
+              <sc-for list="{{ sxByService }}" as="r" hint-placeholder-count="4">
+                <div style="display:flex;justify-content:space-between;gap:6px;font-size:11.5px;color:#1B2A41;padding:4px 0;border-bottom:1px solid rgba(27,42,65,.1)"><span>{{ r.label }}</span><b>{{ r.count }} · {{ r.pct }}</b></div>
+              </sc-for>
+            </div>
+            <div>
+              <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#5A6B7E;font-weight:700;margin-bottom:8px">Par statut</div>
+              <sc-for list="{{ sxByStatus }}" as="r" hint-placeholder-count="4">
+                <div style="display:flex;justify-content:space-between;gap:6px;font-size:11.5px;color:#1B2A41;padding:4px 0;border-bottom:1px solid rgba(27,42,65,.1)"><span>{{ r.label }}</span><b>{{ r.count }} · {{ r.pct }}</b></div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#5A6B7E;font-weight:700;margin-bottom:6px">Détail par période</div>
+          <div style="border-top:1px solid rgba(27,42,65,.25)">
+            <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;padding:6px 0;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#5A6B7E;font-weight:700;border-bottom:1px solid rgba(27,42,65,.25)">
+              <span>Période</span><span>Reçus</span><span>Traités</span><span>Taux</span>
+            </div>
+            <sc-for list="{{ sxTable }}" as="t" hint-placeholder-count="5">
+              <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;padding:5px 0;font-size:11.5px;color:#1B2A41;border-bottom:1px solid rgba(27,42,65,.1)">
+                <span>{{ t.full }}</span><span>{{ t.recv }}</span><span>{{ t.treat }}</span><span>{{ t.rate }}</span>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="margin-top:30px;padding-top:12px;border-top:1px solid rgba(27,42,65,.18);font-size:10.5px;line-height:1.6;color:#5A6B7E">Statistiques générées par Reeper à partir des signalements citoyens de la commune. Les informations proviennent des auteurs des signalements et n'ont pas été vérifiées par Reeper. Les Reeps supprimés ou en cours de modération ne sont pas comptabilisés. Édité le {{ sxEditedDate }} par {{ agentName }}.</div>
+        </div>
+      </div>
+    </sc-if>
+
     <sc-if value="{{ isLegal }}" hint-placeholder-val="{{ false }}">
       <div style="padding:{{ pagePad }};display:flex;flex-direction:column;gap:20px">
         <div style="display:flex;align-items:center;gap:14px">
@@ -1840,6 +2061,107 @@ const fmtDateTime = (ts) => {
   return d.toLocaleDateString("fr-CH", { day: "2-digit", month: "2-digit" }) + " " + d.toLocaleTimeString("fr-CH", { hour: "2-digit", minute: "2-digit" });
 };
 
+const SX_PERIODS = ["7 derniers jours", "30 derniers jours", "Ce mois-ci", "Mois dernier", "3 derniers mois", "Cette année", "Depuis le début", "Personnalisée"];
+const SX_GROUPS = ["Jour", "Semaine", "Mois"];
+const SX_MONTHS = ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."];
+const sxPad = (n) => String(n).padStart(2, "0");
+const sxDayStart = (ts) => { const d = new Date(ts); d.setHours(0, 0, 0, 0); return d.getTime(); };
+const sxAddDays = (ts, n) => { const d = new Date(ts); d.setDate(d.getDate() + n); return d.getTime(); };
+const sxWeekStart = (ts) => { const d = new Date(sxDayStart(ts)); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d.getTime(); };
+const sxMonthStart = (ts, offset) => { const d = new Date(ts); return new Date(d.getFullYear(), d.getMonth() + (offset || 0), 1).getTime(); };
+const sxIsoWeek = (ts) => {
+  const d = new Date(sxDayStart(ts));
+  d.setDate(d.getDate() + 3 - ((d.getDay() + 6) % 7));
+  const w1 = new Date(d.getFullYear(), 0, 4);
+  return 1 + Math.round(((d - w1) / 86400000 - 3 + ((w1.getDay() + 6) % 7)) / 7);
+};
+const sxShort = (ts) => { const d = new Date(ts); return sxPad(d.getDate()) + "." + sxPad(d.getMonth() + 1); };
+const sxFull = (ts) => { const d = new Date(ts); return sxPad(d.getDate()) + "." + sxPad(d.getMonth() + 1) + "." + d.getFullYear(); };
+const sxParseDate = (str) => { if (!str) return null; const t = new Date(str + "T00:00:00").getTime(); return isNaN(t) ? null : t; };
+
+const sxRange = (period, fromStr, toStr, earliest) => {
+  const now = Date.now(), today = sxDayStart(now), tomorrow = sxAddDays(today, 1);
+  if (period === "7 derniers jours") return { from: sxAddDays(today, -6), to: tomorrow };
+  if (period === "30 derniers jours") return { from: sxAddDays(today, -29), to: tomorrow };
+  if (period === "Ce mois-ci") return { from: sxMonthStart(now, 0), to: sxMonthStart(now, 1) };
+  if (period === "Mois dernier") return { from: sxMonthStart(now, -1), to: sxMonthStart(now, 0) };
+  if (period === "3 derniers mois") return { from: sxMonthStart(now, -2), to: sxMonthStart(now, 1) };
+  if (period === "Cette année") return { from: new Date(new Date(now).getFullYear(), 0, 1).getTime(), to: tomorrow };
+  if (period === "Personnalisée") {
+    const f = sxParseDate(fromStr), t = sxParseDate(toStr);
+    const from = f != null ? f : sxDayStart(earliest);
+    const to = t != null ? sxAddDays(t, 1) : tomorrow;
+    return to > from ? { from, to } : { from: to - 86400000, to: from + 86400000 };
+  }
+  return { from: sxDayStart(earliest), to: tomorrow };
+};
+
+const sxCompute = (reeps, f) => {
+  const earliest = reeps.length ? Math.min.apply(null, reeps.map((r) => r.createdAt)) : Date.now();
+  const range = sxRange(f.period, f.from, f.to, earliest);
+  const list = reeps.filter((r) => {
+    if (r.createdAt < range.from || r.createdAt >= range.to) return false;
+    if (f.cat !== "Toutes les catégories" && (r.path && r.path[0]) !== f.cat) return false;
+    if (f.service !== "Tous les services" && r.service !== f.service) return false;
+    if (f.status !== "Tous les statuts" && r.status !== f.status) return false;
+    return true;
+  });
+  const days = (range.to - range.from) / 86400000;
+  let group = f.group, adjusted = false;
+  if (group === "Jour" && days > 93) { group = "Semaine"; adjusted = true; }
+  if (group === "Semaine" && days > 800) { group = "Mois"; adjusted = true; }
+  const startOf = (ts) => group === "Jour" ? sxDayStart(ts) : group === "Semaine" ? sxWeekStart(ts) : sxMonthStart(ts, 0);
+  const nextOf = (ts) => group === "Jour" ? sxAddDays(ts, 1) : group === "Semaine" ? sxAddDays(ts, 7) : sxMonthStart(ts, 1);
+  const buckets = [];
+  for (let st = startOf(range.from); st < range.to && buckets.length < 400; st = nextOf(st)) buckets.push({ start: st, end: nextOf(st), recv: 0, treat: 0 });
+  list.forEach((r) => {
+    const b = buckets.find((x) => r.createdAt >= x.start && r.createdAt < x.end);
+    if (!b) return;
+    b.recv++;
+    if (r.status === "Traité") b.treat++;
+  });
+  const maxRecv = Math.max.apply(null, [1].concat(buckets.map((b) => b.recv)));
+  const step = Math.ceil(buckets.length / 14) || 1;
+  const withLabels = buckets.map((b, i) => {
+    const d = new Date(b.start);
+    let label, full;
+    if (group === "Jour") { label = sxShort(b.start); full = sxFull(b.start); }
+    else if (group === "Semaine") { label = "S" + sxIsoWeek(b.start); full = "S" + sxIsoWeek(b.start) + " · " + sxShort(b.start) + " – " + sxFull(sxAddDays(b.end, -1)); }
+    else { label = SX_MONTHS[d.getMonth()] + (buckets.length > 12 ? " " + String(d.getFullYear()).slice(2) : ""); full = d.toLocaleDateString("fr-CH", { month: "long", year: "numeric" }); }
+    const h = (v) => v === 0 ? "0%" : Math.max(4, Math.round(v / maxRecv * 100)) + "%";
+    return {
+      label: i % step === 0 ? label : "", full, recv: b.recv, treat: b.treat,
+      recvLabel: buckets.length <= 31 ? String(b.recv) : "", recvH: h(b.recv), treatH: h(b.treat),
+      tip: full + " — " + b.recv + " reçu(s), " + b.treat + " traité(s)",
+      rate: b.recv ? Math.round(b.treat / b.recv * 100) + " %" : "—"
+    };
+  });
+  const total = list.length;
+  const pct = (n) => total ? Math.round(n / total * 1000) / 10 : 0;
+  const breakdown = (keyFn, order) => {
+    const m = {};
+    list.forEach((r) => { const k = keyFn(r); m[k] = (m[k] || 0) + 1; });
+    const keys = order ? order : Object.keys(m).sort((a, b) => m[b] - m[a]);
+    return keys.map((k) => ({ label: k, count: m[k] || 0, pct: String(pct(m[k] || 0)).replace(".", ",") + " %", w: pct(m[k] || 0) + "%" }));
+  };
+  const treated = list.filter((r) => r.status === "Traité");
+  const delays = list.filter((r) => r.closedAt && r.closedAt >= r.createdAt).map((r) => r.closedAt - r.createdAt);
+  const avgMs = delays.length ? delays.reduce((a, b) => a + b, 0) / delays.length : null;
+  const avgLabel = avgMs == null ? "—" : avgMs < 86400000 ? Math.max(1, Math.round(avgMs / 3600000)) + " h" : (Math.round(avgMs / 8640000) / 10).toString().replace(".", ",") + " j";
+  return {
+    range, group, adjusted, total, buckets: withLabels,
+    kpis: [
+      { label: "Reeps reçus", value: String(total), hint: "sur la période" },
+      { label: "Traités", value: String(treated.length), hint: total ? pct(treated.length).toString().replace(".", ",") + " % des Reeps" : "—" },
+      { label: "En attente", value: String(total - treated.length), hint: "nouveaux, en cours, planifiés" },
+      { label: "Délai moyen", value: avgLabel, hint: delays.length ? "sur " + delays.length + " Reep(s) clôturé(s)" : "aucun Reep clôturé" }
+    ],
+    byCat: breakdown((r) => (r.path && r.path[0]) || "Autre"),
+    byService: breakdown((r) => r.service || "—"),
+    byStatus: breakdown((r) => r.status, ["Nouveau", "En cours", "Planifié (travaux)", "Traité"])
+  };
+};
+
 const flattenTree = (node, depth) => {
   let out = [];
   Object.keys(node).forEach((k) => {
@@ -1908,6 +2230,7 @@ class Component extends DCLogic {
     preview: false, note: "", closeNote: "", closePhotoDataUrl: null, service: null, status: null, saved: false, closed: false, selPhotoIdx: 0, lightboxOpen: false,
     rightsQuery: "", rightsService: "Tous", rightsRole: "Tous",
     abuseReasons: [], abuseNote: "", abuseError: "",
+    sxPeriod: "Depuis le début", sxFrom: "", sxTo: "", sxGroup: "Semaine", sxCat: "Toutes les catégories", sxService: "Tous les services", sxStatus: "Tous les statuts", sxExportOpen: false,
     detailSection: null, deleteReepConfirm: false, assignSelected: null, assignSaved: false,
     exportOpen: false,
     agentsIn: [(Store.getSession() || FALLBACK_SESSION).initials], profileOpen: false, configTab: "Catégories", catPath: [], newCatParent: [],
@@ -2089,13 +2412,24 @@ class Component extends DCLogic {
       .concat(realConvs).concat(groupConvs).concat(pendingEntry);
 
     const msgBadge = String((CONVS.filter((c) => c.unread && !s.readConvs.includes(c.who)).length + realInbox.filter((c) => c.unread).length + groupConvs.filter((c) => c.unread).length) || "");
+    const roleLc = (session.role || "").toLowerCase();
+    const sxIsChef = !isAdmin && roleLc.indexOf("chef") >= 0;
+    const canStats = isAdmin || sxIsChef;
     const navDef = [
       { label: "Tableau de bord", key: "dash", badge: "" },
       { label: "Carte", key: "map", badge: String(REEPS.length) },
       { label: "Reeps", key: "list", badge: String(stats.byStatus["Nouveau"] || 0) },
-      { label: "Messagerie", key: "msg", badge: msgBadge },
+      { label: "Messagerie", key: "msg", badge: msgBadge }
+    ].concat(canStats ? [{ label: "Statistiques", key: "stats", badge: "" }] : []).concat([
       { label: "Configuration", key: "config", badge: "" }
-    ];
+    ]);
+
+    const sxLockedService = sxIsChef ? (session.service || "") : "";
+    const sxF = { period: s.sxPeriod, from: s.sxFrom, to: s.sxTo, group: s.sxGroup, cat: s.sxCat, service: sxLockedService || s.sxService, status: s.sxStatus };
+    const sx = canStats ? sxCompute(REEPS, sxF) : sxCompute([], sxF);
+    const sxCatSet = {};
+    Object.keys(Store.TREE).forEach((k) => { sxCatSet[k] = true; });
+    REEPS.forEach((r) => { if (r.path && r.path[0]) sxCatSet[r.path[0]] = true; });
 
     const withStatus = (d) => ({ ...d, ...STATUS[d.status], date: fmtDate(d.createdAt) });
     const rows = REEPS.filter((d) => s.filter === "Tous" || d.status === s.filter || (s.filter === "En cours" && d.status === "Planifié (travaux)")).map((d) => ({ ...withStatus(d), onClick: () => this.open(d.id) }));
@@ -2122,7 +2456,7 @@ class Component extends DCLogic {
 
     const dev = s.device || "Bureau";
     const mobile = dev === "Mobile", tablet = dev === "Tablette", desk = dev === "Bureau";
-    const SHORT = { "Tableau de bord": "Bord", "Carte": "Carte", "Reeps": "Liste", "Messagerie": "Messages", "Configuration": "Config" };
+    const SHORT = { "Tableau de bord": "Bord", "Carte": "Carte", "Reeps": "Liste", "Messagerie": "Messages", "Statistiques": "Stats", "Configuration": "Config" };
     const STATUS_DOT = { Nouveau: "#D62839", "En cours": "#E8A33D", "Planifié (travaux)": "#7A6BC4", Traité: "#3F8F63" };
     const markersFor = (list) => JSON.stringify(list.map((d) => ({ id: d.id, lat: d.lat, lon: d.lon, color: STATUS_DOT[d.status] || "#D62839", label: d.title })));
 
@@ -2179,6 +2513,39 @@ class Component extends DCLogic {
       ],
 
       isAdmin,
+
+      isStats: s.screen === "stats" && canStats,
+      sxScopeLabel: "Commune de " + commune + (sxLockedService ? " · Service " + sxLockedService : ""),
+      sxPeriod: s.sxPeriod, sxPeriodOptions: SX_PERIODS,
+      onSxPeriod: (e) => this.setState({ sxPeriod: e.target.value }),
+      sxGroup: s.sxGroup, sxGroupOptions: SX_GROUPS,
+      onSxGroup: (e) => this.setState({ sxGroup: e.target.value }),
+      sxCat: s.sxCat, sxCatOptions: ["Toutes les catégories"].concat(Object.keys(sxCatSet)),
+      onSxCat: (e) => this.setState({ sxCat: e.target.value }),
+      sxService: sxLockedService || s.sxService, sxServiceLocked: !!sxLockedService,
+      sxServiceOptions: sxLockedService ? [sxLockedService] : ["Tous les services"].concat(serviceNames),
+      onSxService: (e) => this.setState({ sxService: e.target.value }),
+      sxStatus: s.sxStatus, sxStatusOptions: ["Tous les statuts", "Nouveau", "En cours", "Planifié (travaux)", "Traité"],
+      onSxStatus: (e) => this.setState({ sxStatus: e.target.value }),
+      sxCustom: s.sxPeriod === "Personnalisée",
+      sxFrom: s.sxFrom, onSxFrom: (e) => this.setState({ sxFrom: e.target.value }),
+      sxTo: s.sxTo, onSxTo: (e) => this.setState({ sxTo: e.target.value }),
+      sxFilterCols: mobile ? "1fr" : tablet ? "1fr 1fr 1fr" : "repeat(5,1fr)",
+      sxKpiCols: mobile ? "1fr 1fr" : "repeat(4,1fr)",
+      sxBreakCols: desk ? "repeat(3,1fr)" : "1fr",
+      sxRangeLabel: "Du " + sxFull(sx.range.from) + " au " + sxFull(sx.range.to - 86400000) + " · " + sx.total + " Reep" + (sx.total > 1 ? "s" : ""),
+      sxGroupLabel: "Regroupés par " + (sx.group === "Jour" ? "jour" : sx.group === "Semaine" ? "semaine" : "mois") + (sx.adjusted ? " (ajusté à la durée de la période)" : "") + " · date de réception",
+      sxFilterSummary: "Catégorie : " + s.sxCat.replace("Toutes les catégories", "toutes") + " · Service : " + (sxLockedService || s.sxService).replace("Tous les services", "tous") + " · Statut : " + s.sxStatus.replace("Tous les statuts", "tous"),
+      sxKpis: sx.kpis,
+      sxBars: sx.buckets, sxChartMinW: Math.max(240, sx.buckets.length * 20) + "px",
+      sxHasData: sx.total > 0, sxNoData: sx.total === 0,
+      sxByCat: sx.byCat, sxByService: sx.byService,
+      sxByStatus: sx.byStatus.map((r) => ({ ...r, color: (STATUS[r.label] || {}).dot || "#8A98A8" })),
+      sxTable: sx.buckets,
+      sxEditedDate: fmtDate(Date.now()),
+      sxExportOpen: s.sxExportOpen,
+      openSxExport: () => this.setState({ sxExportOpen: true }),
+      closeSxExport: () => this.setState({ sxExportOpen: false }),
       notifOpen: s.notifOpen,
       notifBorder: s.notifOpen ? "#1B2A41" : "rgba(27,42,65,.14)",
       toggleNotif: () => this.setState({ notifOpen: !s.notifOpen, profileOpen: false }),
