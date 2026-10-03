@@ -61,7 +61,7 @@ select,textarea,input{font-family:inherit}
       <div style="flex:1"></div>
       <div style="display:{{ navDisplay }};gap:4px">
         <sc-for list="{{ nav }}" as="n" hint-placeholder-count="4">
-          <button onClick="{{ n.onClick }}" style="border:none;background:{{ n.bg }};color:{{ n.fg }};border-radius:9px;padding:10px 12px;font-size:13.5px;font-weight:{{ n.weight }};display:flex;align-items:center;gap:7px;white-space:nowrap">
+          <button onClick="{{ n.onClick }}" style="border:none;background:{{ n.bg }};color:{{ n.fg }};border-radius:9px;padding:10px 10px;font-size:13.5px;font-weight:{{ n.weight }};display:flex;align-items:center;gap:6px;white-space:nowrap">
             <span>{{ n.short }}</span>
             <span style="font-size:11px;font-weight:700;color:{{ n.badgeFg }}">{{ n.badge }}</span>
           </button>
@@ -2470,8 +2470,8 @@ class Component extends DCLogic {
       })),
       hasSyncToast: !!s.syncToast, syncToast: s.syncToast,
       dismissSyncToast: () => this.setState({ syncToast: "" }),
-      headPad: mobile ? "0 14px" : "0 28px",
-      headGap: mobile ? "10px" : tablet ? "18px" : "20px",
+      headPad: mobile ? "0 14px" : "0 22px",
+      headGap: mobile ? "10px" : tablet ? "18px" : "16px",
       deskOnly: mobile ? "none" : "block",
       navDisplay: mobile ? "none" : "flex",
       pagePad: mobile ? "18px 16px 26px" : tablet ? "22px 22px 30px" : "24px 28px 34px",
