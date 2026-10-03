@@ -57,11 +57,11 @@ select,textarea,input{font-family:inherit}
         <span style="font-family:Georgia,Cambria,serif;font-size:20px;font-weight:700;color:#1B2A41;letter-spacing:-.3px;line-height:1">Reeper</span>
       </button>
       <div style="width:1px;height:28px;background:rgba(27,42,65,.12);display:{{ deskOnly }}"></div>
-      <div style="font-size:14px;font-weight:600;color:#1B2A41;display:{{ deskOnly }}">Commune de {{ communeName }}</div>
+      <div style="font-size:14px;font-weight:600;color:#1B2A41;display:{{ deskOnly }};white-space:nowrap">Commune de {{ communeName }}</div>
       <div style="flex:1"></div>
       <div style="display:{{ navDisplay }};gap:4px">
         <sc-for list="{{ nav }}" as="n" hint-placeholder-count="4">
-          <button onClick="{{ n.onClick }}" style="border:none;background:{{ n.bg }};color:{{ n.fg }};border-radius:9px;padding:10px 15px;font-size:13.5px;font-weight:{{ n.weight }};display:flex;align-items:center;gap:9px">
+          <button onClick="{{ n.onClick }}" style="border:none;background:{{ n.bg }};color:{{ n.fg }};border-radius:9px;padding:10px 12px;font-size:13.5px;font-weight:{{ n.weight }};display:flex;align-items:center;gap:7px;white-space:nowrap">
             <span>{{ n.short }}</span>
             <span style="font-size:11px;font-weight:700;color:{{ n.badgeFg }}">{{ n.badge }}</span>
           </button>
@@ -2471,7 +2471,7 @@ class Component extends DCLogic {
       hasSyncToast: !!s.syncToast, syncToast: s.syncToast,
       dismissSyncToast: () => this.setState({ syncToast: "" }),
       headPad: mobile ? "0 14px" : "0 28px",
-      headGap: mobile ? "10px" : tablet ? "18px" : "28px",
+      headGap: mobile ? "10px" : tablet ? "18px" : "20px",
       deskOnly: mobile ? "none" : "block",
       navDisplay: mobile ? "none" : "flex",
       pagePad: mobile ? "18px 16px 26px" : tablet ? "22px 22px 30px" : "24px 28px 34px",
