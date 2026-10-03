@@ -196,7 +196,7 @@ input,textarea,select{font-family:inherit}
                   </span>
                 </button>
               </sc-for>
-              <div style="border-top:1px solid rgba(27,42,65,.08);padding-top:13px;font-size:11.5px;line-height:1.55;color:#8A98A8">Signalement anonyme. Aucune donnée personnelle n'est transmise à la commune.</div>
+              <div style="border-top:1px solid rgba(27,42,65,.08);padding-top:13px;font-size:11.5px;line-height:1.55;color:#8A98A8">Signalement anonyme. Votre identité n'est pas transmise à la commune.<br><br>Un signalement Reeper n'est pas un dépôt de plainte. Pour porter plainte, adressez-vous à la police.</div>
             </div>
 
             <div style="display:flex;flex-direction:column;gap:18px">
@@ -923,7 +923,7 @@ class Component extends DCLogic {
     const mapCenterLat = s.geoLat != null ? s.geoLat : romandieDefault.lat;
     const mapCenterLon = s.geoLon != null ? s.geoLon : romandieDefault.lon;
     const mapZoom = s.geoLat != null ? 16 : 10;
-    const rows = Store.getReeps({}).filter((d) => loggedIn && d.reporterAccount === session.key).map(deco).map((d, i) => ({
+    const rows = Store.getReeps({ includeModeration: true }).filter((d) => loggedIn && d.reporterAccount === session.key).map(deco).map((d, i) => ({
       ...d, onClick: () => this.setState({ sel: i, selPhotoIdx: 0 }),
       ring: "1px solid rgba(27,42,65,.1)",
       shadow: i === s.sel ? "0 6px 18px rgba(27,42,65,.12)" : "none"
@@ -1297,6 +1297,7 @@ class Component extends DCLogic {
         { title: "Données personnelles", body: "Le traitement des données respecte la loi fédérale sur la protection des données du 25 septembre 2020 (LPD, RS 235.1), notamment les principes de licéité, de proportionnalité et d'exactitude (art. 6 LPD) et le devoir d'information lors de la collecte (art. 19 à 21 LPD). Un signalement anonyme n'est associé à aucune donnée personnelle au sens de l'art. 5 let. a LPD." },
         { title: "Droits des personnes", body: "Toute personne concernée dispose d'un droit d'accès à ses données (art. 25 LPD) et peut adresser une réclamation au Préposé fédéral à la protection des données et à la transparence (art. 49 ss LPD)." },
         { title: "Propriété intellectuelle", body: "Le contenu, la marque et l'interface Reeper sont protégés par la loi fédérale sur le droit d'auteur (LDA, RS 231.1). Toute reproduction sans autorisation est interdite." },
+        { title: "Nature du signalement", body: "Un signalement Reeper n'est pas un dépôt de plainte. Il informe la commune d'une anomalie dans l'espace public ; pour porter plainte, adressez-vous à la police. Les informations transmises proviennent de l'auteur du signalement et ne sont pas vérifiées par Reeper. Les faux signalements et les propos injurieux ou contraires à la loi peuvent être masqués ou supprimés par Reeper." },
         { title: "Responsabilité", body: "Reeper transmet les signalements aux communes partenaires. Le traitement, les délais et la priorisation relèvent de la seule responsabilité de la commune concernée." },
         { title: "Contact", body: "Reeper Sàrl · Route de Divonne 5, 1260 Nyon · +41 22 365 14 80 · info@reeper.ch" }
       ],

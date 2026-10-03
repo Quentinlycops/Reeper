@@ -699,7 +699,12 @@ select,textarea,input{font-family:inherit}
               <span style="font-size:13px;color:#48566B;width:200px;flex:none">{{ r.place }}</span>
               <span style="font-size:12px;color:#8A98A8;width:170px;flex:none">Supprimé {{ r.deletedWhen }}</span>
               <button onClick="{{ r.onOpen }}" style="border:1px solid rgba(27,42,65,.14);background:#fff;border-radius:9px;padding:9px 14px;font-size:12.5px;font-weight:600;color:#1B2A41;flex:none">Ouvrir</button>
-              <button onClick="{{ r.onRestore }}" style="border:none;background:#1B2A41;color:#fff;border-radius:9px;padding:9px 14px;font-size:12.5px;font-weight:600;flex:none">Restaurer</button>
+              <sc-if value="{{ r.canRestore }}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{ r.onRestore }}" style="border:none;background:#1B2A41;color:#fff;border-radius:9px;padding:9px 14px;font-size:12.5px;font-weight:600;flex:none">Restaurer</button>
+              </sc-if>
+              <sc-if value="{{ r.moderated }}" hint-placeholder-val="{{ false }}">
+                <span style="font-size:11.5px;color:#9B1C2B;background:#FDF2F3;border-radius:999px;padding:5px 10px;font-weight:700;flex:none">Supprimé par modération</span>
+              </sc-if>
             </div>
           </sc-for>
           <sc-if value="{{ trashEmpty }}" hint-placeholder-val="{{ false }}">
@@ -871,7 +876,43 @@ select,textarea,input{font-family:inherit}
               <button onClick="{{ openSecTransfer }}" style="padding:12px 10px;border:1px solid rgba(27,42,65,.16);border-radius:14px;background:#fff;color:#1B2A41;font-size:13.5px;font-weight:600">↗️ Transférer</button>
               <button onClick="{{ openSecAssign }}" style="padding:12px 10px;border:1px solid rgba(27,42,65,.16);border-radius:14px;background:#fff;color:#1B2A41;font-size:13.5px;font-weight:600">👤 Attribuer</button>
               <button onClick="{{ openSecClose }}" style="padding:12px 10px;border:1px solid rgba(63,143,99,.4);border-radius:14px;background:#fff;color:#2E6B48;font-size:13.5px;font-weight:600">✅ Clôturer</button>
+              <button onClick="{{ openSecAbuse }}" style="grid-column:1 / -1;padding:11px 10px;border:1px solid rgba(214,40,57,.3);border-radius:14px;background:#fff;color:#D62839;font-size:13px;font-weight:600">🚩 Signaler un abus</button>
             </div>
+
+            <sc-if value="{{ secAbuseOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="position:fixed;inset:0;background:rgba(27,42,65,.32);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px" onClick="{{ closeDetailSection }}">
+                <div style="background:#fff;border-radius:14px;padding:20px 22px;max-width:480px;width:100%;max-height:85vh;overflow:auto;box-shadow:0 20px 50px rgba(27,42,65,.28)" onClick="{{ stopProp }}">
+                  <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+                    <span class="rp-ic rp-ic-red">🚩</span>
+                    <span style="flex:1;font-family:Georgia,Cambria,serif;font-size:17px;font-weight:700">Signaler un abus</span>
+                    <button onClick="{{ closeDetailSection }}" style="border:none;background:none;font-size:18px;color:#8A98A8">×</button>
+                  </div>
+                  <p style="margin:0 0 16px;font-size:12.5px;line-height:1.55;color:#5A6B7E">Ce Reep sera transmis à l'équipe Reeper pour examen. Il disparaît de vos listes en attendant la décision, et vous recevrez un retour par la messagerie.</p>
+                  <div style="display:flex;flex-direction:column;gap:16px">
+                    <div>
+                      <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:9px">Motif(s)</div>
+                      <div style="display:flex;flex-wrap:wrap;gap:8px">
+                        <sc-for list="{{ abuseReasonChips }}" as="c" hint-placeholder-count="4">
+                          <button onClick="{{ c.onClick }}" style="border:none;background:{{ c.bg }};color:{{ c.fg }};border-radius:14px;padding:10px 14px;font-size:12.5px;font-weight:700">{{ c.label }}</button>
+                        </sc-for>
+                      </div>
+                    </div>
+                    <div>
+                      <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:9px">Précision (facultatif)</div>
+                      <textarea value="{{ abuseNote }}" onChange="{{ onAbuseNote }}" rows="3" placeholder="Décrivez ce qui pose problème…" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:12px 13px;font-size:13.5px;line-height:1.5;color:#1B2A41;resize:none;outline:none;background:#fff"></textarea>
+                    </div>
+                    <sc-if value="{{ hasAbuseError }}" hint-placeholder-val="{{ false }}">
+                      <div style="font-size:12.5px;color:#D62839">{{ abuseError }}</div>
+                    </sc-if>
+                    <button onClick="{{ submitAbuse }}" style="width:100%;padding:14px;border:none;border-radius:10px;background:#D62839;color:#fff;font-size:14.5px;font-weight:600">Transmettre à Reeper</button>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ abusePendingBanner }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:11px 14px;background:#FDF2F3;border-radius:10px;font-size:12.5px;color:#9B1C2B;line-height:1.5">🚩 Abus signalé à Reeper — en cours d'examen.</div>
+            </sc-if>
 
             <sc-if value="{{ secStatusOpen }}" hint-placeholder-val="{{ false }}">
               <div style="position:fixed;inset:0;background:rgba(27,42,65,.32);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px" onClick="{{ closeDetailSection }}">
@@ -1035,7 +1076,7 @@ select,textarea,input{font-family:inherit}
 
             <div style="display:flex;flex-direction:column;gap:8px">
               <p style="margin:0;font-size:12px;color:#8A98A8;line-height:1.5">{{ dangerHint }}</p>
-              <sc-if value="{{ current.deleted }}" hint-placeholder-val="{{ false }}">
+              <sc-if value="{{ canRestore }}" hint-placeholder-val="{{ false }}">
                 <button onClick="{{ doRestore }}" style="width:100%;padding:12px;border:none;border-radius:10px;background:#1B2A41;color:#fff;font-size:13.5px;font-weight:600">Restaurer ce Reep</button>
               </sc-if>
               <sc-if value="{{ notDeleted }}" hint-placeholder-val="{{ true }}">
@@ -1098,6 +1139,7 @@ select,textarea,input{font-family:inherit}
             <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:6px">Description</div>
             <p style="margin:0;font-size:14px;line-height:1.65;color:#1B2A41">{{ exportDesc }}</p>
           </div>
+          <div style="margin-top:36px;padding-top:14px;border-top:1px solid rgba(27,42,65,.18);font-size:11px;line-height:1.6;color:#5A6B7E">{{ exportFooter }}</div>
         </div>
       </div>
     </sc-if>
@@ -1864,6 +1906,7 @@ class Component extends DCLogic {
     screen: "dash", sel: null, filter: "Tous", cat: "Toutes les catégories", view: "Carte",
     preview: false, note: "", closeNote: "", closePhotoDataUrl: null, service: null, status: null, saved: false, closed: false, selPhotoIdx: 0, lightboxOpen: false,
     rightsQuery: "", rightsService: "Tous", rightsRole: "Tous",
+    abuseReasons: [], abuseNote: "", abuseError: "",
     detailSection: null, deleteReepConfirm: false, assignSelected: null, assignSaved: false,
     exportOpen: false,
     agentsIn: [(Store.getSession() || FALLBACK_SESSION).initials], profileOpen: false, configTab: "Catégories", catPath: [], newCatParent: [],
@@ -2566,6 +2609,7 @@ class Component extends DCLogic {
         { title: "Données personnelles", body: "Le traitement des données respecte la loi fédérale sur la protection des données du 25 septembre 2020 (LPD, RS 235.1), notamment les principes de licéité, de proportionnalité et d'exactitude (art. 6 LPD) et le devoir d'information lors de la collecte (art. 19 à 21 LPD). Un signalement anonyme n'est associé à aucune donnée personnelle au sens de l'art. 5 let. a LPD." },
         { title: "Droits des personnes", body: "Toute personne concernée dispose d'un droit d'accès à ses données (art. 25 LPD) et peut adresser une réclamation au Préposé fédéral à la protection des données et à la transparence (art. 49 ss LPD)." },
         { title: "Propriété intellectuelle", body: "Le contenu, la marque et l'interface Reeper sont protégés par la loi fédérale sur le droit d'auteur (LDA, RS 231.1). Toute reproduction sans autorisation est interdite." },
+        { title: "Nature du signalement", body: "Un signalement Reeper n'est pas un dépôt de plainte. Il informe la commune d'une anomalie dans l'espace public ; pour porter plainte, adressez-vous à la police. Les informations transmises proviennent de l'auteur du signalement et ne sont pas vérifiées par Reeper. Les faux signalements et les propos injurieux ou contraires à la loi peuvent être masqués ou supprimés par Reeper." },
         { title: "Responsabilité", body: "Reeper transmet les signalements aux communes partenaires. Le traitement, les délais et la priorisation relèvent de la seule responsabilité de la commune concernée." },
         { title: "Contact", body: "Reeper Sàrl · Route de Divonne 5, 1260 Nyon · +41 22 365 14 80 · info@reeper.ch" }
       ],
@@ -2752,6 +2796,7 @@ class Component extends DCLogic {
       doPrint: () => window.print(),
       exportId: cur.id, exportCommune: commune, exportDate: fmtDateTime(cur.createdAt),
       exportCat: cur.cat, exportPlace: cur.place, exportDesc: cur.desc,
+      exportFooter: "Ce rapport est un constat généré par Reeper à partir d'un signalement citoyen. Il ne constitue pas un dépôt de plainte. Les informations proviennent de l'auteur du signalement et n'ont pas été vérifiées par Reeper. Édité le " + fmtDate(Date.now()) + ".",
       hasExportPhotos: selPhotos.length > 0,
       exportPhotos: selPhotos.map((url) => ({ url })),
       exportPhotoCols: "repeat(" + Math.max(1, Math.ceil(Math.sqrt(selPhotos.length))) + ",1fr)",
@@ -2766,6 +2811,24 @@ class Component extends DCLogic {
 
       dangerHint: cur.deleted ? "Ce Reep est dans la corbeille depuis " + relTime(cur.deletedAt) + ". Il sera effacé définitivement au bout d'un an." : "Le Reep est déplacé dans la corbeille. Il peut être restauré pendant 1 an, puis il est effacé définitivement.",
       notDeleted: !cur.deleted,
+      canRestore: !!cur.deleted && !(cur.abuse && cur.abuse.status === "deleted"),
+      abusePendingBanner: !!(cur.abuse && cur.abuse.status === "pending"),
+      secAbuseOpen: s.detailSection === "abuse",
+      openSecAbuse: () => this.setState({ detailSection: "abuse", abuseReasons: [], abuseNote: "", abuseError: "" }),
+      abuseReasonChips: Store.ABUSE_REASONS.map((label) => {
+        const on = s.abuseReasons.indexOf(label) >= 0;
+        return { label, bg: on ? "#D62839" : "#F3F6F8", fg: on ? "#fff" : "#1B2A41", onClick: () => this.setState({ abuseReasons: on ? s.abuseReasons.filter((x) => x !== label) : s.abuseReasons.concat(label), abuseError: "" }) };
+      }),
+      abuseNote: s.abuseNote, onAbuseNote: (e) => this.setState({ abuseNote: e.target.value, abuseError: "" }),
+      hasAbuseError: !!s.abuseError, abuseError: s.abuseError,
+      submitAbuse: () => {
+        const res = Store.reportAbuse(cur.id, { reasons: s.abuseReasons, note: s.abuseNote, who: agentName, whoKey: session.key });
+        if (!res.ok) { this.setState({ abuseError: res.error }); return; }
+        this.setState({ detailSection: null, abuseReasons: [], abuseNote: "", abuseError: "", syncToast: "Abus signalé à Reeper — le Reep est en cours d'examen" });
+        clearTimeout(this._toastTimer);
+        this._toastTimer = setTimeout(() => this.setState({ syncToast: "" }), 6000);
+        this.go("list");
+      },
       deleteReepConfirm: s.deleteReepConfirm,
       deleteReepLabel: s.deleteReepConfirm ? "Confirmer la suppression ?" : "Supprimer ce Reep",
       doDelete: () => {
@@ -2780,6 +2843,8 @@ class Component extends DCLogic {
       trashRows: deletedRows.map((r) => ({
         id: r.id, title: r.title, place: r.place, deletedWhen: relTime(r.deletedAt),
         onOpen: () => this._transition(() => this.setState({ screen: "detail", sel: r.id, note: "", service: null, status: null, saved: false, closed: false, closePhotoDataUrl: null, preview: false })),
+        canRestore: !(r.abuse && r.abuse.status === "deleted"),
+        moderated: !!(r.abuse && r.abuse.status === "deleted"),
         onRestore: () => { Store.restoreReep(r.id, agentName); this.forceUpdate(); }
       })),
 

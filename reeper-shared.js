@@ -74,7 +74,7 @@
       assigned_to: r.assignedTo || [],
       reporter_account: r.reporterAccount, created_at: r.createdAt, closed_at: r.closedAt,
       deleted: !!r.deleted, deleted_at: r.deletedAt, timeline: r.timeline || [],
-      points_awarded: r.pointsAwarded || 0, updated_at: Date.now()
+      points_awarded: r.pointsAwarded || 0, abuse: r.abuse || null, updated_at: Date.now()
     };
   }
   function rowToReep(row) {
@@ -86,7 +86,7 @@
       assignedTo: row.assigned_to || [],
       reporterAccount: row.reporter_account, createdAt: row.created_at, closedAt: row.closed_at,
       deleted: !!row.deleted, deletedAt: row.deleted_at, timeline: row.timeline || [],
-      pointsAwarded: row.points_awarded || 0
+      pointsAwarded: row.points_awarded || 0, abuse: row.abuse || null
     };
   }
   function msgToRow(m) {
@@ -537,6 +537,17 @@
 
   function timelineEntry(label, who, when, note, internal) {
     return { label: label, who: who || "Citoyen anonyme", when: when || now(), note: note || "", internal: !!internal };
+  }
+
+  function pendingMod(r) { return !!(r.abuse && r.abuse.status === "pending"); }
+  function maskView(r) {
+    if (r.abuse && r.abuse.status === "masked") {
+      var c = Object.assign({}, r);
+      c.desc = "[Texte masqué par Reeper]";
+      c.descMasked = true;
+      return c;
+    }
+    return r;
   }
 
   function seedReep(o) {
@@ -1047,27 +1058,85 @@
     getReep: function (id) {
       var data = load();
       var i = findIndex(data, id);
-      return i >= 0 ? data.reeps[i] : null;
+      return i >= 0 ? maskView(data.reeps[i]) : null;
     },
     getReeps: function (opts) {
       opts = opts || {};
       var data = load();
       return data.reeps.filter(function (r) {
         if (!opts.includeDeleted && r.deleted) return false;
+        if (!opts.includeModeration && pendingMod(r)) return false;
         if (opts.commune && r.commune !== opts.commune) return false;
         return true;
-      }).sort(function (a, b) { return b.createdAt - a.createdAt; });
+      }).sort(function (a, b) { return b.createdAt - a.createdAt; }).map(maskView);
     },
     getDeleted: function (commune) {
       var data = load();
       return data.reeps.filter(function (r) { return r.deleted && (!commune || r.commune === commune); })
-        .sort(function (a, b) { return (b.deletedAt || 0) - (a.deletedAt || 0); });
+        .sort(function (a, b) { return (b.deletedAt || 0) - (a.deletedAt || 0); }).map(maskView);
     },
     listPublic: function (limit) {
       var data = load();
-      return data.reeps.filter(function (r) { return !r.deleted; })
+      return data.reeps.filter(function (r) { return !r.deleted && !pendingMod(r); })
         .sort(function (a, b) { return b.createdAt - a.createdAt; })
-        .slice(0, limit || 20);
+        .slice(0, limit || 20).map(maskView);
+    },
+
+    // --- Modération : signalement d'abus par une commune, décision du Gérant ---
+    ABUSE_REASONS: ["Propos injurieux", "Faux signalement", "Photo de personnes", "Répétition"],
+    reportAbuse: function (id, o) {
+      var data = load();
+      var i = findIndex(data, id);
+      if (i < 0) return { ok: false, error: "Reep introuvable." };
+      var r = data.reeps[i];
+      if (pendingMod(r)) return { ok: false, error: "Un signalement d'abus est déjà en cours d'examen pour ce Reep." };
+      var reasons = (o.reasons || []).slice();
+      var note = (o.note || "").trim();
+      if (!reasons.length && !note) return { ok: false, error: "Indiquez au moins un motif ou une précision." };
+      r.abuse = { status: "pending", reasons: reasons, note: note, reportedBy: o.who || "Agent commune", reportedByKey: o.whoKey || null, reportedAt: now(), resolvedAt: null, resolvedBy: null, resolution: "", resolutionNote: "" };
+      r.timeline.push(timelineEntry("Abus signalé à Reeper", o.who || "Agent commune", now(), reasons.join(", ") + (note ? (reasons.length ? " — " : "") + note : ""), true));
+      persist(data);
+      return { ok: true, reep: r };
+    },
+    getModeration: function () {
+      var data = load();
+      return data.reeps.filter(function (r) { return !!r.abuse; })
+        .sort(function (a, b) {
+          var pa = a.abuse.status === "pending" ? 0 : 1, pb = b.abuse.status === "pending" ? 0 : 1;
+          if (pa !== pb) return pa - pb;
+          return (b.abuse.resolvedAt || b.abuse.reportedAt || 0) - (a.abuse.resolvedAt || a.abuse.reportedAt || 0);
+        });
+    },
+    pendingModerationCount: function () {
+      return load().reeps.filter(pendingMod).length;
+    },
+    resolveAbuse: function (id, o) {
+      var data = load();
+      var i = findIndex(data, id);
+      if (i < 0) return { ok: false, error: "Reep introuvable." };
+      var r = data.reeps[i];
+      if (!pendingMod(r)) return { ok: false, error: "Ce signalement a déjà été traité." };
+      var action = o.action;
+      var note = (o.note || "").trim();
+      var who = o.who || "Gérant Reeper";
+      var labels = { dismiss: "Classé sans suite", mask: "Texte masqué, signalement conservé", "delete": "Reep supprimé (corbeille)" };
+      if (!labels[action]) return { ok: false, error: "Action inconnue." };
+      r.abuse.status = action === "dismiss" ? "dismissed" : action === "mask" ? "masked" : "deleted";
+      r.abuse.resolvedAt = now();
+      r.abuse.resolvedBy = who;
+      r.abuse.resolution = labels[action];
+      r.abuse.resolutionNote = note;
+      if (action === "delete") { r.deleted = true; r.deletedAt = now(); }
+      r.timeline.push(timelineEntry("Modération : " + labels[action].toLowerCase(), who, now(), note, true));
+      var recipients = {};
+      this.adminsForCommune(r.commune).forEach(function (a) { recipients[a.key] = true; });
+      if (r.abuse.reportedByKey) recipients[r.abuse.reportedByKey] = true;
+      persist(data);
+      var self = this;
+      Object.keys(recipients).forEach(function (k) {
+        self.sendMessage({ from: o.whoKey, to: k, text: "Modération du Reep " + r.id + " — " + r.title + " : " + labels[action] + "." + (note ? " " + note : ""), reep: r.id });
+      });
+      return { ok: true, reep: r };
     },
 
     addReep: function (o) {
@@ -1221,6 +1290,7 @@
       var i = findIndex(data, id);
       if (i < 0) return null;
       var r = data.reeps[i];
+      if (r.abuse && r.abuse.status === "deleted") { r.abuse.status = "dismissed"; r.abuse.resolution = "Rétabli depuis la corbeille"; }
       r.deleted = false;
       r.deletedAt = null;
       r.timeline.push(timelineEntry("Reep restauré", who || "Agent commune", now(), "Restauré depuis la corbeille.", true));
@@ -1354,7 +1424,7 @@
     },
     reepStatsForCommune: function (commune, sinceTs) {
       var data = load();
-      var reeps = data.reeps.filter(function (r) { return r.commune === commune && !r.deleted && r.createdAt >= (sinceTs || 0); });
+      var reeps = data.reeps.filter(function (r) { return r.commune === commune && !r.deleted && !pendingMod(r) && r.createdAt >= (sinceTs || 0); });
       var total = reeps.length;
       var since = sinceTs || (reeps.length ? Math.min.apply(null, reeps.map(function (r) { return r.createdAt; })) : now());
       var months = Math.max(1, (now() - since) / (30 * 86400000));
@@ -1567,7 +1637,7 @@
     },
 
     chartData: function (commune, mode) {
-      var reeps = load().reeps.filter(function (r) { return r.commune === commune && !r.deleted; });
+      var reeps = load().reeps.filter(function (r) { return r.commune === commune && !r.deleted && !pendingMod(r); });
       var d = new Date();
       if (mode === "Mois") {
         var monthStart = new Date(d.getFullYear(), d.getMonth(), 1).getTime();
@@ -1607,7 +1677,7 @@
 
     statsForCommune: function (commune) {
       var data = load();
-      var all = data.reeps.filter(function (r) { return r.commune === commune && !r.deleted; });
+      var all = data.reeps.filter(function (r) { return r.commune === commune && !r.deleted && !pendingMod(r); });
       var wk = startOfWeek(now()), mo = startOfMonth(now());
       var week = all.filter(function (r) { return r.createdAt >= wk; }).length;
       var month = all.filter(function (r) { return r.createdAt >= mo; }).length;
@@ -1618,7 +1688,7 @@
 
     statsGlobal: function () {
       var data = load();
-      var all = data.reeps.filter(function (r) { return !r.deleted; });
+      var all = data.reeps.filter(function (r) { return !r.deleted && !pendingMod(r); });
       var wk = startOfWeek(now()), mo = startOfMonth(now());
       var week = all.filter(function (r) { return r.createdAt >= wk; }).length;
       var month = all.filter(function (r) { return r.createdAt >= mo; }).length;
@@ -1634,7 +1704,7 @@
     },
 
     chartDataGlobal: function (mode) {
-      var reeps = load().reeps.filter(function (r) { return !r.deleted; });
+      var reeps = load().reeps.filter(function (r) { return !r.deleted && !pendingMod(r); });
       var d = new Date();
       if (mode === "Mois") {
         var monthStart = new Date(d.getFullYear(), d.getMonth(), 1).getTime();

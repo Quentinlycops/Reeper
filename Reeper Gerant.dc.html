@@ -665,6 +665,68 @@ select,textarea,input{font-family:inherit}
         </div>
       </sc-if>
 
+      <sc-if value="{{ isModeration }}" hint-placeholder-val="{{ false }}">
+        <div class="rg-content" style="display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
+            <div style="flex:1">
+              <h1 style="margin:0;font-family:Georgia,Cambria,serif;font-size:24px;font-weight:700;letter-spacing:-.3px">Modération</h1>
+              <div style="font-size:12.5px;color:#8A98A8;margin-top:3px">Reeps signalés comme abusifs par les communes — la décision vous revient</div>
+            </div>
+            <div style="display:flex;background:#EEF2F5;border-radius:9px;padding:3px;gap:2px">
+              <button onClick="{{ modModePendingClick }}" style="border:none;background:{{ modModePendingBg }};color:{{ modModePendingFg }};border-radius:7px;padding:9px 15px;font-size:12.5px;font-weight:700">À traiter · {{ modPendingCount }}</button>
+              <button onClick="{{ modModeHistoryClick }}" style="border:none;background:{{ modModeHistoryBg }};color:{{ modModeHistoryFg }};border-radius:7px;padding:9px 15px;font-size:12.5px;font-weight:700">Historique</button>
+            </div>
+          </div>
+
+          <sc-if value="{{ hasModError }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:12.5px;color:#D62839">{{ modError }}</div>
+          </sc-if>
+
+          <sc-for list="{{ modRows }}" as="m" hint-placeholder-count="2">
+            <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:14px;padding:18px 20px;display:flex;gap:18px;flex-wrap:wrap">
+              <sc-if value="{{ m.hasPhoto }}" hint-placeholder-val="{{ false }}">
+                <img src="{{ m.photo }}" style="width:150px;height:130px;object-fit:cover;border-radius:10px;flex:none" />
+              </sc-if>
+              <div style="flex:1;min-width:260px;display:flex;flex-direction:column;gap:12px">
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                  <span style="font-family:Georgia,Cambria,serif;font-size:16.5px;font-weight:700">{{ m.title }}</span>
+                  <span style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:#8A98A8">{{ m.id }}</span>
+                  <span style="background:{{ m.statusBg }};color:{{ m.statusFg }};border-radius:999px;padding:4px 10px;font-size:11px;font-weight:700">{{ m.statusLabel }}</span>
+                </div>
+                <div style="font-size:12.5px;color:#5A6B7E">{{ m.commune }} · {{ m.place }}</div>
+                <div>
+                  <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:5px">Description du citoyen</div>
+                  <p style="margin:0;font-size:13.5px;line-height:1.6;color:#3E5064">{{ m.desc }}</p>
+                </div>
+                <div style="background:#FDF2F3;border-radius:10px;padding:11px 14px;font-size:12.5px;line-height:1.55;color:#7A1A25">
+                  <b>🚩 {{ m.reasonsLabel }}</b>
+                  <sc-if value="{{ m.hasAbuseNote }}" hint-placeholder-val="{{ false }}"><div style="margin-top:3px">{{ m.abuseNote }}</div></sc-if>
+                  <div style="margin-top:3px;opacity:.8">Signalé par {{ m.reportedBy }} · {{ m.reportedWhen }}</div>
+                </div>
+
+                <sc-if value="{{ m.isPending }}" hint-placeholder-val="{{ true }}">
+                  <textarea value="{{ m.note }}" onChange="{{ m.onNote }}" rows="2" placeholder="Message de retour à la commune (facultatif)…" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:13px;line-height:1.5;resize:none;outline:none"></textarea>
+                  <div style="display:flex;gap:8px;flex-wrap:wrap">
+                    <button onClick="{{ m.onDismiss }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;color:#1B2A41;border-radius:10px;padding:11px 15px;font-size:13px;font-weight:600">Classer sans suite</button>
+                    <button onClick="{{ m.onMask }}" style="border:none;background:#1B2A41;color:#fff;border-radius:10px;padding:11px 15px;font-size:13px;font-weight:600">Masquer le texte</button>
+                    <button onClick="{{ m.onDelete }}" style="border:none;background:#D62839;color:#fff;border-radius:10px;padding:11px 15px;font-size:13px;font-weight:600">{{ m.deleteLabel }}</button>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ m.isResolved }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-size:12.5px;color:#48566B;line-height:1.55">
+                    <b>{{ m.resolutionLabel }}</b> — {{ m.resolvedBy }} · {{ m.resolvedWhen }}
+                    <sc-if value="{{ m.hasResolutionNote }}" hint-placeholder-val="{{ false }}"><div style="margin-top:3px">Retour à la commune : {{ m.resolutionNote }}</div></sc-if>
+                  </div>
+                </sc-if>
+              </div>
+            </div>
+          </sc-for>
+          <sc-if value="{{ modEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:30px 20px;text-align:center;font-size:13px;color:#8A98A8;background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:14px">{{ modEmptyLabel }}</div>
+          </sc-if>
+        </div>
+      </sc-if>
+
       <sc-if value="{{ isContractsList }}" hint-placeholder-val="{{ false }}">
         <div class="rg-content" style="display:flex;flex-direction:column;gap:16px">
           <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
@@ -1185,6 +1247,7 @@ class Component extends DCLogic {
     replFirst: "", replLast: "", replEmail: "", replaceError: "",
     msgSel: null, msgQuery: "", pendingConv: null, draft: "",
     pwdPanelOpen: false, pwdOld: "", pwdNew1: "", pwdNew2: "", pwdMsg: "", pwdMsgIsError: false,
+    modMode: "pending", modNotes: {}, modError: "", modConfirmDelete: null,
     activityMode: "journal", activityCommune: "Toutes", activityStatus: "Tous", activityCat: "Toutes", activityPeriod: "Tout", activitySearch: "",
     contractQuery: "", contractSel: null, contractDraft: null, contractSaved: false, contractEditOpen: false,
     addCommuneOpen: false, addCommuneName: "", addCommuneError: "",
@@ -1231,7 +1294,7 @@ class Component extends DCLogic {
     const goSite = () => { window.location.href = "./Reeper Web.dc.html"; };
     const doLogout = () => { Store.logout(); window.location.href = "./Reeper Web.dc.html"; };
 
-    const navDef = [["Tableau de bord", "dash"], ["Reeps", "reeps"], ["Comptes", "accounts"], ["Messagerie", "msg"], ["Activité", "activity"], ["Contrats", "contracts"]];
+    const navDef = [["Tableau de bord", "dash"], ["Reeps", "reeps"], ["Comptes", "accounts"], ["Messagerie", "msg"], ["Activité", "activity"], ["Modération", "moderation"], ["Contrats", "contracts"]];
 
     const startDelete = (key) => {
       if (s.pendingDeleteKey === key) {
@@ -1395,6 +1458,17 @@ class Component extends DCLogic {
       : [];
     const lastIncoming = curSupportThread.slice().reverse().find((m) => curSupportConv && m.from === curSupportConv.withKey);
     const replyFromKey = (!lastIncoming || lastIncoming.to === Store.REEPER_SUPPORT_KEY) ? Store.REEPER_SUPPORT_KEY : session.key;
+    const modRaw = Store.getModeration();
+    const modPendingCount = modRaw.filter((r) => r.abuse.status === "pending").length;
+    const modShown = modRaw.filter((r) => (s.modMode === "history" ? r.abuse.status !== "pending" : r.abuse.status === "pending"));
+    const MOD_STATUS = { pending: ["À traiter", "#FDF0E2", "#A96A16"], dismissed: ["Classé sans suite", "#E7EDF3", "#31506F"], masked: ["Texte masqué", "#EDE9F5", "#54459B"], deleted: ["Supprimé", "#FDF2F3", "#9B1C2B"] };
+    const decideAbuse = (id, action) => {
+      if (action === "delete" && s.modConfirmDelete !== id) { this.setState({ modConfirmDelete: id }); return; }
+      const res = Store.resolveAbuse(id, { action, note: s.modNotes[id] || "", who: session.displayName, whoKey: session.key });
+      if (!res.ok) { this.setState({ modError: res.error, modConfirmDelete: null }); return; }
+      const notes = { ...s.modNotes }; delete notes[id];
+      this.setState({ modError: "", modNotes: notes, modConfirmDelete: null });
+    };
     const sendDraft = () => {
       if (!curSupportConv || !s.draft.trim()) return;
       Store.sendMessage({ from: replyFromKey, to: curSupportConv.withKey, text: s.draft.trim() });
@@ -1403,8 +1477,9 @@ class Component extends DCLogic {
 
     return {
       goSite, doLogout,
-      nav: navDef.map(([label, key]) => {
+      nav: navDef.map(([baseLabel, key]) => {
         const on = s.screen === key;
+        const label = key === "moderation" && modPendingCount ? baseLabel + " · " + modPendingCount : baseLabel;
         return { label, onClick: () => this._transition(() => this.setState({ screen: key, profileOpen: false })), bg: on ? "#1B2A41" : "transparent", fg: on ? "#fff" : "#5A6B7E", weight: on ? 700 : 500 };
       }),
 
@@ -1461,6 +1536,37 @@ class Component extends DCLogic {
         onRestore: () => { Store.restoreReep(r.id, session.displayName); this.forceUpdate(); }
       })),
       activityTrashEmpty: !activityTrashRaw.length,
+
+      isModeration: s.screen === "moderation",
+      modPendingCount,
+      modModePendingClick: () => this.setState({ modMode: "pending" }),
+      modModeHistoryClick: () => this.setState({ modMode: "history" }),
+      modModePendingBg: s.modMode !== "history" ? "#1B2A41" : "transparent", modModePendingFg: s.modMode !== "history" ? "#fff" : "#5A6B7E",
+      modModeHistoryBg: s.modMode === "history" ? "#1B2A41" : "transparent", modModeHistoryFg: s.modMode === "history" ? "#fff" : "#5A6B7E",
+      hasModError: !!s.modError, modError: s.modError,
+      modEmpty: !modShown.length,
+      modEmptyLabel: s.modMode === "history" ? "Aucune décision de modération pour l'instant." : "Aucun Reep en attente de modération.",
+      modRows: modShown.map((r) => {
+        const a = r.abuse;
+        const st = MOD_STATUS[a.status] || MOD_STATUS.pending;
+        const photo = (r.photos && r.photos[0]) || r.photoUrl || "";
+        return {
+          id: r.id, title: r.title, commune: r.commune, place: r.place || r.address || "—",
+          desc: r.desc || "—", hasPhoto: !!photo, photo,
+          statusLabel: st[0], statusBg: st[1], statusFg: st[2],
+          reasonsLabel: (a.reasons || []).join(" · ") || "Abus signalé",
+          hasAbuseNote: !!a.note, abuseNote: a.note,
+          reportedBy: a.reportedBy, reportedWhen: fmtDateTime(a.reportedAt),
+          isPending: a.status === "pending", isResolved: a.status !== "pending",
+          resolutionLabel: a.resolution, resolvedBy: a.resolvedBy, resolvedWhen: a.resolvedAt ? fmtDateTime(a.resolvedAt) : "",
+          hasResolutionNote: !!a.resolutionNote, resolutionNote: a.resolutionNote,
+          note: s.modNotes[r.id] || "", onNote: (e) => this.setState({ modNotes: { ...s.modNotes, [r.id]: e.target.value } }),
+          onDismiss: () => decideAbuse(r.id, "dismiss"),
+          onMask: () => decideAbuse(r.id, "mask"),
+          onDelete: () => decideAbuse(r.id, "delete"),
+          deleteLabel: s.modConfirmDelete === r.id ? "Confirmer la suppression ?" : "Supprimer (corbeille)"
+        };
+      }),
 
       isContracts: s.screen === "contracts",
       isContractsList: s.screen === "contracts" && !s.contractSel,
