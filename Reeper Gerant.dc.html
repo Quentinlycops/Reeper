@@ -33,6 +33,11 @@ select,textarea,input{font-family:inherit}
 .rg-msg-split{display:grid;grid-template-columns:320px 1fr}
 .rg-nav{display:flex}
 .rg-mobile-nav{display:none}
+@media (max-width: 1380px) {
+  .rg-title{display:none}
+  .rg-nav button{padding:10px 11px}
+  .rg-header{padding:0 20px;gap:14px}
+}
 @media (max-width: 900px) {
   .rg-header{padding:0 14px;gap:10px;height:60px}
   .rg-title{display:none}
@@ -1381,9 +1386,9 @@ select,textarea,input{font-family:inherit}
       </div>
     </sc-if>
 
-    <div class="rg-mobile-nav" style="flex:none;background:#fff;border-top:1px solid rgba(27,42,65,.1);padding:8px 4px 12px">
+    <div class="rg-mobile-nav" style="flex:none;background:#fff;border-top:1px solid rgba(27,42,65,.1);padding:8px 4px 12px;overflow-x:auto">
       <sc-for list="{{ nav }}" as="n" hint-placeholder-count="4">
-        <button onClick="{{ n.onClick }}" style="border:none;background:none;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 2px;min-height:44px;color:{{ n.fg }};flex:1;min-width:0">
+        <button onClick="{{ n.onClick }}" style="border:none;background:none;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 2px;min-height:44px;color:{{ n.fg }};flex:1 0 auto;min-width:62px">
           <span style="width:16px;height:16px;border-radius:5px;background:{{ n.fg }};opacity:.85"></span>
           <span style="font-size:9.5px;font-weight:{{ n.weight }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%">{{ n.label }}</span>
         </button>
