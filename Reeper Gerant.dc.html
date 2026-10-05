@@ -205,13 +205,13 @@ select,textarea,input{font-family:inherit}
             </select>
           </div>
 
-          <div class="rg-reeps-split" style="gap:18px;align-items:start">
+          <div>
             <div class="rg-table-scroll" style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:hidden">
               <div style="display:grid;grid-template-columns:1.6fr .9fr .9fr .9fr;padding:12px 20px;background:#FAFBFC;border-bottom:1px solid rgba(27,42,65,.08);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700">
                 <span>Reep</span><span>Commune</span><span>Service</span><span>Statut</span>
               </div>
               <sc-for list="{{ reepRows }}" as="r" hint-placeholder-count="8">
-                <button onClick="{{ r.onClick }}" onDoubleClick="{{ r.onDoubleClick }}" style="display:grid;grid-template-columns:1.6fr .9fr .9fr .9fr;gap:10px;align-items:center;width:100%;padding:13px 20px;border:none;border-bottom:1px solid rgba(27,42,65,.06);background:{{ r.rowBg }};text-align:left;color:#1B2A41" style-hover="background:#FAFBFC">
+                <button onClick="{{ r.onClick }}" style="display:grid;grid-template-columns:1.6fr .9fr .9fr .9fr;gap:10px;align-items:center;width:100%;padding:13px 20px;border:none;border-bottom:1px solid rgba(27,42,65,.06);background:{{ r.rowBg }};text-align:left;color:#1B2A41" style-hover="background:#FAFBFC">
                   <span style="min-width:0">
                     <span style="display:block;font-size:13.5px;font-weight:600">{{ r.title }}</span>
                     <span style="display:block;font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:#8A98A8;margin-top:3px">{{ r.id }}</span>
@@ -230,44 +230,6 @@ select,textarea,input{font-family:inherit}
               </sc-if>
             </div>
 
-            <sc-if value="{{ hasSelReep }}" hint-placeholder-val="{{ false }}">
-              <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:hidden">
-                <div style="padding:18px 20px;border-bottom:1px solid rgba(27,42,65,.08);display:flex;align-items:center;gap:10px">
-                  <span style="flex:1;font-family:Georgia,serif;font-size:16.5px;font-weight:700">{{ selReep.title }}</span>
-                  <button onClick="{{ closeSelReep }}" style="border:none;background:none;font-size:16px;color:#8A98A8">×</button>
-                </div>
-                <div style="height:200px;position:relative;cursor:pointer" onClick="{{ openLightbox }}">
-                  <image-slot id="{{ selReep.slot }}" shape="rect" src="{{ selReep.src }}" placeholder="Photo de l'anomalie"></image-slot>
-                </div>
-                <sc-if value="{{ hasMultiPhotos }}" hint-placeholder-val="{{ false }}">
-                  <div style="display:flex;gap:8px;padding:12px 20px 0;overflow-x:auto">
-                    <sc-for list="{{ selPhotoThumbs }}" as="p" hint-placeholder-count="3">
-                      <button onClick="{{ p.onClick }}" style="flex:none;width:52px;height:52px;border-radius:8px;border:{{ p.ring }};padding:0;overflow:hidden;background:#F3F6F8;cursor:pointer">
-                        <img src="{{ p.url }}" style="width:100%;height:100%;object-fit:cover;display:block" />
-                      </button>
-                    </sc-for>
-                  </div>
-                </sc-if>
-                <div style="padding:16px 20px;display:flex;flex-direction:column;gap:12px">
-                  <div style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:#8A98A8">{{ selReep.id }}</div>
-                  <div style="font-size:13px;color:#48566B">{{ selReep.commune }} · {{ selReep.place }}</div>
-                  <sc-if value="{{ selReepUnserved }}" hint-placeholder-val="{{ false }}">
-                    <span style="display:inline-block;align-self:flex-start;font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;background:#FDF2F3;color:#D62839">Commune sans contrat Reeper</span>
-                  </sc-if>
-                  <div style="font-size:11px;font-weight:700;padding:5px 10px;border-radius:999px;background:{{ selReep.bg }};color:{{ selReep.fg }};align-self:flex-start">{{ selReep.status }}</div>
-                  <p style="margin:0;font-size:13.5px;line-height:1.6;color:#3E5064">{{ selReep.desc }}</p>
-                  <div style="font-size:11.5px;color:#8A98A8">Statut modifiable uniquement par la commune concernée.</div>
-                  <div style="border-top:1px solid rgba(27,42,65,.08);padding-top:10px;display:flex;flex-direction:column;gap:10px;max-height:220px;overflow:auto">
-                    <sc-for list="{{ selReep.timeline }}" as="t" hint-placeholder-count="3">
-                      <div>
-                        <div style="font-size:12.5px;font-weight:600">{{ t.label }}</div>
-                        <div style="font-size:11px;color:#8A98A8;margin-top:1px">{{ t.who }} · {{ t.when }}</div>
-                      </div>
-                    </sc-for>
-                  </div>
-                </div>
-              </div>
-            </sc-if>
           </div>
         </div>
       </sc-if>
@@ -299,7 +261,12 @@ select,textarea,input{font-family:inherit}
                 </sc-if>
                 <div style="font-size:11px;font-weight:700;padding:5px 10px;border-radius:999px;background:{{ selReep.bg }};color:{{ selReep.fg }};align-self:flex-start">{{ selReep.status }}</div>
                 <p style="margin:0;font-size:14px;line-height:1.65;color:#3E5064">{{ selReep.desc }}</p>
-                <div style="font-size:11.5px;color:#8A98A8">Statut modifiable uniquement par la commune concernée.</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                  <button onClick="{{ gOpenAssign }}" style="padding:12px 10px;border:1px solid rgba(27,42,65,.16);border-radius:12px;background:#fff;color:#1B2A41;font-size:13.5px;font-weight:600">👤 Attribuer</button>
+                  <button onClick="{{ gOpenTransfer }}" style="padding:12px 10px;border:1px solid rgba(27,42,65,.16);border-radius:12px;background:#fff;color:#1B2A41;font-size:13.5px;font-weight:600">↗️ Transférer</button>
+                  <button onClick="{{ gOpenStatus }}" style="padding:12px 10px;border:1px solid rgba(27,42,65,.16);border-radius:12px;background:#fff;color:#1B2A41;font-size:13.5px;font-weight:600">📊 Statut</button>
+                  <button onClick="{{ gOpenDelete }}" style="padding:12px 10px;border:1px solid rgba(214,40,57,.35);border-radius:12px;background:#fff;color:#D62839;font-size:13.5px;font-weight:600">🗑️ Supprimer</button>
+                </div>
                 <div style="border-top:1px solid rgba(27,42,65,.08);padding-top:12px;display:flex;flex-direction:column;gap:10px">
                   <sc-for list="{{ selReep.timeline }}" as="t" hint-placeholder-count="3">
                     <div>
@@ -312,6 +279,100 @@ select,textarea,input{font-family:inherit}
             </div>
           </div>
         </sc-if>
+
+      <sc-if value="{{ gAssignOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position:fixed;inset:0;background:rgba(27,42,65,.4);z-index:220;display:flex;align-items:center;justify-content:center;padding:20px" onClick="{{ gCloseAct }}">
+          <div style="background:#fff;border-radius:14px;padding:20px 22px;max-width:480px;width:100%;max-height:85vh;overflow:auto;box-shadow:0 20px 50px rgba(27,42,65,.28)" onClick="{{ stopProp }}">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+              <span style="flex:1;font-family:Georgia,Cambria,serif;font-size:17px;font-weight:700">👤 Attribuer</span>
+              <button onClick="{{ gCloseAct }}" style="border:none;background:none;font-size:18px;color:#8A98A8">×</button>
+            </div>
+            <p style="margin:0 0 14px;font-size:12.5px;line-height:1.55;color:#5A6B7E">Personnes de la commune de {{ selReep.commune }} à qui attribuer ce Reep.</p>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
+              <sc-for list="{{ gAssignChips }}" as="a" hint-placeholder-count="3">
+                <button onClick="{{ a.onClick }}" style="border:1px solid {{ a.border }};background:{{ a.bg }};color:{{ a.fg }};border-radius:999px;padding:8px 14px;font-size:13px;font-weight:600">{{ a.name }} <span style="opacity:.6;font-weight:400">{{ a.role }}</span></button>
+              </sc-for>
+            </div>
+            <sc-if value="{{ gAssignEmpty }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size:12.5px;color:#8A98A8;margin-bottom:14px">Aucune personne active dans cette commune.</div>
+            </sc-if>
+            <button onClick="{{ gSaveAssign }}" style="width:100%;padding:13px;border:none;border-radius:10px;background:#1B2A41;color:#fff;font-size:14px;font-weight:600">{{ gAssignLabel }}</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ gStatusOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position:fixed;inset:0;background:rgba(27,42,65,.4);z-index:220;display:flex;align-items:center;justify-content:center;padding:20px" onClick="{{ gCloseAct }}">
+          <div style="background:#fff;border-radius:14px;padding:20px 22px;max-width:420px;width:100%;box-shadow:0 20px 50px rgba(27,42,65,.28)" onClick="{{ stopProp }}">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+              <span style="flex:1;font-family:Georgia,Cambria,serif;font-size:17px;font-weight:700">📊 Statut</span>
+              <button onClick="{{ gCloseAct }}" style="border:none;background:none;font-size:18px;color:#8A98A8">×</button>
+            </div>
+            <select value="{{ gStatusSel }}" onChange="{{ onGStatus }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;background:#fff;margin-bottom:14px">
+              <sc-for list="{{ gStatusOptions }}" as="o" hint-placeholder-count="4"><option value="{{ o }}">{{ o }}</option></sc-for>
+            </select>
+            <button onClick="{{ gSaveStatus }}" style="width:100%;padding:13px;border:none;border-radius:10px;background:#1B2A41;color:#fff;font-size:14px;font-weight:600">Enregistrer le statut</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ gDeleteOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position:fixed;inset:0;background:rgba(27,42,65,.4);z-index:220;display:flex;align-items:center;justify-content:center;padding:20px" onClick="{{ gCloseAct }}">
+          <div style="background:#fff;border-radius:14px;padding:20px 22px;max-width:420px;width:100%;box-shadow:0 20px 50px rgba(27,42,65,.28)" onClick="{{ stopProp }}">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+              <span style="flex:1;font-family:Georgia,Cambria,serif;font-size:17px;font-weight:700">🗑️ Supprimer ce Reep</span>
+              <button onClick="{{ gCloseAct }}" style="border:none;background:none;font-size:18px;color:#8A98A8">×</button>
+            </div>
+            <p style="margin:0 0 16px;font-size:13px;line-height:1.6;color:#48566B">Le Reep <b>{{ selReep.id }}</b> sera déplacé dans la corbeille (Activité → Corbeille). Il pourra être restauré pendant 1 an, puis il sera effacé définitivement.</p>
+            <div style="display:flex;gap:10px">
+              <button onClick="{{ gConfirmDelete }}" style="flex:1;padding:13px;border:none;border-radius:10px;background:#D62839;color:#fff;font-size:14px;font-weight:600">Supprimer</button>
+              <button onClick="{{ gCloseAct }}" style="padding:13px 18px;border:1px solid rgba(27,42,65,.16);border-radius:10px;background:#fff;color:#48566B;font-size:14px;font-weight:600">Annuler</button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ gTransferOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position:fixed;inset:0;background:rgba(27,42,65,.4);z-index:220;display:flex;align-items:center;justify-content:center;padding:20px" onClick="{{ gCloseAct }}">
+          <div style="background:#fff;border-radius:14px;padding:20px 22px;max-width:500px;width:100%;max-height:88vh;overflow:auto;box-shadow:0 20px 50px rgba(27,42,65,.28)" onClick="{{ stopProp }}">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+              <span style="flex:1;font-family:Georgia,Cambria,serif;font-size:17px;font-weight:700">↗️ Transférer ce Reep</span>
+              <button onClick="{{ gCloseAct }}" style="border:none;background:none;font-size:18px;color:#8A98A8">×</button>
+            </div>
+            <p style="margin:0 0 14px;font-size:12.5px;line-height:1.55;color:#5A6B7E">Le Reep {{ selReep.id }} est transmis avec sa description, sa localisation et votre message.</p>
+            <sc-if value="{{ gTrNotDone }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;background:#F3F6F8;border-radius:10px;padding:3px;gap:2px;margin-bottom:14px">
+                <sc-for list="{{ gTrTabs }}" as="t" hint-placeholder-count="3">
+                  <button onClick="{{ t.onClick }}" style="flex:1;border:none;background:{{ t.bg }};color:{{ t.fg }};border-radius:8px;padding:10px 6px;font-size:12.5px;font-weight:700">{{ t.label }}</button>
+                </sc-for>
+              </div>
+              <sc-if value="{{ gTrIsAccount }}" hint-placeholder-val="{{ true }}">
+                <select value="{{ gTrAccount }}" onChange="{{ onGTrAccount }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;background:#fff;margin-bottom:12px">
+                  <option value="">Choisir une personne…</option>
+                  <sc-for list="{{ gTrAccountOptions }}" as="o" hint-placeholder-count="4"><option value="{{ o.key }}">{{ o.label }}</option></sc-for>
+                </select>
+              </sc-if>
+              <sc-if value="{{ gTrIsContact }}" hint-placeholder-val="{{ false }}">
+                <select value="{{ gTrContact }}" onChange="{{ onGTrContact }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;background:#fff;margin-bottom:12px">
+                  <option value="">Choisir un contact…</option>
+                  <sc-for list="{{ gTrContactOptions }}" as="o" hint-placeholder-count="4"><option value="{{ o.key }}">{{ o.label }}</option></sc-for>
+                </select>
+                <sc-if value="{{ gTrNoContacts }}" hint-placeholder-val="{{ false }}"><div style="font-size:12px;color:#8A98A8;margin:-6px 0 12px">Aucun contact enregistré : ajoutez-en dans l'onglet Contacts.</div></sc-if>
+              </sc-if>
+              <sc-if value="{{ gTrIsEmail }}" hint-placeholder-val="{{ false }}">
+                <input value="{{ gTrEmail }}" onChange="{{ onGTrEmail }}" placeholder="adresse@exemple.ch" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;outline:none;margin-bottom:12px" />
+              </sc-if>
+              <textarea value="{{ gTrNote }}" onChange="{{ onGTrNote }}" rows="3" placeholder="Message d'accompagnement (facultatif)…" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:12px 13px;font-size:13.5px;line-height:1.5;resize:none;outline:none"></textarea>
+              <sc-if value="{{ hasGTrError }}" hint-placeholder-val="{{ false }}"><div style="margin-top:10px;font-size:12.5px;color:#D62839">{{ gTrError }}</div></sc-if>
+              <button onClick="{{ gSendTransfer }}" style="margin-top:14px;width:100%;padding:13px;border:none;border-radius:10px;background:#1B2A41;color:#fff;font-size:14px;font-weight:600">Transférer</button>
+            </sc-if>
+            <sc-if value="{{ gTrDoneShow }}" hint-placeholder-val="{{ false }}">
+              <div style="background:#EFF7F1;border-radius:10px;padding:14px 16px;font-size:13px;line-height:1.6;color:#1F5637">{{ gTrDone }}</div>
+              <button onClick="{{ gCloseAct }}" style="margin-top:14px;width:100%;padding:13px;border:none;border-radius:10px;background:#1B2A41;color:#fff;font-size:14px;font-weight:600">Fermer</button>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
 
       <sc-if value="{{ lightboxOpen }}" hint-placeholder-val="{{ false }}">
         <div style="position:fixed;inset:0;background:rgba(10,14,20,.9);z-index:300;display:flex;align-items:center;justify-content:center;padding:30px" onClick="{{ closeLightbox }}">
@@ -724,6 +785,142 @@ select,textarea,input{font-family:inherit}
           <sc-if value="{{ modEmpty }}" hint-placeholder-val="{{ false }}">
             <div style="padding:30px 20px;text-align:center;font-size:13px;color:#8A98A8;background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:14px">{{ modEmptyLabel }}</div>
           </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isCarnet }}" hint-placeholder-val="{{ false }}">
+        <div class="rg-content" style="display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
+            <div style="flex:1">
+              <h1 style="margin:0;font-family:Georgia,Cambria,serif;font-size:24px;font-weight:700;letter-spacing:-.3px">Contacts</h1>
+              <div style="font-size:12.5px;color:#8A98A8;margin-top:3px">Personnes et entreprises avec qui Reeper travaille — {{ cbCount }} enregistré(s)</div>
+            </div>
+            <button onClick="{{ openCbNew }}" style="border:none;background:#1B2A41;color:#fff;border-radius:9px;padding:11px 16px;font-size:13.5px;font-weight:600">+ Nouveau contact</button>
+          </div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+            <input value="{{ cbQuery }}" onChange="{{ onCbQuery }}" placeholder="Rechercher un nom, une entreprise, un e-mail, une étiquette…" style="flex:1;min-width:220px;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:10px 14px;font-size:13.5px;outline:none" />
+            <select value="{{ cbType }}" onChange="{{ onCbType }}" style="border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:9px 13px;font-size:13.5px;background:#fff">
+              <sc-for list="{{ cbTypeOptions }}" as="o" hint-placeholder-count="3"><option value="{{ o }}">{{ o }}</option></sc-for>
+            </select>
+          </div>
+          <div class="rg-table-scroll" style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:hidden">
+            <div style="display:grid;grid-template-columns:1.5fr 1.3fr 1fr 1fr;padding:12px 20px;background:#FAFBFC;border-bottom:1px solid rgba(27,42,65,.08);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700">
+              <span>Nom</span><span>E-mail</span><span>Téléphone</span><span>Localité</span>
+            </div>
+            <sc-for list="{{ cbRows }}" as="r" hint-placeholder-count="5">
+              <button onClick="{{ r.onOpen }}" style="display:grid;grid-template-columns:1.5fr 1.3fr 1fr 1fr;gap:10px;align-items:center;width:100%;padding:13px 20px;border:none;border-bottom:1px solid rgba(27,42,65,.06);background:#fff;text-align:left;color:#1B2A41" style-hover="background:#FAFBFC">
+                <span style="min-width:0;display:flex;align-items:center;gap:11px">
+                  <span style="width:34px;height:34px;border-radius:10px;background:#F3F6F8;display:flex;align-items:center;justify-content:center;font-size:16px;flex:none">{{ r.icon }}</span>
+                  <span style="min-width:0">
+                    <span style="display:block;font-size:13.5px;font-weight:600">{{ r.label }}</span>
+                    <span style="display:block;font-size:11.5px;color:#8A98A8;margin-top:2px">{{ r.sub }}</span>
+                  </span>
+                </span>
+                <span style="font-size:12.5px;color:#48566B;word-break:break-all">{{ r.email }}</span>
+                <span style="font-size:12.5px;color:#48566B">{{ r.phone }}</span>
+                <span style="font-size:12.5px;color:#48566B">{{ r.city }}</span>
+              </button>
+            </sc-for>
+            <sc-if value="{{ cbEmpty }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:34px 20px;text-align:center;font-size:13px;color:#8A98A8">{{ cbEmptyLabel }}</div>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ cbDetailOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position:fixed;inset:0;background:rgba(27,42,65,.32);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px" onClick="{{ closeCb }}">
+          <div style="background:#fff;border-radius:14px;max-width:600px;width:100%;max-height:90vh;overflow:auto;box-shadow:0 20px 50px rgba(27,42,65,.28)" onClick="{{ stopProp }}">
+            <div style="padding:18px 22px;border-bottom:1px solid rgba(27,42,65,.08);display:flex;align-items:center;gap:12px">
+              <span style="width:40px;height:40px;border-radius:12px;background:#F3F6F8;display:flex;align-items:center;justify-content:center;font-size:19px;flex:none">{{ cbDetail.icon }}</span>
+              <span style="flex:1;min-width:0">
+                <span style="display:block;font-family:Georgia,Cambria,serif;font-size:18px;font-weight:700">{{ cbDetail.label }}</span>
+                <span style="display:block;font-size:12.5px;color:#8A98A8;margin-top:2px">{{ cbDetail.sub }}</span>
+              </span>
+              <button onClick="{{ closeCb }}" style="border:none;background:none;font-size:18px;color:#8A98A8">×</button>
+            </div>
+            <div style="padding:20px 22px;display:flex;flex-direction:column;gap:18px">
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button onClick="{{ openCbSend }}" style="border:none;background:#D62839;color:#fff;border-radius:10px;padding:11px 16px;font-size:13.5px;font-weight:600">✉️ Envoyer un Reep</button>
+                <button onClick="{{ openCbEdit }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;color:#1B2A41;border-radius:10px;padding:11px 16px;font-size:13.5px;font-weight:600">Modifier</button>
+                <button onClick="{{ cbDeleteFn }}" style="border:1px solid rgba(214,40,57,.35);background:#fff;color:#D62839;border-radius:10px;padding:11px 16px;font-size:13.5px;font-weight:600">{{ cbDeleteLabel }}</button>
+              </div>
+              <div style="display:grid;grid-template-columns:150px 1fr;gap:10px 16px;font-size:13.5px">
+                <sc-for list="{{ cbDetail.rows }}" as="r" hint-placeholder-count="6">
+                  <span style="color:#8A98A8;font-size:12px;padding-top:2px">{{ r.label }}</span>
+                  <span style="color:#1B2A41;white-space:pre-line;word-break:break-word">{{ r.value }}</span>
+                </sc-for>
+              </div>
+              <div>
+                <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:8px">Reeps envoyés</div>
+                <sc-for list="{{ cbHistory }}" as="h" hint-placeholder-count="2">
+                  <div style="padding:10px 0;border-top:1px solid rgba(27,42,65,.07)">
+                    <div style="font-size:13px;font-weight:600">{{ h.title }}</div>
+                    <div style="font-size:11.5px;color:#8A98A8;margin-top:2px">{{ h.meta }}</div>
+                  </div>
+                </sc-for>
+                <sc-if value="{{ cbNoHistory }}" hint-placeholder-val="{{ false }}"><div style="font-size:12.5px;color:#8A98A8">Aucun Reep envoyé à ce contact pour l'instant.</div></sc-if>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ cbFormOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position:fixed;inset:0;background:rgba(27,42,65,.4);z-index:225;display:flex;align-items:center;justify-content:center;padding:20px" onClick="{{ closeCbForm }}">
+          <div style="background:#fff;border-radius:14px;max-width:660px;width:100%;max-height:92vh;overflow:auto;box-shadow:0 20px 50px rgba(27,42,65,.28)" onClick="{{ stopProp }}">
+            <div style="padding:18px 22px;border-bottom:1px solid rgba(27,42,65,.08);display:flex;align-items:center;gap:12px">
+              <span style="flex:1;font-family:Georgia,Cambria,serif;font-size:18px;font-weight:700">{{ cbFormTitle }}</span>
+              <button onClick="{{ closeCbForm }}" style="border:none;background:none;font-size:18px;color:#8A98A8">×</button>
+            </div>
+            <div style="padding:20px 22px;display:flex;flex-direction:column;gap:16px">
+              <div style="display:flex;background:#F3F6F8;border-radius:10px;padding:3px;gap:2px">
+                <sc-for list="{{ cbKindTabs }}" as="t" hint-placeholder-count="2">
+                  <button onClick="{{ t.onClick }}" style="flex:1;border:none;background:{{ t.bg }};color:{{ t.fg }};border-radius:8px;padding:10px;font-size:13px;font-weight:700">{{ t.label }}</button>
+                </sc-for>
+              </div>
+              <div style="display:grid;grid-template-columns:{{ cbFormCols }};gap:12px">
+                <sc-for list="{{ cbFields }}" as="f" hint-placeholder-count="8">
+                  <label style="grid-column:{{ f.span }};display:flex;flex-direction:column;gap:6px;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700">{{ f.label }}
+                    <input value="{{ f.value }}" onChange="{{ f.onChange }}" placeholder="{{ f.placeholder }}" style="border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;outline:none;color:#1B2A41;text-transform:none;letter-spacing:0;font-weight:500" />
+                  </label>
+                </sc-for>
+              </div>
+              <label style="display:flex;flex-direction:column;gap:6px;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700">Notes
+                <textarea value="{{ cbNotes }}" onChange="{{ onCbNotes }}" rows="3" placeholder="Informations utiles : horaires, domaine d'intervention, remarques…" style="border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:13.5px;line-height:1.5;resize:none;outline:none;color:#1B2A41;text-transform:none;letter-spacing:0;font-weight:500"></textarea>
+              </label>
+              <sc-if value="{{ hasCbFormError }}" hint-placeholder-val="{{ false }}"><div style="font-size:12.5px;color:#D62839">{{ cbFormError }}</div></sc-if>
+              <div style="display:flex;gap:10px">
+                <button onClick="{{ saveCb }}" style="flex:1;padding:13px;border:none;border-radius:10px;background:#1B2A41;color:#fff;font-size:14px;font-weight:600">Enregistrer</button>
+                <button onClick="{{ closeCbForm }}" style="padding:13px 18px;border:1px solid rgba(27,42,65,.16);border-radius:10px;background:#fff;color:#48566B;font-size:14px;font-weight:600">Annuler</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ cbSendOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position:fixed;inset:0;background:rgba(27,42,65,.4);z-index:225;display:flex;align-items:center;justify-content:center;padding:20px" onClick="{{ closeCbSend }}">
+          <div style="background:#fff;border-radius:14px;max-width:500px;width:100%;max-height:90vh;overflow:auto;box-shadow:0 20px 50px rgba(27,42,65,.28);padding:20px 22px" onClick="{{ stopProp }}">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+              <span style="flex:1;font-family:Georgia,Cambria,serif;font-size:17px;font-weight:700">✉️ Envoyer un Reep à {{ cbDetail.label }}</span>
+              <button onClick="{{ closeCbSend }}" style="border:none;background:none;font-size:18px;color:#8A98A8">×</button>
+            </div>
+            <sc-if value="{{ cbSendNotDone }}" hint-placeholder-val="{{ true }}">
+              <p style="margin:0 0 14px;font-size:12.5px;line-height:1.55;color:#5A6B7E">Le Reep choisi est transmis par e-mail à {{ cbDetail.email }}, avec sa description, sa localisation et votre message.</p>
+              <select value="{{ cbSendReep }}" onChange="{{ onCbSendReep }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;background:#fff;margin-bottom:12px">
+                <option value="">Choisir un Reep…</option>
+                <sc-for list="{{ cbSendOptions }}" as="o" hint-placeholder-count="4"><option value="{{ o.key }}">{{ o.label }}</option></sc-for>
+              </select>
+              <textarea value="{{ cbSendNote }}" onChange="{{ onCbSendNote }}" rows="3" placeholder="Message d'accompagnement (facultatif)…" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:12px 13px;font-size:13.5px;line-height:1.5;resize:none;outline:none"></textarea>
+              <sc-if value="{{ hasCbSendError }}" hint-placeholder-val="{{ false }}"><div style="margin-top:10px;font-size:12.5px;color:#D62839">{{ cbSendError }}</div></sc-if>
+              <button onClick="{{ doCbSend }}" style="margin-top:14px;width:100%;padding:13px;border:none;border-radius:10px;background:#D62839;color:#fff;font-size:14px;font-weight:600">Envoyer le Reep</button>
+            </sc-if>
+            <sc-if value="{{ cbSendDoneShow }}" hint-placeholder-val="{{ false }}">
+              <div style="background:#EFF7F1;border-radius:10px;padding:14px 16px;font-size:13px;line-height:1.6;color:#1F5637;margin-top:8px">{{ cbSendDone }}</div>
+              <button onClick="{{ closeCbSend }}" style="margin-top:14px;width:100%;padding:13px;border:none;border-radius:10px;background:#1B2A41;color:#fff;font-size:14px;font-weight:600">Fermer</button>
+            </sc-if>
+          </div>
         </div>
       </sc-if>
 
@@ -1248,6 +1445,8 @@ class Component extends DCLogic {
     msgSel: null, msgQuery: "", pendingConv: null, draft: "",
     pwdPanelOpen: false, pwdOld: "", pwdNew1: "", pwdNew2: "", pwdMsg: "", pwdMsgIsError: false,
     modMode: "pending", modNotes: {}, modError: "", modConfirmDelete: null,
+    gAct: null, gAssignSel: null, gStatusSel: null, gTrMode: "account", gTrAccount: "", gTrContact: "", gTrEmail: "", gTrNote: "", gTrError: "", gTrDone: "",
+    cbQuery: "", cbType: "Tous", cbSel: null, cbForm: null, cbFormError: "", cbDelConfirm: false, cbSendOpen: false, cbSendReep: "", cbSendNote: "", cbSendError: "", cbSendDone: "",
     activityMode: "journal", activityCommune: "Toutes", activityStatus: "Tous", activityCat: "Toutes", activityPeriod: "Tout", activitySearch: "",
     contractQuery: "", contractSel: null, contractDraft: null, contractSaved: false, contractEditOpen: false,
     addCommuneOpen: false, addCommuneName: "", addCommuneError: "",
@@ -1294,7 +1493,7 @@ class Component extends DCLogic {
     const goSite = () => { window.location.href = "./Reeper Web.dc.html"; };
     const doLogout = () => { Store.logout(); window.location.href = "./Reeper Web.dc.html"; };
 
-    const navDef = [["Tableau de bord", "dash"], ["Reeps", "reeps"], ["Comptes", "accounts"], ["Messagerie", "msg"], ["Activité", "activity"], ["Modération", "moderation"], ["Contrats", "contracts"]];
+    const navDef = [["Tableau de bord", "dash"], ["Reeps", "reeps"], ["Comptes", "accounts"], ["Messagerie", "msg"], ["Activité", "activity"], ["Modération", "moderation"], ["Contacts", "carnet"], ["Contrats", "contracts"]];
 
     const startDelete = (key) => {
       if (s.pendingDeleteKey === key) {
@@ -1469,6 +1668,58 @@ class Component extends DCLogic {
       const notes = { ...s.modNotes }; delete notes[id];
       this.setState({ modError: "", modNotes: notes, modConfirmDelete: null });
     };
+    // --- Actions Gérant sur un Reep (fenêtre) ---
+    const gAgents = selReepRaw ? Store.agentsForCommune(selReepRaw.commune) : [];
+    const gAssignKeys = s.gAssignSel != null ? s.gAssignSel : ((selReepRaw && selReepRaw.assignedTo) || []);
+    const gResetAct = { gAct: null, gAssignSel: null, gStatusSel: null, gTrError: "", gTrDone: "", gTrNote: "", gTrAccount: "", gTrContact: "", gTrEmail: "" };
+    const gAccounts = Store.listAccounts({}).filter((a) => (a.type === "agent" || a.type === "gerant") && a.status === "active")
+      .sort((a, b) => a.displayName.localeCompare(b.displayName));
+    const gContacts = Store.listContacts();
+    const gSend = () => {
+      if (!selReepRaw) return;
+      const mode = s.gTrMode;
+      if (mode === "account" && !s.gTrAccount) { this.setState({ gTrError: "Choisissez une personne." }); return; }
+      if (mode === "contact" && !s.gTrContact) { this.setState({ gTrError: "Choisissez un contact." }); return; }
+      const res = Store.forwardReep(selReepRaw.id, { kind: mode, accountKey: s.gTrAccount, contactId: s.gTrContact, email: s.gTrEmail, note: s.gTrNote, who: session.displayName, whoKey: session.key });
+      if (!res.ok) { this.setState({ gTrError: res.error }); return; }
+      this.setState({ gTrError: "", gTrDone: "✓ Reep " + selReepRaw.id + " transmis à " + res.name + (res.email && res.email !== res.name ? " (" + res.email + ")" : "") + (mode === "account" ? ", et notifié dans sa messagerie Reeper" : "") + ". L'envoi d'e-mails n'est pas encore actif : le message est enregistré dans l'historique du Reep (envoi simulé)." });
+    };
+
+    // --- Carnet de contacts ---
+    const cbAll = gContacts;
+    const cbQ = s.cbQuery.trim().toLowerCase();
+    const cbFiltered = cbAll.filter((c) => {
+      if (s.cbType === "Personnes" && c.kind === "company") return false;
+      if (s.cbType === "Entreprises" && c.kind !== "company") return false;
+      if (!cbQ) return true;
+      return [Store.contactLabel(c), c.firstName, c.lastName, c.company, c.email, c.phone, c.mobile, c.city, c.companyNumber, (c.tags || []).join(" ")].join(" ").toLowerCase().indexOf(cbQ) >= 0;
+    });
+    const cbPerson = (c) => ((c.firstName || "") + " " + (c.lastName || "")).trim();
+    const cbCur = s.cbSel ? Store.getContact(s.cbSel) : null;
+    const cbAddr = (c) => [c.street, [c.zip, c.city].filter(Boolean).join(" "), c.country && c.country !== "Suisse" ? c.country : ""].filter(Boolean).join("\n");
+    const cbForm = s.cbForm;
+    const cbSetF = (k) => (e) => this.setState({ cbForm: { ...this.state.cbForm, [k]: e.target.value }, cbFormError: "" });
+    const cbIsCompany = !!cbForm && cbForm.kind === "company";
+    const cbFieldDefs = cbForm ? (cbIsCompany ? [
+      ["company", "Nom de l'entreprise", "Ex. Électricité Rolle SA", "1 / -1"],
+      ["companyNumber", "N° d'entreprise (IDE)", "CHE-123.456.789", "auto"],
+      ["website", "Site web", "www.exemple.ch", "auto"],
+      ["firstName", "Prénom du contact", "", "auto"], ["lastName", "Nom du contact", "", "auto"],
+      ["jobTitle", "Fonction du contact", "Ex. Responsable d'exploitation", "1 / -1"]
+    ] : [
+      ["firstName", "Prénom", "", "auto"], ["lastName", "Nom", "", "auto"],
+      ["jobTitle", "Fonction", "Ex. Technicien", "1 / -1"],
+      ["company", "Entreprise", "", "auto"], ["companyNumber", "N° d'entreprise (IDE)", "CHE-123.456.789", "auto"]
+    ]).concat([
+      ["phone", "Téléphone", "022 000 00 00", "auto"], ["mobile", "Mobile", "079 000 00 00", "auto"],
+      ["email", "E-mail", "contact@exemple.ch", "1 / -1"],
+      ["street", "Rue et numéro", "", "1 / -1"], ["zip", "NPA", "1260", "auto"], ["city", "Localité", "Nyon", "auto"],
+      ["country", "Pays", "Suisse", "auto"]
+    ]).concat(cbIsCompany ? [] : [["website", "Site web", "www.exemple.ch", "auto"]]).concat([
+      ["tagsText", "Étiquettes (séparées par des virgules)", "Ex. voirie, éclairage, urgence", "1 / -1"]
+    ]) : [];
+    const cbBlank = { kind: "person", firstName: "", lastName: "", company: "", companyNumber: "", jobTitle: "", phone: "", mobile: "", email: "", street: "", zip: "", city: "", country: "Suisse", website: "", notes: "", tagsText: "" };
+    const cbSendDisabledReeps = Store.getReeps({}).map((r) => ({ key: r.id, label: r.id + " — " + r.title + " · " + r.commune }));
     const sendDraft = () => {
       if (!curSupportConv || !s.draft.trim()) return;
       Store.sendMessage({ from: replyFromKey, to: curSupportConv.withKey, text: s.draft.trim() });
@@ -1536,6 +1787,116 @@ class Component extends DCLogic {
         onRestore: () => { Store.restoreReep(r.id, session.displayName); this.forceUpdate(); }
       })),
       activityTrashEmpty: !activityTrashRaw.length,
+
+      gOpenAssign: () => this.setState({ gAct: "assign", gAssignSel: null }),
+      gOpenTransfer: () => this.setState({ gAct: "transfer", gTrError: "", gTrDone: "" }),
+      gOpenStatus: () => this.setState({ gAct: "status", gStatusSel: null }),
+      gOpenDelete: () => this.setState({ gAct: "delete" }),
+      gCloseAct: () => this.setState(gResetAct),
+      gAssignOpen: s.gAct === "assign" && !!selReepRaw,
+      gAssignChips: gAgents.map((a) => {
+        const on = gAssignKeys.indexOf(a.key) >= 0;
+        return {
+          name: a.displayName, role: roleTier(a.role),
+          bg: on ? "#1B2A41" : "#fff", fg: on ? "#fff" : "#1B2A41", border: on ? "#1B2A41" : "rgba(27,42,65,.2)",
+          onClick: () => this.setState({ gAssignSel: on ? gAssignKeys.filter((k) => k !== a.key) : gAssignKeys.concat(a.key) })
+        };
+      }),
+      gAssignEmpty: gAgents.length === 0,
+      gAssignLabel: "Enregistrer l'attribution",
+      gSaveAssign: () => { if (selReepRaw) Store.assignReep(selReepRaw.id, gAssignKeys, session.displayName); this.setState(gResetAct); },
+      gStatusOpen: s.gAct === "status" && !!selReepRaw,
+      gStatusSel: s.gStatusSel || (selReepRaw ? selReepRaw.status : "Nouveau"),
+      gStatusOptions: STATUS_ORDER,
+      onGStatus: (e) => this.setState({ gStatusSel: e.target.value }),
+      gSaveStatus: () => { if (selReepRaw) Store.updateStatus(selReepRaw.id, s.gStatusSel || selReepRaw.status, session.displayName); this.setState(gResetAct); },
+      gDeleteOpen: s.gAct === "delete" && !!selReepRaw,
+      gConfirmDelete: () => { if (selReepRaw) Store.deleteReep(selReepRaw.id, session.displayName); this.setState({ ...gResetAct, reepModalOpen: false, selId: null, lightboxOpen: false }); },
+      gTransferOpen: s.gAct === "transfer" && !!selReepRaw,
+      gTrTabs: [["account", "Personne Reeper"], ["contact", "Contact"], ["email", "Adresse e-mail"]].map(([mode, label]) => ({
+        label, bg: s.gTrMode === mode ? "#fff" : "transparent", fg: s.gTrMode === mode ? "#1B2A41" : "#8A98A8",
+        onClick: () => this.setState({ gTrMode: mode, gTrError: "" })
+      })),
+      gTrIsAccount: s.gTrMode === "account", gTrIsContact: s.gTrMode === "contact", gTrIsEmail: s.gTrMode === "email",
+      gTrAccount: s.gTrAccount, onGTrAccount: (e) => this.setState({ gTrAccount: e.target.value, gTrError: "" }),
+      gTrAccountOptions: gAccounts.map((a) => ({ key: a.key, label: a.displayName + " — " + a.role + (a.commune ? " · " + a.commune : "") })),
+      gTrContact: s.gTrContact, onGTrContact: (e) => this.setState({ gTrContact: e.target.value, gTrError: "" }),
+      gTrContactOptions: gContacts.map((c) => ({ key: c.id, label: Store.contactLabel(c) + (c.email ? " — " + c.email : " (pas d'e-mail)") })),
+      gTrNoContacts: gContacts.length === 0,
+      gTrEmail: s.gTrEmail, onGTrEmail: (e) => this.setState({ gTrEmail: e.target.value, gTrError: "" }),
+      gTrNote: s.gTrNote, onGTrNote: (e) => this.setState({ gTrNote: e.target.value }),
+      hasGTrError: !!s.gTrError, gTrError: s.gTrError,
+      gSendTransfer: gSend,
+      gTrNotDone: !s.gTrDone, gTrDoneShow: !!s.gTrDone, gTrDone: s.gTrDone,
+
+      isCarnet: s.screen === "carnet",
+      cbCount: cbAll.length,
+      cbQuery: s.cbQuery, onCbQuery: (e) => this.setState({ cbQuery: e.target.value }),
+      cbType: s.cbType, onCbType: (e) => this.setState({ cbType: e.target.value }), cbTypeOptions: ["Tous", "Personnes", "Entreprises"],
+      cbEmpty: cbFiltered.length === 0,
+      cbEmptyLabel: cbAll.length === 0 ? "Aucun contact pour l'instant. Cliquez sur « Nouveau contact » pour en ajouter un." : "Aucun contact ne correspond à cette recherche.",
+      cbRows: cbFiltered.map((c) => ({
+        icon: c.kind === "company" ? "🏢" : "👤", label: Store.contactLabel(c),
+        sub: c.kind === "company" ? [cbPerson(c), c.jobTitle].filter(Boolean).join(" · ") || "Entreprise" : [c.jobTitle, c.company].filter(Boolean).join(" · ") || "Personne",
+        email: c.email || "—", phone: c.phone || c.mobile || "—", city: [c.zip, c.city].filter(Boolean).join(" ") || "—",
+        onOpen: () => this.setState({ cbSel: c.id, cbDelConfirm: false })
+      })),
+      openCbNew: () => this.setState({ cbForm: { ...cbBlank }, cbFormError: "" }),
+      cbDetailOpen: s.screen === "carnet" && !!cbCur,
+      closeCb: () => this.setState({ cbSel: null, cbDelConfirm: false }),
+      cbDetail: cbCur ? {
+        icon: cbCur.kind === "company" ? "🏢" : "👤", label: Store.contactLabel(cbCur), email: cbCur.email,
+        sub: cbCur.kind === "company" ? "Entreprise" : (cbCur.jobTitle || "Personne"),
+        rows: [
+          ["Entreprise", cbCur.kind === "company" ? "" : cbCur.company], ["Personne de contact", cbCur.kind === "company" ? [cbPerson(cbCur), cbCur.jobTitle].filter(Boolean).join(" — ") : ""],
+          ["N° d'entreprise", cbCur.companyNumber], ["Fonction", cbCur.kind === "company" ? "" : cbCur.jobTitle],
+          ["Téléphone", cbCur.phone], ["Mobile", cbCur.mobile], ["E-mail", cbCur.email], ["Adresse", cbAddr(cbCur)],
+          ["Site web", cbCur.website], ["Étiquettes", (cbCur.tags || []).join(", ")], ["Notes", cbCur.notes]
+        ].filter((r) => r[1]).map((r) => ({ label: r[0], value: r[1] }))
+      } : { icon: "", label: "", email: "", sub: "", rows: [] },
+      cbHistory: cbCur ? (cbCur.history || []).map((h) => ({ title: h.reepId + " — " + h.reepTitle, meta: fmtDateTime(h.when) + " · " + h.by + (h.note ? " · " + h.note : "") })) : [],
+      cbNoHistory: !cbCur || !(cbCur.history || []).length,
+      openCbEdit: () => { if (cbCur) this.setState({ cbForm: { ...cbBlank, ...cbCur, tagsText: (cbCur.tags || []).join(", ") }, cbFormError: "" }); },
+      cbDeleteLabel: s.cbDelConfirm ? "Confirmer la suppression ?" : "Supprimer",
+      cbDeleteFn: () => {
+        if (!cbCur) return;
+        if (!s.cbDelConfirm) { this.setState({ cbDelConfirm: true }); return; }
+        Store.deleteContact(cbCur.id);
+        this.setState({ cbSel: null, cbDelConfirm: false });
+      },
+      cbFormOpen: !!cbForm,
+      cbFormTitle: cbForm && cbForm.id ? "Modifier le contact" : "Nouveau contact",
+      cbFormCols: "repeat(auto-fit,minmax(220px,1fr))",
+      cbKindTabs: [["person", "👤 Personne"], ["company", "🏢 Entreprise"]].map(([kind, label]) => ({
+        label, bg: cbForm && cbForm.kind === kind ? "#fff" : "transparent", fg: cbForm && cbForm.kind === kind ? "#1B2A41" : "#8A98A8",
+        onClick: () => this.setState({ cbForm: { ...this.state.cbForm, kind }, cbFormError: "" })
+      })),
+      cbFields: cbFieldDefs.map(([k, label, placeholder, span]) => ({ label, placeholder, span, value: (cbForm && cbForm[k]) || "", onChange: cbSetF(k) })),
+      cbNotes: (cbForm && cbForm.notes) || "", onCbNotes: cbSetF("notes"),
+      hasCbFormError: !!s.cbFormError, cbFormError: s.cbFormError,
+      closeCbForm: () => this.setState({ cbForm: null, cbFormError: "" }),
+      saveCb: () => {
+        const f = this.state.cbForm;
+        if (!f) return;
+        const res = Store.saveContact({ ...f, tags: (f.tagsText || "").split(",") });
+        if (!res.ok) { this.setState({ cbFormError: res.error }); return; }
+        this.setState({ cbForm: null, cbFormError: "", cbSel: res.contact.id, cbDelConfirm: false });
+      },
+      cbSendOpen: s.cbSendOpen && !!cbCur,
+      openCbSend: () => this.setState({ cbSendOpen: true, cbSendReep: "", cbSendNote: "", cbSendError: "", cbSendDone: "" }),
+      closeCbSend: () => this.setState({ cbSendOpen: false }),
+      cbSendReep: s.cbSendReep, onCbSendReep: (e) => this.setState({ cbSendReep: e.target.value, cbSendError: "" }),
+      cbSendOptions: cbSendDisabledReeps,
+      cbSendNote: s.cbSendNote, onCbSendNote: (e) => this.setState({ cbSendNote: e.target.value }),
+      hasCbSendError: !!s.cbSendError, cbSendError: s.cbSendError,
+      cbSendNotDone: !s.cbSendDone, cbSendDoneShow: !!s.cbSendDone, cbSendDone: s.cbSendDone,
+      doCbSend: () => {
+        if (!cbCur) return;
+        if (!s.cbSendReep) { this.setState({ cbSendError: "Choisissez le Reep à envoyer." }); return; }
+        const res = Store.forwardReep(s.cbSendReep, { kind: "contact", contactId: cbCur.id, note: s.cbSendNote, who: session.displayName, whoKey: session.key });
+        if (!res.ok) { this.setState({ cbSendError: res.error }); return; }
+        this.setState({ cbSendError: "", cbSendDone: "✓ Reep " + s.cbSendReep + " transmis à " + res.name + " (" + res.email + "). L'envoi d'e-mails n'est pas encore actif : le message est enregistré dans l'historique du contact et du Reep (envoi simulé)." });
+      },
 
       isModeration: s.screen === "moderation",
       modPendingCount,
@@ -1791,15 +2152,13 @@ class Component extends DCLogic {
       reepsEmpty: reepFiltered.length === 0,
       reepRows: reepFiltered.map((r) => ({
         ...r, rowBg: r.id === s.selId ? "#FAFBFC" : "#fff",
-        onClick: () => this.setState({ selId: r.id }),
-        onDoubleClick: () => this.setState({ selId: r.id, selPhotoIdx: 0, reepModalOpen: true })
+        onClick: () => this.setState({ selId: r.id, selPhotoIdx: 0, reepModalOpen: true })
       })),
 
-      hasSelReep: !!selReepRaw,
       selReepUnserved: !!(selReepRaw && selReepRaw.unserved),
       closeSelReep: () => this.setState({ selId: null, selPhotoIdx: 0, lightboxOpen: false }),
       reepModalOpen: s.reepModalOpen && !!selReepRaw,
-      closeReepModal: () => this.setState({ reepModalOpen: false, lightboxOpen: false }),
+      closeReepModal: () => this.setState({ reepModalOpen: false, lightboxOpen: false, gAct: null }),
       stopProp: (e) => e.stopPropagation(),
       contactOpen: s.contactOpen,
       openContact: () => this.setState({ contactOpen: true, ctSent: false, ctError: "" }),

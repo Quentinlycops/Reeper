@@ -161,6 +161,27 @@
     };
   }
 
+  function contactToRow(c) {
+    return {
+      id: c.id, kind: c.kind || "person", first_name: c.firstName || "", last_name: c.lastName || "",
+      company: c.company || "", company_number: c.companyNumber || "", job_title: c.jobTitle || "",
+      phone: c.phone || "", mobile: c.mobile || "", email: c.email || "",
+      street: c.street || "", zip: c.zip || "", city: c.city || "", country: c.country || "Suisse",
+      website: c.website || "", tags: c.tags || [], notes: c.notes || "", history: c.history || [],
+      created_at: c.createdAt || null, updated_at: Date.now()
+    };
+  }
+  function rowToContact(r) {
+    return {
+      id: r.id, kind: r.kind || "person", firstName: r.first_name || "", lastName: r.last_name || "",
+      company: r.company || "", companyNumber: r.company_number || "", jobTitle: r.job_title || "",
+      phone: r.phone || "", mobile: r.mobile || "", email: r.email || "",
+      street: r.street || "", zip: r.zip || "", city: r.city || "", country: r.country || "Suisse",
+      website: r.website || "", tags: r.tags || [], notes: r.notes || "", history: r.history || [],
+      createdAt: r.created_at || 0
+    };
+  }
+
   var _pushTimer = null;
   var _pendingPushData = null;
   var _pushInFlight = false;
@@ -173,7 +194,8 @@
       sbUpsert("groups", (data.groups || []).map(grpToRow), "id"),
       sbUpsert("contracts", (data.contracts || []).map(contractToRow), "commune"),
       sbUpsert("communes_meta", (data.communesMeta || []).map(communeMetaToRow), "name"),
-      sbUpsert("commune_config", (data.communeConfigs || []).map(commConfigToRow), "commune")
+      sbUpsert("commune_config", (data.communeConfigs || []).map(commConfigToRow), "commune"),
+      sbUpsert("contacts", (data.contacts || []).map(contactToRow), "id")
     ]).then(function (r) { _pushInFlight = false; return r; }, function (e) { _pushInFlight = false; throw e; });
   }
   function _schedulePush(data) {
@@ -198,9 +220,9 @@
 
   function syncPull() {
     if (!SYNC_ON || _pushTimer || _pushInFlight) return Promise.resolve(false);
-    return Promise.all([sbSelectAll("accounts"), sbSelectAll("reeps"), sbSelectAll("messages"), sbSelectAll("groups"), sbSelectAll("contracts"), sbSelectAll("communes_meta"), sbSelectAll("commune_config")])
+    return Promise.all([sbSelectAll("accounts"), sbSelectAll("reeps"), sbSelectAll("messages"), sbSelectAll("groups"), sbSelectAll("contracts"), sbSelectAll("communes_meta"), sbSelectAll("commune_config"), sbSelectAll("contacts")])
       .then(function (results) {
-        var accRows = results[0], reepRows = results[1], msgRows = results[2], grpRows = results[3], contractRows = results[4], metaRows = results[5], configRows = results[6];
+        var accRows = results[0], reepRows = results[1], msgRows = results[2], grpRows = results[3], contractRows = results[4], metaRows = results[5], configRows = results[6], contactRows = results[7];
         if (!accRows || !reepRows || !msgRows || !grpRows) return false;
         var data = load();
         // Cloud not seeded yet but we already have local data: push ours up instead of wiping local with empty cloud tables.
@@ -223,6 +245,9 @@
         }
         if (configRows && (configRows.length > 0 || !data.communeConfigs || data.communeConfigs.length === 0)) {
           data.communeConfigs = configRows.map(rowToCommConfig);
+        }
+        if (contactRows && (contactRows.length > 0 || !data.contacts || data.contacts.length === 0)) {
+          data.contacts = contactRows.map(rowToContact);
         }
         save(data);
         var hasNew = data.reeps.length > oldReepCount || data.messages.length > oldMsgCount;
@@ -365,6 +390,7 @@
     if (!data.messages) data.messages = [];
     if (!data.emailLog) data.emailLog = [];
     if (!data.groups) data.groups = [];
+    if (!data.contacts) data.contacts = [];
     if (data.seq == null) data.seq = 4900;
     if (!data.accounts.some(function (a) { return a.type === "gerant"; })) {
       var gerantSeed = DEFAULT_ACCOUNTS.filter(function (a) { return a.type === "gerant"; });
@@ -541,6 +567,12 @@
 
   function timelineEntry(label, who, when, note, internal) {
     return { label: label, who: who || "Citoyen anonyme", when: when || now(), note: note || "", internal: !!internal };
+  }
+
+  function contactLabel(c) {
+    if (c.kind === "company") return c.company || "—";
+    var n = ((c.firstName || "") + " " + (c.lastName || "")).trim();
+    return n || c.company || "—";
   }
 
   function pendingMod(r) { return !!(r.abuse && r.abuse.status === "pending"); }
@@ -748,7 +780,7 @@
   var Store = {
     TREE: TREE, SERVICE: SERVICE, SERVICE_NAMES: SERVICE_NAMES, COMMUNES: COMMUNES, COMMUNE_CODES: COMMUNE_CODES,
     REEPER_SUPPORT_KEY: REEPER_SUPPORT_KEY,
-    PASSWORDLESS: PASSWORDLESS,
+    PASSWORDLESS: PASSWORDLESS, contactLabel: contactLabel,
     SYNC_ON: SYNC_ON, startAutoSync: startAutoSync, syncPull: syncPull, flushPush: flushPush,
     POINTS_PER_REEP: POINTS_PER_REEP, REWARDS: REWARDS,
 
@@ -1301,6 +1333,90 @@
       r.timeline.push(timelineEntry("Reep restauré", who || "Agent commune", now(), "Restauré depuis la corbeille.", true));
       persist(data);
       return r;
+    },
+
+    // --- Gérant: carnet de contacts (personnes et entreprises) -----------------
+    listContacts: function () {
+      return load().contacts.slice().sort(function (a, b) {
+        return contactLabel(a).toLowerCase().localeCompare(contactLabel(b).toLowerCase());
+      });
+    },
+    getContact: function (id) {
+      return load().contacts.find(function (c) { return c.id === id; }) || null;
+    },
+    saveContact: function (o) {
+      var data = load();
+      var email = String(o.email || "").trim();
+      var first = String(o.firstName || "").trim(), last = String(o.lastName || "").trim(), company = String(o.company || "").trim();
+      var kind = o.kind === "company" ? "company" : "person";
+      if (kind === "company" ? !company : (!first && !last)) return { ok: false, error: kind === "company" ? "Le nom de l'entreprise est requis." : "Indiquez au moins un prénom ou un nom." };
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { ok: false, error: "Adresse e-mail invalide." };
+      var fields = {
+        kind: kind, firstName: first, lastName: last, company: company,
+        companyNumber: String(o.companyNumber || "").trim(), jobTitle: String(o.jobTitle || "").trim(),
+        phone: String(o.phone || "").trim(), mobile: String(o.mobile || "").trim(), email: email,
+        street: String(o.street || "").trim(), zip: String(o.zip || "").trim(), city: String(o.city || "").trim(),
+        country: String(o.country || "").trim() || "Suisse", website: String(o.website || "").trim(),
+        tags: (o.tags || []).map(function (t) { return String(t).trim(); }).filter(Boolean), notes: String(o.notes || "").trim()
+      };
+      var c = o.id ? data.contacts.find(function (x) { return x.id === o.id; }) : null;
+      if (c) Object.assign(c, fields);
+      else {
+        c = Object.assign({ id: "ct" + (data.seq = (data.seq || 4900) + 1), history: [], createdAt: now() }, fields);
+        data.contacts.push(c);
+      }
+      persist(data);
+      return { ok: true, contact: c };
+    },
+    deleteContact: function (id) {
+      var data = load();
+      data.contacts = data.contacts.filter(function (c) { return c.id !== id; });
+      persist(data);
+      sbDelete("contacts", "id", id);
+      return true;
+    },
+    // Transmission d'un Reep à une personne Reeper, un contact enregistré ou une adresse e-mail.
+    // L'envoi d'e-mail est simulé (journal local), comme les autres e-mails de l'application.
+    forwardReep: function (id, o) {
+      var data = load();
+      var i = findIndex(data, id);
+      if (i < 0) return { ok: false, error: "Reep introuvable." };
+      var r = data.reeps[i];
+      var name = "", email = "", account = null, contact = null;
+      if (o.kind === "account") {
+        account = findAccount(data, o.accountKey);
+        if (!account) return { ok: false, error: "Personne introuvable." };
+        name = account.displayName; email = account.email || "";
+      } else if (o.kind === "contact") {
+        contact = data.contacts.find(function (c) { return c.id === o.contactId; });
+        if (!contact) return { ok: false, error: "Contact introuvable." };
+        name = contactLabel(contact); email = contact.email || "";
+        if (!email) return { ok: false, error: "Ce contact n'a pas d'adresse e-mail." };
+      } else {
+        email = String(o.email || "").trim();
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { ok: false, error: "Adresse e-mail invalide." };
+        name = email;
+      }
+      var note = String(o.note || "").trim();
+      var who = o.who || "Gérant Reeper";
+      var desc = (r.abuse && r.abuse.status === "masked") ? "[Texte masqué par Reeper]" : (r.desc || "—");
+      if (email) {
+        data.emailLog.push({
+          id: "e" + (data.seq = (data.seq || 4900) + 1), from: EMAIL_SENDER, to: email, kind: "reep_forward", when: now(), simulated: true,
+          subject: "Reep " + r.id + " — " + r.title,
+          body: "Bonjour,\n\n" + who + " (Reeper) vous transmet le signalement suivant.\n\n" +
+            "Référence : " + r.id + "\nCatégorie : " + r.cat + "\nCommune : " + r.commune + "\nLieu : " + (r.place || r.address || "—") + "\n\n" +
+            "Description : " + desc + "\n" + (note ? "\nMessage : " + note + "\n" : "") + "\nCordialement,\nL'équipe Reeper"
+        });
+      }
+      r.timeline.push(timelineEntry("Reep transmis à " + name, who, now(), (email ? email : "") + (note ? (email ? " — " : "") + note : ""), true));
+      if (contact) {
+        contact.history = contact.history || [];
+        contact.history.unshift({ id: "h" + (data.seq = (data.seq || 4900) + 1), reepId: r.id, reepTitle: r.title, when: now(), by: who, note: note, email: email });
+      }
+      persist(data);
+      if (account) this.sendMessage({ from: o.whoKey, to: account.key, text: "Reep " + r.id + " — " + r.title + " vous est transmis." + (note ? " " + note : ""), reep: r.id });
+      return { ok: true, name: name, email: email, simulated: true };
     },
 
     // --- Gérant: commune contract CRM -----------------------------------------
