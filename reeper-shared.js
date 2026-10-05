@@ -18,14 +18,15 @@
     return h;
   }
   function sbUpsert(table, rows, pk) {
-    if (!SYNC_ON || !rows || !rows.length) return Promise.resolve();
+    if (!SYNC_ON || !rows || !rows.length) return Promise.resolve(false);
     return fetch(SUPABASE_URL + "/rest/v1/" + table + "?on_conflict=" + pk, {
       method: "POST",
       headers: sbHeaders({ Prefer: "resolution=merge-duplicates,return=minimal" }),
       body: JSON.stringify(rows)
     }).then(function (r) {
-      if (!r.ok) return r.text().then(function (t) { try { console.warn("[reeper-sync] push rejected:", table, r.status, t); } catch (x) {} });
-    }).catch(function (e) { try { console.warn("[reeper-sync] push failed:", table, e); } catch (x) {} });
+      if (!r.ok) return r.text().then(function (t) { try { console.warn("[reeper-sync] push rejected:", table, r.status, t); } catch (x) {} return false; });
+      return true;
+    }).catch(function (e) { try { console.warn("[reeper-sync] push failed:", table, e); } catch (x) {} return false; });
   }
   function sbDelete(table, col, val) {
     if (!SYNC_ON) return Promise.resolve();
@@ -182,21 +183,87 @@
     };
   }
 
+  // --- Synchronisation incrémentale ------------------------------------------
+  // data.syncSig = { u: { table: { pk: updated_at connu } }, h: { table: { pk: empreinte de la ligne } } }
+  // Pull : une requête minuscule (pk + updated_at) par table ; seules les lignes modifiées sont
+  // téléchargées (et jamais les photos d'un Reep déjà connu). Push : seules les lignes modifiées sont envoyées.
+  var SYNC_TABLES = [
+    { name: "accounts", pk: "key", list: "accounts", toRow: accToRow, fromRow: rowToAcc },
+    { name: "reeps", pk: "id", list: "reeps", toRow: reepToRow, fromRow: rowToReep },
+    { name: "messages", pk: "id", list: "messages", toRow: msgToRow, fromRow: rowToMsg },
+    { name: "groups", pk: "id", list: "groups", toRow: grpToRow, fromRow: rowToGrp },
+    { name: "contracts", pk: "commune", list: "contracts", toRow: contractToRow, fromRow: rowToContract },
+    { name: "communes_meta", pk: "name", list: "communesMeta", toRow: communeMetaToRow, fromRow: rowToCommuneMeta },
+    { name: "commune_config", pk: "commune", list: "communeConfigs", toRow: commConfigToRow, fromRow: rowToCommConfig },
+    { name: "contacts", pk: "id", list: "contacts", toRow: contactToRow, fromRow: rowToContact }
+  ];
+  var REEP_UPDATE_COLS = "id,title,path,leaf,cat,service,status,commune,place,address,lat,lon,description,close_photo_url,close_note,agents_in,assigned_to,reporter_account,created_at,closed_at,deleted,deleted_at,timeline,points_awarded,abuse,updated_at";
+
+  function hashStr(s) {
+    var h = 5381;
+    for (var i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+    return h + ":" + s.length;
+  }
+  function rowHash(row) {
+    var c = {};
+    for (var k in row) if (k !== "updated_at") c[k] = row[k];
+    return hashStr(JSON.stringify(c));
+  }
+  function sigOf(data) {
+    if (!data.syncSig) data.syncSig = { u: {}, h: {} };
+    if (!data.syncSig.u) data.syncSig.u = {};
+    if (!data.syncSig.h) data.syncSig.h = {};
+    return data.syncSig;
+  }
+  function sbSelect(table, query) {
+    if (!SYNC_ON) return Promise.resolve(null);
+    return fetch(SUPABASE_URL + "/rest/v1/" + table + "?" + query, { headers: sbHeaders() })
+      .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+      .catch(function (e) { try { console.warn("[reeper-sync] pull failed:", table, e); } catch (x) {} return null; });
+  }
+  function sbSelectIn(table, cols, pk, ids) {
+    if (!ids.length) return Promise.resolve([]);
+    var chunks = [];
+    for (var i = 0; i < ids.length; i += 40) chunks.push(ids.slice(i, i + 40));
+    return Promise.all(chunks.map(function (ch) {
+      var list = ch.map(function (id) { return '"' + String(id).replace(/"/g, '\\"') + '"'; }).join(",");
+      return sbSelect(table, "select=" + cols + "&" + pk + "=in." + encodeURIComponent("(" + list + ")"));
+    })).then(function (parts) {
+      var out = [];
+      for (var j = 0; j < parts.length; j++) { if (!parts[j]) return null; out = out.concat(parts[j]); }
+      return out;
+    });
+  }
+
   var _pushTimer = null;
   var _pendingPushData = null;
   var _pushInFlight = false;
   function _runPush(data) {
     _pushInFlight = true;
-    return Promise.all([
-      sbUpsert("accounts", (data.accounts || []).map(accToRow), "key"),
-      sbUpsert("reeps", (data.reeps || []).map(reepToRow), "id"),
-      sbUpsert("messages", (data.messages || []).map(msgToRow), "id"),
-      sbUpsert("groups", (data.groups || []).map(grpToRow), "id"),
-      sbUpsert("contracts", (data.contracts || []).map(contractToRow), "commune"),
-      sbUpsert("communes_meta", (data.communesMeta || []).map(communeMetaToRow), "name"),
-      sbUpsert("commune_config", (data.communeConfigs || []).map(commConfigToRow), "commune"),
-      sbUpsert("contacts", (data.contacts || []).map(contactToRow), "id")
-    ]).then(function (r) { _pushInFlight = false; return r; }, function (e) { _pushInFlight = false; throw e; });
+    var sigNow = sigOf(load());
+    var jobs = SYNC_TABLES.map(function (t) {
+      var known = sigNow.h[t.name] || {};
+      var changed = (data[t.list] || []).map(t.toRow).filter(function (row) { return known[row[t.pk]] !== rowHash(row); });
+      if (!changed.length) return Promise.resolve({ t: t, rows: [] });
+      return sbUpsert(t.name, changed, t.pk).then(function (ok) { return { t: t, rows: ok ? changed : [] }; });
+    });
+    return Promise.all(jobs).then(function (res) {
+      var cur = load();
+      var sig = sigOf(cur);
+      var touched = false;
+      res.forEach(function (x) {
+        x.rows.forEach(function (row) {
+          if (!sig.u[x.t.name]) sig.u[x.t.name] = {};
+          if (!sig.h[x.t.name]) sig.h[x.t.name] = {};
+          sig.u[x.t.name][row[x.t.pk]] = row.updated_at;
+          sig.h[x.t.name][row[x.t.pk]] = rowHash(row);
+          touched = true;
+        });
+      });
+      if (touched) save(cur);
+      _pushInFlight = false;
+      return res;
+    }, function (e) { _pushInFlight = false; throw e; });
   }
   function _schedulePush(data) {
     if (!SYNC_ON) return;
@@ -218,42 +285,135 @@
     return _runPush(d);
   }
 
+  function _notifySync(hasNew) {
+    try { window.dispatchEvent(new CustomEvent("reeper:sync", { detail: { hasNew: hasNew } })); } catch (e) {}
+  }
+
+  // Première synchronisation (aucune signature locale) : récupération complète, le cloud remplace le local.
+  function _fullPull() {
+    return Promise.all(SYNC_TABLES.map(function (t) { return sbSelectAll(t.name); })).then(function (results) {
+      var accRows = results[0], reepRows = results[1], msgRows = results[2], grpRows = results[3];
+      if (!accRows || !reepRows || !msgRows || !grpRows) return false;
+      var data = load();
+      // Cloud not seeded yet but we already have local data: push ours up instead of wiping local with empty cloud tables.
+      if (accRows.length === 0 && reepRows.length === 0 && (data.accounts.length > 0 || data.reeps.length > 0)) {
+        _schedulePush(data);
+        return false;
+      }
+      var oldReepCount = data.reeps.length, oldMsgCount = data.messages.length;
+      SYNC_TABLES.forEach(function (t, i) {
+        var rows = results[i];
+        if (!rows) return;
+        var local = data[t.list];
+        // Tables optionnelles (ajoutées plus tard) : une table cloud vide n'efface jamais les données locales.
+        var optional = i >= 4;
+        if (optional && rows.length === 0 && local && local.length > 0 && !(t.name === "contracts" && local.every(function (c) { return !c.annualAmount && !c.journal.length; }))) return;
+        data[t.list] = rows.map(t.fromRow);
+      });
+      data.syncSig = { u: {}, h: {} };
+      SYNC_TABLES.forEach(function (t, i) {
+        var rows = results[i];
+        if (!rows) return;
+        data.syncSig.u[t.name] = {};
+        data.syncSig.h[t.name] = {};
+        rows.forEach(function (row) {
+          data.syncSig.u[t.name][row[t.pk]] = row.updated_at;
+          data.syncSig.h[t.name][row[t.pk]] = rowHash(t.toRow(t.fromRow(row)));
+        });
+      });
+      save(data);
+      var hasNew = data.reeps.length > oldReepCount || data.messages.length > oldMsgCount;
+      _notifySync(hasNew);
+      return hasNew;
+    });
+  }
+
   function syncPull() {
     if (!SYNC_ON || _pushTimer || _pushInFlight) return Promise.resolve(false);
-    return Promise.all([sbSelectAll("accounts"), sbSelectAll("reeps"), sbSelectAll("messages"), sbSelectAll("groups"), sbSelectAll("contracts"), sbSelectAll("communes_meta"), sbSelectAll("commune_config"), sbSelectAll("contacts")])
-      .then(function (results) {
-        var accRows = results[0], reepRows = results[1], msgRows = results[2], grpRows = results[3], contractRows = results[4], metaRows = results[5], configRows = results[6], contactRows = results[7];
-        if (!accRows || !reepRows || !msgRows || !grpRows) return false;
-        var data = load();
-        // Cloud not seeded yet but we already have local data: push ours up instead of wiping local with empty cloud tables.
-        if (accRows.length === 0 && reepRows.length === 0 && (data.accounts.length > 0 || data.reeps.length > 0)) {
-          _schedulePush(data);
-          return false;
-        }
-        var oldReepCount = data.reeps.length, oldMsgCount = data.messages.length;
-        data.accounts = accRows.map(rowToAcc);
-        data.reeps = reepRows.map(rowToReep);
-        data.messages = msgRows.map(rowToMsg);
-        data.groups = grpRows.map(rowToGrp);
-        // Contracts / communes_meta tables are optional (added later) — only apply if the pull
-        // actually succeeded, and never let an empty/missing cloud table wipe locally-entered data.
-        if (contractRows && (contractRows.length > 0 || !data.contracts || data.contracts.every(function (c) { return !c.annualAmount && !c.journal.length; }))) {
-          data.contracts = contractRows.map(rowToContract);
-        }
-        if (metaRows && (metaRows.length > 0 || !data.communesMeta || data.communesMeta.length === 0)) {
-          data.communesMeta = metaRows.map(rowToCommuneMeta);
-        }
-        if (configRows && (configRows.length > 0 || !data.communeConfigs || data.communeConfigs.length === 0)) {
-          data.communeConfigs = configRows.map(rowToCommConfig);
-        }
-        if (contactRows && (contactRows.length > 0 || !data.contacts || data.contacts.length === 0)) {
-          data.contacts = contactRows.map(rowToContact);
-        }
+    var local0 = load();
+    if (!local0.syncSig) return _fullPull();
+    return Promise.all(SYNC_TABLES.map(function (t) { return sbSelect(t.name, "select=" + t.pk + ",updated_at"); })).then(function (lights) {
+      for (var q = 0; q < lights.length; q++) if (!lights[q]) return false;
+      var data = load();
+      var sig = sigOf(data);
+      // Cloud wiped but we still have local data: push ours up instead of deleting local.
+      if (lights[0].length === 0 && lights[1].length === 0 && (data.accounts.length > 0 || data.reeps.length > 0)) {
+        data.syncSig = { u: {}, h: {} };
         save(data);
-        var hasNew = data.reeps.length > oldReepCount || data.messages.length > oldMsgCount;
-        try { window.dispatchEvent(new CustomEvent("reeper:sync", { detail: { hasNew: hasNew } })); } catch (e) {}
+        _schedulePush(data);
+        return false;
+      }
+      var plan = SYNC_TABLES.map(function (t, i) {
+        var known = sig.u[t.name] || {};
+        var cloud = {};
+        lights[i].forEach(function (r) { cloud[r[t.pk]] = r.updated_at; });
+        return {
+          t: t, cloud: cloud,
+          changed: lights[i].filter(function (r) { return known[r[t.pk]] !== r.updated_at; }).map(function (r) { return r[t.pk]; }),
+          removed: Object.keys(known).filter(function (k) { return !(k in cloud); })
+        };
+      });
+      var anyChange = plan.some(function (p) { return p.changed.length || p.removed.length; });
+      if (!anyChange) return false;
+      // Télécharger uniquement les lignes modifiées (Reeps déjà connus : sans les photos d'origine).
+      return Promise.all(plan.map(function (p) {
+        if (!p.changed.length) return Promise.resolve([]);
+        if (p.t.name !== "reeps") return sbSelectIn(p.t.name, "*", p.t.pk, p.changed);
+        var haveIds = {};
+        (data.reeps || []).forEach(function (r) { haveIds[r.id] = true; });
+        var knownIds = p.changed.filter(function (id) { return haveIds[id]; });
+        var freshIds = p.changed.filter(function (id) { return !haveIds[id]; });
+        return Promise.all([sbSelectIn("reeps", REEP_UPDATE_COLS, "id", knownIds), sbSelectIn("reeps", "*", "id", freshIds)]).then(function (two) {
+          if (!two[0] || !two[1]) return null;
+          two[0].forEach(function (row) { row.__partial = true; });
+          return two[0].concat(two[1]);
+        });
+      })).then(function (fetched) {
+        for (var q = 0; q < fetched.length; q++) if (!fetched[q]) return false;
+        var fresh = load();
+        var fsig = sigOf(fresh);
+        var oldReepCount = fresh.reeps.length, oldMsgCount = fresh.messages.length;
+        plan.forEach(function (p, i) {
+          var t = p.t;
+          var byPk = {};
+          fetched[i].forEach(function (row) { byPk[row[t.pk]] = row; });
+          var removed = {};
+          p.removed.forEach(function (k) { removed[k] = true; });
+          var seen = {};
+          var next = [];
+          (fresh[t.list] || []).forEach(function (obj) {
+            var k = obj[t.pk];
+            if (removed[k]) return;
+            if (byPk[k]) {
+              var row = byPk[k];
+              if (row.__partial) { row.photo_url = obj.photoUrl; row.photos = obj.photos || []; }
+              delete row.__partial;
+              next.push(t.fromRow(row));
+              seen[k] = true;
+            } else next.push(obj);
+          });
+          Object.keys(byPk).forEach(function (k) {
+            if (seen[k]) return;
+            var row = byPk[k];
+            delete row.__partial;
+            next.push(t.fromRow(row));
+          });
+          fresh[t.list] = next;
+          if (!fsig.u[t.name]) fsig.u[t.name] = {};
+          if (!fsig.h[t.name]) fsig.h[t.name] = {};
+          Object.keys(byPk).forEach(function (k) {
+            var row = byPk[k];
+            fsig.u[t.name][k] = p.cloud[k];
+            fsig.h[t.name][k] = rowHash(t.toRow(t.fromRow(row)));
+          });
+          p.removed.forEach(function (k) { delete fsig.u[t.name][k]; delete fsig.h[t.name][k]; });
+        });
+        save(fresh);
+        var hasNew = fresh.reeps.length > oldReepCount || fresh.messages.length > oldMsgCount;
+        _notifySync(hasNew);
         return hasNew;
       });
+    });
   }
 
   var _syncStarted = false;
