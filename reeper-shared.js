@@ -260,10 +260,9 @@
   function startAutoSync() {
     if (!SYNC_ON || _syncStarted) return;
     _syncStarted = true;
+    // Version test : une seule récupération au chargement de la page (chaque pull
+    // télécharge toutes les photos, ce qui consomme l'egress Supabase).
     syncPull();
-    setInterval(syncPull, 86400000);
-    window.addEventListener("focus", function () { syncPull(); });
-    document.addEventListener("visibilitychange", function () { if (!document.hidden) syncPull(); });
   }
   // --- end Supabase sync ------------------------------------------------------
 
