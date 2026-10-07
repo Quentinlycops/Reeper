@@ -915,6 +915,42 @@
     });
   }
 
+  // Recherche d'adresses dans le registre officiel suisse (swisstopo, numéro de rue inclus).
+  // opts.bias : nom de commune à privilégier (ex. "Gland") ; les résultats de cette commune passent en premier.
+  function searchAddresses(query, opts) {
+    opts = opts || {};
+    var limit = opts.limit || 12;
+    var served = Object.keys(COMMUNES);
+    function parse(r) {
+      var a = (r && r.attrs) || {};
+      var label = String(a.label || "").replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
+      var m = label.match(/^(.*?)\s+(\d{4})\s+(.+)$/);
+      var head = (m ? m[1] : label).replace(/\s+#$/, "");
+      var zip = m ? m[2] : "", town = m ? m[3] : "";
+      var nm = head.match(/^(.*?)\s+(\d+[a-zA-Z]?(?:[.\-\/]\d+)?)$/);
+      return {
+        id: String(a.featureId || label), street: nm ? nm[1] : head, num: nm ? nm[2] : "", zip: zip, town: town,
+        label: head + (town ? ", " + town : ""), display: label, lat: a.lat, lon: a.lon, isServed: served.indexOf(town) !== -1
+      };
+    }
+    function run(q) {
+      var url = "https://api3.geo.admin.ch/rest/services/ech/SearchServer?type=locations&origins=address&sr=4326&lang=fr&limit=" + limit + "&searchText=" + encodeURIComponent(q);
+      return fetch(url).then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+        .then(function (j) { return (j.results || []).map(parse).filter(function (x) { return typeof x.lat === "number" && typeof x.lon === "number"; }); })
+        .catch(function () { return []; });
+    }
+    var q0 = String(query || "").trim();
+    if (!q0) return Promise.resolve([]);
+    var queries = opts.bias ? [q0 + " " + opts.bias, q0] : [q0];
+    return Promise.all(queries.map(run)).then(function (lists) {
+      var seen = {}, out = [];
+      lists.forEach(function (list) { list.forEach(function (x) { if (!seen[x.id]) { seen[x.id] = true; out.push(x); } }); });
+      var rank = function (x) { return (opts.bias && x.town === opts.bias) ? 0 : x.isServed ? 1 : 2; };
+      out = out.map(function (x, i) { return { x: x, i: i }; }).sort(function (a, b) { return rank(a.x) - rank(b.x) || a.i - b.i; }).map(function (o) { return o.x; });
+      return out.slice(0, limit);
+    });
+  }
+
   function reverseGeocode(lat, lon) {
     var url = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=" + lat + "&lon=" + lon + "&zoom=18&addressdetails=1";
     return fetch(url, { headers: { "Accept": "application/json" } }).then(function (r) {
@@ -974,7 +1010,7 @@
     citizenStatus: citizenStatus,
     communeFromText: communeFromText,
     downscaleImage: downscaleImage,
-    reverseGeocode: reverseGeocode,
+    reverseGeocode: reverseGeocode, searchAddresses: searchAddresses,
 
     getAccount: function (key) {
       var data = load();

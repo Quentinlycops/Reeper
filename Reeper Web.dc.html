@@ -875,6 +875,20 @@ class Component extends DCLogic {
   }
 
   _forwardGeocode(query, skipCommune) {
+    const gen = (this._geoGen2 = (this._geoGen2 || 0) + 1);
+    const known = !skipCommune && this.state.communeGuess;
+    Store.searchAddresses(query, { bias: known || "", limit: 6 }).then((list) => {
+      if (gen !== this._geoGen2) return;
+      const best = known ? list.find((x) => x.town === known) : (list.find((x) => x.isServed) || list[0]);
+      if (!best) { this._forwardGeocodeNominatim(query, skipCommune); return; }
+      const guess = this.state.communeManual ? this.state.communeGuess : (Store.communeFromText(best.display) || best.town || this.state.communeGuess);
+      this.setState({ geoLat: best.lat, geoLon: best.lon, geo: true, communeGuess: guess, addrNum: this.state.addrNum || best.num || "" });
+      const el = document.querySelector('reeper-map[data-role="loc-picker"]');
+      if (el && el.panTo) el.panTo(best.lat, best.lon, 17);
+    });
+  }
+
+  _forwardGeocodeNominatim(query, skipCommune) {
     const gen = (this._geoGen = (this._geoGen || 0) + 1);
     const knownCommune = !skipCommune && this.state.communeGuess;
     const fullQuery = knownCommune ? query + ", " + knownCommune : query;
@@ -901,6 +915,14 @@ class Component extends DCLogic {
 
   _fetchAddrSuggestions(query) {
     const gen = (this._suggGen = (this._suggGen || 0) + 1);
+    Store.searchAddresses(query, { bias: this.state.communeGuess || "Gland", limit: 12 }).then((list) => {
+      if (gen !== this._suggGen) return;
+      if (list.length) { this.setState({ addrSuggestions: list }); return; }
+      this._fetchAddrSuggestionsNominatim(query, gen);
+    });
+  }
+
+  _fetchAddrSuggestionsNominatim(query, gen) {
     var url = "https://nominatim.openstreetmap.org/search?format=jsonv2&limit=15&countrycodes=ch&addressdetails=1&accept-language=fr&viewbox=6.05,46.65,6.95,46.20&q=" + encodeURIComponent(query);
     fetch(url)
       .then((r) => r.json()).then((list) => {
@@ -923,11 +945,11 @@ class Component extends DCLogic {
     const session = Store.getSession();
     const loggedIn = !!(session && session.type === "citizen");
     const path = s.path || [];
-    const romandieDefault = { lat: 46.45, lon: 6.85 };
+    const romandieDefault = (Store.COMMUNES.Gland && Store.COMMUNES.Gland.center) || { lat: 46.4183, lon: 6.2664 };
     const fullAddr = s.addrText.trim() + (s.addrNum.trim() ? " " + s.addrNum.trim() : "");
     const mapCenterLat = s.geoLat != null ? s.geoLat : romandieDefault.lat;
     const mapCenterLon = s.geoLon != null ? s.geoLon : romandieDefault.lon;
-    const mapZoom = s.geoLat != null ? 16 : 10;
+    const mapZoom = s.geoLat != null ? 16 : 13;
     const rows = Store.getReeps({ includeModeration: true }).filter((d) => loggedIn && d.reporterAccount === session.key).map(deco).map((d, i) => ({
       ...d, onClick: () => this.setState({ sel: i, selPhotoIdx: 0 }),
       ring: "1px solid rgba(27,42,65,.1)",
@@ -1138,7 +1160,7 @@ class Component extends DCLogic {
       addrSuggestions: s.addrSuggestions.map((a) => ({
         label: a.label,
         onClick: () => {
-          this.setState({ addrText: a.street, geoLat: a.lat, geoLon: a.lon, geo: true, addrSuggestions: [], communeManual: false, communeGuess: Store.communeFromText(a.display) || a.town || s.communeGuess });
+          this.setState({ addrText: a.street, addrNum: a.num || s.addrNum, geoLat: a.lat, geoLon: a.lon, geo: true, addrSuggestions: [], communeManual: false, communeGuess: Store.communeFromText(a.display) || a.town || s.communeGuess });
           const el = document.querySelector('reeper-map[data-role="loc-picker"]');
           if (el && el.panTo) el.panTo(a.lat, a.lon, 17);
         }

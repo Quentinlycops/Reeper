@@ -2325,6 +2325,20 @@ class Component extends DCLogic {
   }
 
   _forwardGeocodeNR(query, skipCommune) {
+    const gen = (this._nrGeoGen2 = (this._nrGeoGen2 || 0) + 1);
+    const known = !skipCommune && this.state.nrCommune;
+    Store.searchAddresses(query, { bias: known || "", limit: 6 }).then((list) => {
+      if (gen !== this._nrGeoGen2) return;
+      const best = known ? list.find((x) => x.town === known) : (list.find((x) => x.isServed) || list[0]);
+      if (!best) { this._forwardGeocodeNRNominatim(query, skipCommune); return; }
+      const guess = this.state.nrCommuneManual ? this.state.nrCommune : (Store.communeFromText(best.display) || best.town || this.state.nrCommune);
+      this.setState({ nrLat: best.lat, nrLon: best.lon, nrCommune: guess, nrAddrNum: this.state.nrAddrNum || best.num || "" });
+      const el = document.querySelector('reeper-map[data-role="nr-map"]');
+      if (el && el.panTo) el.panTo(best.lat, best.lon, 17);
+    });
+  }
+
+  _forwardGeocodeNRNominatim(query, skipCommune) {
     const gen = (this._nrGeoGen = (this._nrGeoGen || 0) + 1);
     const knownCommune = !skipCommune && this.state.nrCommune;
     const fullQuery = knownCommune ? query + ", " + knownCommune : query;
