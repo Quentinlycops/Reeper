@@ -429,11 +429,11 @@
   var TREE = {
     "Voirie": {
       "Avaloir": { "Avaloir bétonné": null, "Avaloir bouché": null, "Grille manquante": null },
-      "Chaussée": { "Béton/ciment": null, "Endommagée": null, "Glissante": { "Autre": null, "Neige/verglas": null }, "Huile sur la chaussée": null, "Marquage": null },
+      "Chaussée": { "Béton/ciment": null, "Endommagée": null, "Glissante (hors gel)": null, "Huile sur la chaussée": null, "Marquage": null },
       "Passage piéton": { "Avaloir gênant": null, "Bordure à modifier": null, "Dalles podotactiles": { "Endommagées": null, "Mal placées": null, "Non contrastées": null, "Obstacle gênant": null }, "Marquage": null },
-      "Piste cyclable": { "Bordure à modifier": null, "Endommagée": null, "Glissante": { "Autre": null, "Neige/verglas": null }, "Marquage": null, "Verre sur piste cyclable": null },
+      "Piste cyclable": { "Bordure à modifier": null, "Endommagée": null, "Glissante (hors gel)": null, "Marquage": null, "Verre sur piste cyclable": null },
       "Taque égout": { "Bruyante": null, "Cassée": null },
-      "Trottoir": { "Endommagé": null, "Escaliers à sécuriser": null, "Glissant": { "Autre": null, "Neige/verglas": null }, "Obstacle gênant": null }
+      "Trottoir": { "Endommagé": null, "Escaliers à sécuriser": null, "Glissant (hors gel)": null, "Obstacle gênant": null }
     },
     "Propreté publique": {
       "Bulle à verre": { "Débordante": { "Blanc": null, "Vert": null, "Brun": null }, "Déchets aux abords": null, "Sale": null },
@@ -482,13 +482,23 @@
       "Trotinette": { "Partagée": null, "Privée": null },
       "Vélo": { "Partagé": null, "Privé": null },
       "Voiture": { "Partagée": null, "Privée": null }
+    },
+    "Lac / rivière": {
+      "Pollution": { "Hydrocarbures / huile": null, "Déchets dans l'eau ou sur la rive": null, "Eau trouble, colorée ou mousse": null, "Autre": null },
+      "Animaux": { "Animal mort": null, "Animal blessé ou en détresse": null, "Prolifération / nuisance": null }
+    },
+    "Hiver": {
+      "Trottoir glissant (gel, verglas, neige)": null,
+      "Route glissante (gel, verglas, neige)": null,
+      "Escaliers glissants (gel, verglas, neige)": null
     }
   };
 
   var SERVICE = {
     "Voirie": "Voirie", "Propreté publique": "Propreté publique", "Plantation": "Espaces verts",
     "Signalisation": "Voirie", "Éclairage": "Éclairage", "Mobilier urbain": "Bâtiments",
-    "Monument": "Bâtiments", "Véhicule abandonné": "Voirie"
+    "Monument": "Bâtiments", "Véhicule abandonné": "Voirie",
+    "Lac / rivière": "Espaces verts", "Hiver": "Voirie"
   };
 
   var SERVICE_NAMES = ["Voirie", "Propreté publique", "Éclairage", "Espaces verts", "Bâtiments"];
