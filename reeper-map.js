@@ -79,9 +79,9 @@
       var center = this._parseCenter();
       var zoom = parseFloat(this.getAttribute("zoom")) || 15;
       this._map = L.map(this._container, { zoomControl: true, scrollWheelZoom: false }).setView(center, zoom);
-      L.tileLayer("https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png", {
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
-        attribution: "&copy; OpenStreetMap contributors &copy; CARTO"
+        attribution: "&copy; <a href=\"https://www.openstreetmap.org/copyright\" target=\"_blank\" rel=\"noopener\">OpenStreetMap</a> contributors"
       }).addTo(this._map);
       this._layer = L.layerGroup().addTo(this._map);
       this._renderMarkers();
