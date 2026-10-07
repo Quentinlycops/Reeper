@@ -673,7 +673,7 @@
     };
   }
 
-  var EMAIL_SENDER = "contact@reeper.ch";
+  var EMAIL_SENDER = "info@reeper.ch";
 
   function emailFor(kind, o) {
     var firstName = o.firstName || "";
@@ -695,7 +695,7 @@
         body: "Bonjour " + firstName + ",\n\n" +
           "Votre demande de création de compte pour la commune de " + commune + " a bien été enregistrée.\n\n" +
           "Votre accès est en cours de validation par l'administrateur de votre commune sur Reeper. Vous recevrez un email dès que votre compte sera activé.\n\n" +
-          "Si vous avez des questions, vous pouvez contacter votre administrateur communal ou notre équipe à contact@reeper.ch.\n\n" +
+          "Si vous avez des questions, vous pouvez contacter votre administrateur communal ou notre équipe à info@reeper.ch.\n\n" +
           "À très vite,\nL'équipe Reeper"
       };
     }

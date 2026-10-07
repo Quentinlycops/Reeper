@@ -464,7 +464,7 @@ input,textarea,select{font-family:inherit}
                           <span style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700">E-mail envoyé (aperçu)</span>
                         </div>
                         <div style="padding:16px 18px">
-                          <div style="font-size:12px;color:#8A98A8;margin-bottom:2px">De : contact@reeper.ch</div>
+                          <div style="font-size:12px;color:#8A98A8;margin-bottom:2px">De : info@reeper.ch</div>
                           <div style="font-size:12px;color:#8A98A8;margin-bottom:10px">À : {{ signupEmailTo }}</div>
                           <div style="font-size:15px;font-weight:700;margin-bottom:8px">{{ signupEmailSubject }}</div>
                           <div style="font-size:13.5px;line-height:1.7;color:#3E5064;white-space:pre-wrap">{{ signupEmailBody }}</div>
@@ -700,11 +700,11 @@ input,textarea,select{font-family:inherit}
           <div class="rp-footer-cols">
             <div class="rp-footer-col">
               <div class="lbl">Adresse</div>
-              <div>Route de Divonne 5<br>1260 Nyon, Suisse</div>
+              <div>Chemin Laurence 3<br>1185 Mont-sur-Rolle, Suisse</div>
             </div>
             <div class="rp-footer-col">
               <div class="lbl">Coordonnées</div>
-              <div>+41 22 365 14 80</div>
+              <div>+41 76 235 24 87</div>
               <div>info@reeper.ch</div>
             </div>
             <div class="rp-footer-col">
@@ -936,7 +936,7 @@ class Component extends DCLogic {
     const curRow = rows[s.sel] || rows[0];
     const curPhotos = curRow ? (curRow.photos && curRow.photos.length ? curRow.photos : (curRow.photoUrl ? [curRow.photoUrl] : [])) : [];
     const curPhotoActiveIdx = Math.min(s.selPhotoIdx || 0, Math.max(0, curPhotos.length - 1));
-    const navDef = [["Accueil", "home"], ["Signaler", "report"], ["Mes Reeps", "track"], ["Mentions légales", "legal"]];
+    const navDef = [["Accueil", "home"], ["Signaler", "report"], ["Mes Reeps", "track"]];
 
     const goTrack = () => (loggedIn ? this.go("track") : this.setState({ view: "login", wantTrack: true }));
     const afterSignupContinue = () => {
@@ -1305,7 +1305,7 @@ class Component extends DCLogic {
         { title: "Propriété intellectuelle", body: "Le contenu, la marque et l'interface Reeper sont protégés par la loi fédérale sur le droit d'auteur (LDA, RS 231.1). Toute reproduction sans autorisation est interdite." },
         { title: "Nature du signalement", body: "Un signalement Reeper n'est pas un dépôt de plainte. Il informe la commune d'une anomalie dans l'espace public ; pour porter plainte, adressez-vous à la police. Les informations transmises proviennent de l'auteur du signalement et ne sont pas vérifiées par Reeper. Les faux signalements et les propos injurieux ou contraires à la loi peuvent être masqués ou supprimés par Reeper." },
         { title: "Responsabilité", body: "Reeper transmet les signalements aux communes partenaires. Le traitement, les délais et la priorisation relèvent de la seule responsabilité de la commune concernée." },
-        { title: "Contact", body: "Reeper Sàrl · Route de Divonne 5, 1260 Nyon · +41 22 365 14 80 · info@reeper.ch" }
+        { title: "Contact", body: "Reeper Sàrl · Chemin Laurence 3, 1185 Mont-sur-Rolle · +41 76 235 24 87 · info@reeper.ch" }
       ],
 
       aboutParagraphs: [
