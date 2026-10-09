@@ -1404,9 +1404,10 @@ const STATUS = {
   Nouveau: { bg: "#E7EDF3", fg: "#31506F", dot: "#D62839" },
   "En cours": { bg: "#FDF0E2", fg: "#A96A16", dot: "#E8A33D" },
   "Planifié (travaux)": { bg: "#EDE9F5", fg: "#54459B", dot: "#7A6BC4" },
-  Traité: { bg: "#E5F1EA", fg: "#2E6B48", dot: "#3F8F63" }
+  Traité: { bg: "#E5F1EA", fg: "#2E6B48", dot: "#3F8F63" },
+  Refusé: { bg: "#FDF2F3", fg: "#9B1C2B", dot: "#9B1C2B" }
 };
-const STATUS_ORDER = ["Nouveau", "En cours", "Planifié (travaux)", "Traité"];
+const STATUS_ORDER = ["Nouveau", "En cours", "Planifié (travaux)", "Traité", "Refusé"];
 
 const fmtDateTime = (ts) => {
   const d = new Date(ts);

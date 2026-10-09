@@ -807,9 +807,53 @@ select,textarea,input{font-family:inherit}
           <div style="flex:1"></div>
           <sc-if value="{{ isCurReepNew }}" hint-placeholder-val="{{ false }}">
             <button onClick="{{ acceptReep }}" style="border:none;background:#3F8F63;color:#fff;border-radius:9px;padding:10px 16px;font-size:13px;font-weight:700">✓ Accepter</button>
+            <button onClick="{{ openRefuseReep }}" style="border:1px solid rgba(214,40,57,.4);background:#fff;color:#D62839;border-radius:9px;padding:10px 16px;font-size:13px;font-weight:700">✕ Refuser</button>
+          </sc-if>
+          <sc-if value="{{ isCurRefused }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ reopenReepAction }}" style="border:1px solid rgba(27,42,65,.2);background:#fff;color:#1B2A41;border-radius:9px;padding:10px 16px;font-size:13px;font-weight:700">↺ Rouvrir ce Reep</button>
           </sc-if>
           <button onClick="{{ openExport }}" style="border:1px solid rgba(27,42,65,.14);background:#fff;border-radius:9px;padding:9px 14px;font-size:13px;font-weight:600;color:#1B2A41">⭳ Exporter le rapport</button>
         </div>
+
+        <sc-if value="{{ isCurRefused }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#FDF2F3;border-radius:12px;padding:15px 18px">
+            <div style="font-size:13.5px;font-weight:700;color:#9B1C2B">Reep refusé</div>
+            <div style="font-size:13.5px;line-height:1.6;color:#7A1A25;margin-top:5px">{{ refusalText }}</div>
+            <div style="font-size:12px;color:#9B6068;margin-top:8px">Cette justification est visible par le citoyen et l'équipe Reeper a été informée. Le Reep reste consultable dans « Reeps » (filtre « Refusés »).</div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ secRefuseOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="position:fixed;inset:0;background:rgba(27,42,65,.32);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px" onClick="{{ closeDetailSection }}">
+            <div style="background:#fff;border-radius:14px;padding:20px 22px;max-width:500px;width:100%;max-height:88vh;overflow:auto;box-shadow:0 20px 50px rgba(27,42,65,.28)" onClick="{{ stopProp }}">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+                <span class="rp-ic rp-ic-red">✕</span>
+                <span style="flex:1;font-family:Georgia,Cambria,serif;font-size:17px;font-weight:700">Refuser ce Reep</span>
+                <button onClick="{{ closeDetailSection }}" style="border:none;background:none;font-size:18px;color:#8A98A8">×</button>
+              </div>
+              <p style="margin:0 0 16px;font-size:12.5px;line-height:1.55;color:#5A6B7E">Le refus doit être justifié : le citoyen verra votre explication dans « Mes Reeps ». Le Reep n'est pas supprimé, il reste dans votre liste (filtre « Refusés ») et l'équipe Reeper est informée.</p>
+              <div style="display:flex;flex-direction:column;gap:16px">
+                <div>
+                  <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:9px">Motif</div>
+                  <div style="display:flex;flex-wrap:wrap;gap:8px">
+                    <sc-for list="{{ rrReasonChips }}" as="c" hint-placeholder-count="5">
+                      <button onClick="{{ c.onClick }}" style="border:none;background:{{ c.bg }};color:{{ c.fg }};border-radius:14px;padding:10px 14px;font-size:12.5px;font-weight:700;text-align:left">{{ c.label }}</button>
+                    </sc-for>
+                  </div>
+                </div>
+                <div>
+                  <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:9px">Justification (visible par le citoyen)</div>
+                  <textarea value="{{ rrNote }}" onChange="{{ onRrNote }}" rows="4" placeholder="Ex. Cette route est cantonale : le signalement a été transmis à l'État de Vaud." style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:12px 13px;font-size:13.5px;line-height:1.5;color:#1B2A41;resize:none;outline:none;background:#fff"></textarea>
+                </div>
+                <sc-if value="{{ hasRrError }}" hint-placeholder-val="{{ false }}"><div style="font-size:12.5px;color:#D62839">{{ rrError }}</div></sc-if>
+                <div style="display:flex;gap:10px">
+                  <button onClick="{{ confirmRefuseReep }}" style="flex:1;padding:13px;border:none;border-radius:10px;background:#D62839;color:#fff;font-size:14px;font-weight:600">Refuser le Reep</button>
+                  <button onClick="{{ closeDetailSection }}" style="padding:13px 18px;border:1px solid rgba(27,42,65,.16);border-radius:10px;background:#fff;color:#48566B;font-size:14px;font-weight:600">Annuler</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </sc-if>
 
         <div style="display:grid;grid-template-columns:{{ detailCols }};gap:18px;align-items:start">
           <div style="display:flex;flex-direction:column;gap:16px">
@@ -2040,7 +2084,8 @@ const STATUS = {
   Nouveau: { bg: "#E7EDF3", fg: "#31506F", dot: "#D62839" },
   "En cours": { bg: "#FDF0E2", fg: "#A96A16", dot: "#E8A33D" },
   "Planifié (travaux)": { bg: "#EDE9F5", fg: "#54459B", dot: "#7A6BC4" },
-  Traité: { bg: "#E5F1EA", fg: "#2E6B48", dot: "#3F8F63" }
+  Traité: { bg: "#E5F1EA", fg: "#2E6B48", dot: "#3F8F63" },
+  Refusé: { bg: "#FDF2F3", fg: "#9B1C2B", dot: "#9B1C2B" }
 };
 
 const relTime = (ts) => {
@@ -2158,7 +2203,7 @@ const sxCompute = (reeps, f) => {
     ],
     byCat: breakdown((r) => (r.path && r.path[0]) || "Autre"),
     byService: breakdown((r) => r.service || "—"),
-    byStatus: breakdown((r) => r.status, ["Nouveau", "En cours", "Planifié (travaux)", "Traité"])
+    byStatus: breakdown((r) => r.status, ["Nouveau", "En cours", "Planifié (travaux)", "Traité", "Refusé"])
   };
 };
 
@@ -2230,6 +2275,7 @@ class Component extends DCLogic {
     preview: false, note: "", closeNote: "", closePhotoDataUrl: null, service: null, status: null, saved: false, closed: false, selPhotoIdx: 0, lightboxOpen: false,
     rightsQuery: "", rightsService: "Tous", rightsRole: "Tous",
     abuseReasons: [], abuseNote: "", abuseError: "",
+    rrReason: "", rrNote: "", rrError: "",
     sxPeriod: "Depuis le début", sxFrom: "", sxTo: "", sxGroup: "Semaine", sxCat: "Toutes les catégories", sxService: "Tous les services", sxStatus: "Tous les statuts", sxExportOpen: false,
     detailSection: null, deleteReepConfirm: false, assignSelected: null, assignSaved: false,
     exportOpen: false,
@@ -2471,7 +2517,7 @@ class Component extends DCLogic {
     const dev = s.device || "Bureau";
     const mobile = dev === "Mobile", tablet = dev === "Tablette", desk = dev === "Bureau";
     const SHORT = { "Tableau de bord": "Tableau", "Carte": "Carte", "Reeps": "Liste", "Messagerie": "Messages", "Statistiques": "Stats", "Configuration": "Config" };
-    const STATUS_DOT = { Nouveau: "#D62839", "En cours": "#E8A33D", "Planifié (travaux)": "#7A6BC4", Traité: "#3F8F63" };
+    const STATUS_DOT = { Nouveau: "#D62839", "En cours": "#E8A33D", "Planifié (travaux)": "#7A6BC4", Traité: "#3F8F63", Refusé: "#9B1C2B" };
     const markersFor = (list) => JSON.stringify(list.map((d) => ({ id: d.id, lat: d.lat, lon: d.lon, color: STATUS_DOT[d.status] || "#D62839", label: d.title })));
 
     return {
@@ -2539,7 +2585,7 @@ class Component extends DCLogic {
       sxService: sxLockedService || s.sxService, sxServiceLocked: !!sxLockedService,
       sxServiceOptions: sxLockedService ? [sxLockedService] : ["Tous les services"].concat(serviceNames),
       onSxService: (e) => this.setState({ sxService: e.target.value }),
-      sxStatus: s.sxStatus, sxStatusOptions: ["Tous les statuts", "Nouveau", "En cours", "Planifié (travaux)", "Traité"],
+      sxStatus: s.sxStatus, sxStatusOptions: ["Tous les statuts", "Nouveau", "En cours", "Planifié (travaux)", "Traité", "Refusé"],
       onSxStatus: (e) => this.setState({ sxStatus: e.target.value }),
       sxCustom: s.sxPeriod === "Personnalisée",
       sxFrom: s.sxFrom, onSxFrom: (e) => this.setState({ sxFrom: e.target.value }),
@@ -3046,7 +3092,7 @@ class Component extends DCLogic {
         }),
 
       communeCenter: Store.COMMUNES[commune].center.lat + "," + Store.COMMUNES[commune].center.lon,
-      activeCount: REEPS.filter((d) => d.status !== "Traité").length,
+      activeCount: REEPS.filter((d) => d.status !== "Traité" && d.status !== "Refusé").length,
       miniMarkers: markersFor(REEPS),
 
       myAssignments: (session.key ? Store.personalJournalFor(session.key) : []).slice(0, 8).map((j) => ({
@@ -3064,14 +3110,15 @@ class Component extends DCLogic {
       legend: [
         { label: "Nouveau", dot: "#D62839" },
         { label: "En cours", dot: "#E8A33D" },
-        { label: "Traité", dot: "#3F8F63" }
+        { label: "Traité", dot: "#3F8F63" },
+        { label: "Refusé", dot: "#9B1C2B" }
       ],
       hasPreview: s.preview,
       closePreview: () => this.setState({ preview: false }),
 
       rows, rowCount: rows.length,
-      statusFilters: ["Tous", "Nouveaux", "En cours", "Traités"].map((label, i) => {
-        const key = ["Tous", "Nouveau", "En cours", "Traité"][i];
+      statusFilters: ["Tous", "Nouveaux", "En cours", "Traités", "Refusés"].map((label, i) => {
+        const key = ["Tous", "Nouveau", "En cours", "Traité", "Refusé"][i];
         return { label, onClick: () => this.setState({ filter: key }),
           bg: s.filter === key ? "#1B2A41" : "#fff", fg: s.filter === key ? "#fff" : "#48566B",
           border: s.filter === key ? "#1B2A41" : "rgba(27,42,65,.16)" };
@@ -3093,13 +3140,31 @@ class Component extends DCLogic {
       lightboxPrev: (e) => { e.stopPropagation(); this.setState({ selPhotoIdx: (selPhotoActiveIdx - 1 + selPhotos.length) % selPhotos.length }); },
       lightboxNext: (e) => { e.stopPropagation(); this.setState({ selPhotoIdx: (selPhotoActiveIdx + 1) % selPhotos.length }); },
       isCurReepNew: cur.status === "Nouveau",
+      isCurRefused: cur.status === "Refusé",
+      refusalText: ((cur.timeline || []).slice().reverse().find((t) => t.label === "Reep refusé") || {}).note || "",
+      secRefuseOpen: s.detailSection === "refuse",
+      openRefuseReep: () => this.setState({ detailSection: "refuse", rrReason: "", rrNote: "", rrError: "" }),
+      rrReasonChips: ["Hors compétence de la commune", "Doublon d'un Reep existant", "Informations insuffisantes", "Pas une anomalie / sans suite", "Autre motif"].map((label) => {
+        const on = s.rrReason === label;
+        return { label, bg: on ? "#D62839" : "#F3F6F8", fg: on ? "#fff" : "#1B2A41", onClick: () => this.setState({ rrReason: label, rrError: "" }) };
+      }),
+      rrNote: s.rrNote, onRrNote: (e) => this.setState({ rrNote: e.target.value, rrError: "" }),
+      hasRrError: !!s.rrError, rrError: s.rrError,
+      confirmRefuseReep: () => {
+        const res = Store.refuseReep(cur.id, { reason: s.rrReason, note: s.rrNote, who: agentName, whoKey: session.key });
+        if (!res.ok) { this.setState({ rrError: res.error }); return; }
+        this.setState({ detailSection: null, rrReason: "", rrNote: "", rrError: "", status: "Refusé", saved: false, syncToast: "Reep refusé — le citoyen et l'équipe Reeper sont informés" });
+        clearTimeout(this._toastTimer);
+        this._toastTimer = setTimeout(() => this.setState({ syncToast: "" }), 6000);
+      },
+      reopenReepAction: () => { Store.reopenReep(cur.id, agentName); this._transition(() => this.setState({ status: "Nouveau", saved: false })); },
       acceptReep: () => { Store.acceptReep(cur.id, agentName); this._transition(() => this.setState({ status: "En cours", saved: false })); },
       meta: [
         { label: "Signalé par", value: cur.reporterAccount ? (Store.getAccount(cur.reporterAccount) || {}).displayName || "Citoyen" : "Citoyen anonyme" },
         { label: "Reçu le", value: fmtDateTime(cur.createdAt) },
         { label: "Statut", value: cur.status }
       ],
-      statusEditable: ["Nouveau", "En cours", "Planifié (travaux)", "Traité"],
+      statusEditable: cur.status === "Refusé" ? ["Refusé", "Nouveau", "En cours", "Planifié (travaux)", "Traité"] : ["Nouveau", "En cours", "Planifié (travaux)", "Traité"],
       statusHint: status === "Planifié (travaux)" ? "Statut interne : le citoyen voit « En cours »." : "Les statuts internes s'affichent en forme simplifiée côté citoyen.",
       onStatusChange: (e) => this.setState({ status: e.target.value, saved: false }),
       serviceNames, service, onService: (e) => this.setState({ service: e.target.value, saved: false }),

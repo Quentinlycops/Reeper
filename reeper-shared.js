@@ -1427,6 +1427,36 @@
       return r;
     },
 
+    // Refus d'un nouveau Reep par la commune : motif + justification obligatoires, visibles du citoyen.
+    // Le Reep reste dans la liste de la commune (statut "Refusé") et l'équipe Reeper est informée par la messagerie.
+    refuseReep: function (id, o) {
+      var data = load();
+      var i = findIndex(data, id);
+      if (i < 0) return { ok: false, error: "Reep introuvable." };
+      var r = data.reeps[i];
+      if (r.status !== "Nouveau") return { ok: false, error: "Seul un nouveau Reep peut être refusé." };
+      var reason = String(o.reason || "").trim();
+      var note = String(o.note || "").trim();
+      if (!reason) return { ok: false, error: "Choisissez un motif de refus." };
+      if (note.length < 10) return { ok: false, error: "Justifiez le refus en quelques mots (10 caractères minimum) : ce texte est visible par le citoyen." };
+      r.status = "Refusé";
+      r.timeline.push(timelineEntry("Reep refusé", o.who || "Agent commune", now(), reason + " — " + note, false));
+      persist(data);
+      this.sendMessage({ from: o.whoKey, to: REEPER_SUPPORT_KEY, text: "Reep " + r.id + " (" + r.title + ") refusé par la commune de " + r.commune + ". Motif : " + reason + " — " + note, reep: r.id });
+      return { ok: true, reep: r };
+    },
+    reopenReep: function (id, who) {
+      var data = load();
+      var i = findIndex(data, id);
+      if (i < 0) return null;
+      var r = data.reeps[i];
+      if (r.status !== "Refusé") return r;
+      r.status = "Nouveau";
+      r.timeline.push(timelineEntry("Reep rouvert", who || "Agent commune", now(), "Le refus a été annulé, le Reep est de nouveau à traiter.", false));
+      persist(data);
+      return r;
+    },
+
     acceptReep: function (id, who) {
       var data = load();
       var i = findIndex(data, id);
@@ -2007,7 +2037,7 @@
       var wk = startOfWeek(now()), mo = startOfMonth(now());
       var week = all.filter(function (r) { return r.createdAt >= wk; }).length;
       var month = all.filter(function (r) { return r.createdAt >= mo; }).length;
-      var byStatus = { "Nouveau": 0, "En cours": 0, "Planifié (travaux)": 0, "Traité": 0 };
+      var byStatus = { "Nouveau": 0, "En cours": 0, "Planifié (travaux)": 0, "Traité": 0, "Refusé": 0 };
       all.forEach(function (r) { if (byStatus[r.status] == null) byStatus[r.status] = 0; byStatus[r.status]++; });
       return { week: week, month: month, total: all.length, byStatus: byStatus };
     },
@@ -2018,7 +2048,7 @@
       var wk = startOfWeek(now()), mo = startOfMonth(now());
       var week = all.filter(function (r) { return r.createdAt >= wk; }).length;
       var month = all.filter(function (r) { return r.createdAt >= mo; }).length;
-      var byStatus = { "Nouveau": 0, "En cours": 0, "Planifié (travaux)": 0, "Traité": 0 };
+      var byStatus = { "Nouveau": 0, "En cours": 0, "Planifié (travaux)": 0, "Traité": 0, "Refusé": 0 };
       var byCommune = {};
       Object.keys(COMMUNES).forEach(function (c) { byCommune[c] = 0; });
       all.forEach(function (r) {

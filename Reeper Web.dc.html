@@ -591,6 +591,13 @@ input,textarea,select{font-family:inherit}
                 <h2 style="margin:12px 0 0;font-family:Georgia,Cambria,serif;font-size:27px;font-weight:700">{{ cur.title }}</h2>
                 <div style="font-size:13px;color:#8A98A8;margin-top:5px">{{ cur.meta }}</div>
                 <p style="margin:16px 0 0;font-size:14.5px;line-height:1.65;color:#3E5064;max-width:66ch;text-wrap:pretty">{{ cur.desc }}</p>
+                <sc-if value="{{ cur.isRefused }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:18px;background:#FDF2F3;border-radius:12px;padding:15px 18px">
+                    <div style="font-size:13.5px;font-weight:700;color:#9B1C2B">Ce signalement n'a pas pu être pris en charge</div>
+                    <div style="font-size:13.5px;line-height:1.6;color:#7A1A25;margin-top:5px">{{ cur.refusal }}</div>
+                    <div style="font-size:12px;color:#9B6068;margin-top:8px">L'équipe Reeper a été informée. Vous pouvez effectuer un nouveau signalement si la situation évolue.</div>
+                  </div>
+                </sc-if>
                 <div style="margin-top:24px;border-top:1px solid rgba(27,42,65,.09);padding-top:8px">
                   <sc-for list="{{ cur.timeline }}" as="t" hint-placeholder-count="3">
                     <div style="padding:14px 0;border-bottom:1px solid rgba(27,42,65,.07);display:flex;gap:13px;align-items:flex-start">
@@ -598,6 +605,7 @@ input,textarea,select{font-family:inherit}
                       <span style="flex:1;min-width:0">
                         <span style="display:block;font-size:14px;font-weight:600">{{ t.label }}</span>
                         <span style="display:block;font-size:12px;color:#8A98A8;margin-top:2px">{{ t.when }}</span>
+                        <sc-if value="{{ t.hasNote }}" hint-placeholder-val="{{ false }}"><span style="display:block;font-size:12.5px;line-height:1.55;color:#7A1A25;margin-top:4px">{{ t.note }}</span></sc-if>
                       </span>
                     </div>
                   </sc-for>
@@ -776,7 +784,8 @@ const Store = window.ReeperStore;
 const STATUS = {
   Nouveau: { bg: "#E7EDF3", fg: "#31506F" },
   "En cours": { bg: "#FDF1E7", fg: "#9A5A1E" },
-  "Traité": { bg: "#EAF3ED", fg: "#2E6B48" }
+  "Traité": { bg: "#EAF3ED", fg: "#2E6B48" },
+  "Refusé": { bg: "#FDF2F3", fg: "#9B1C2B" }
 };
 
 const relTime = (ts) => {
@@ -800,7 +809,9 @@ const deco = (r) => {
     slot: "w-" + r.id, slotBig: "wb-" + r.id,
     src: r.photoUrl || "", hint: "Photo de l'anomalie",
     meta: r.place + " · " + (status === "Traité" && r.closedAt ? "clos le " + new Date(r.closedAt).toLocaleDateString("fr-CH", { day: "numeric", month: "long" }) : relTime(r.createdAt)),
-    timeline: r.timeline.filter((t) => !t.internal).map((t, i) => ({ label: t.label, when: fmtDate(t.when), dot: i === 0 ? "#1B2A41" : status === "Traité" ? "#3F8F63" : "#D62839" }))
+    timeline: r.timeline.filter((t) => !t.internal).map((t, i) => ({ label: t.label, when: fmtDate(t.when), note: t.label === "Reep refusé" ? t.note : "", hasNote: t.label === "Reep refusé" && !!t.note, dot: i === 0 ? "#1B2A41" : status === "Traité" ? "#3F8F63" : status === "Refusé" ? "#9B1C2B" : "#D62839" })),
+    isRefused: status === "Refusé",
+    refusal: (status === "Refusé" && (r.timeline.slice().reverse().find((t) => t.label === "Reep refusé") || {}).note) || ""
   };
 };
 
