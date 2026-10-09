@@ -1443,7 +1443,18 @@
       r.timeline.push(timelineEntry("Reep refusé", o.who || "Agent commune", now(), reason + " — " + note, false));
       persist(data);
       this.sendMessage({ from: o.whoKey, to: REEPER_SUPPORT_KEY, text: "Reep " + r.id + " (" + r.title + ") refusé par la commune de " + r.commune + ". Motif : " + reason + " — " + note, reep: r.id });
-      return { ok: true, reep: r };
+      // Informer les responsables de la commune : administrateurs et chef(s) du service concerné.
+      var self = this;
+      var notified = {};
+      this.adminsForCommune(r.commune).forEach(function (a) { notified[a.key] = a; });
+      this.agentsForCommune(r.commune).forEach(function (a) {
+        if ((a.role || "").toLowerCase().indexOf("chef") >= 0 && a.service === r.service) notified[a.key] = a;
+      });
+      delete notified[o.whoKey];
+      Object.keys(notified).forEach(function (k) {
+        self.sendMessage({ from: o.whoKey, to: k, text: "Reep " + r.id + " (" + r.title + ") refusé par " + (o.who || "un agent") + " — " + reason + " : " + note, reep: r.id });
+      });
+      return { ok: true, reep: r, notified: Object.keys(notified).map(function (k) { return notified[k].displayName; }) };
     },
     reopenReep: function (id, who) {
       var data = load();

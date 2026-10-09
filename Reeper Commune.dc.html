@@ -819,7 +819,7 @@ select,textarea,input{font-family:inherit}
           <div style="background:#FDF2F3;border-radius:12px;padding:15px 18px">
             <div style="font-size:13.5px;font-weight:700;color:#9B1C2B">Reep refusé</div>
             <div style="font-size:13.5px;line-height:1.6;color:#7A1A25;margin-top:5px">{{ refusalText }}</div>
-            <div style="font-size:12px;color:#9B6068;margin-top:8px">Cette justification est visible par le citoyen et l'équipe Reeper a été informée. Le Reep reste consultable dans « Reeps » (filtre « Refusés »).</div>
+            <div style="font-size:12px;color:#9B6068;margin-top:8px">Cette justification est visible par le citoyen. L'administrateur de la commune, le chef du service concerné et l'équipe Reeper ont été informés. Le Reep reste consultable dans « Reeps » (filtre « Refusés »).</div>
           </div>
         </sc-if>
 
@@ -831,7 +831,7 @@ select,textarea,input{font-family:inherit}
                 <span style="flex:1;font-family:Georgia,Cambria,serif;font-size:17px;font-weight:700">Refuser ce Reep</span>
                 <button onClick="{{ closeDetailSection }}" style="border:none;background:none;font-size:18px;color:#8A98A8">×</button>
               </div>
-              <p style="margin:0 0 16px;font-size:12.5px;line-height:1.55;color:#5A6B7E">Le refus doit être justifié : le citoyen verra votre explication dans « Mes Reeps ». Le Reep n'est pas supprimé, il reste dans votre liste (filtre « Refusés ») et l'équipe Reeper est informée.</p>
+              <p style="margin:0 0 16px;font-size:12.5px;line-height:1.55;color:#5A6B7E">Le refus doit être justifié : le citoyen verra votre explication dans « Mes Reeps ». Le Reep n'est pas supprimé, il reste dans votre liste (filtre « Refusés »). L'administrateur de la commune, le chef du service concerné et l'équipe Reeper sont informés.</p>
               <div style="display:flex;flex-direction:column;gap:16px">
                 <div>
                   <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:9px">Motif</div>
@@ -3153,7 +3153,7 @@ class Component extends DCLogic {
       confirmRefuseReep: () => {
         const res = Store.refuseReep(cur.id, { reason: s.rrReason, note: s.rrNote, who: agentName, whoKey: session.key });
         if (!res.ok) { this.setState({ rrError: res.error }); return; }
-        this.setState({ detailSection: null, rrReason: "", rrNote: "", rrError: "", status: "Refusé", saved: false, syncToast: "Reep refusé — le citoyen et l'équipe Reeper sont informés" });
+        this.setState({ detailSection: null, rrReason: "", rrNote: "", rrError: "", status: "Refusé", saved: false, syncToast: "Reep refusé — le citoyen, les responsables de la commune et l'équipe Reeper sont informés" });
         clearTimeout(this._toastTimer);
         this._toastTimer = setTimeout(() => this.setState({ syncToast: "" }), 6000);
       },
