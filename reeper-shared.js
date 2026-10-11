@@ -1317,6 +1317,16 @@
       return data.reeps.filter(function (r) { return r.deleted && (!commune || r.commune === commune); })
         .sort(function (a, b) { return (b.deletedAt || 0) - (a.deletedAt || 0); }).map(maskView);
     },
+    // Compteurs publics de signalements (jour / mois / année en cours), hors Reeps supprimés ou en modération.
+    publicCounts: function () {
+      var d = new Date();
+      var day = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+      var month = new Date(d.getFullYear(), d.getMonth(), 1).getTime();
+      var year = new Date(d.getFullYear(), 0, 1).getTime();
+      var list = load().reeps.filter(function (r) { return !r.deleted && !pendingMod(r); });
+      function since(ts) { return list.filter(function (r) { return r.createdAt >= ts; }).length; }
+      return { day: since(day), month: since(month), year: since(year) };
+    },
     listPublic: function (limit) {
       var data = load();
       return data.reeps.filter(function (r) { return !r.deleted && !pendingMod(r); })

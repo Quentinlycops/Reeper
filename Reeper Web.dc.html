@@ -161,23 +161,20 @@ input,textarea,select{font-family:inherit}
                 </div>
               </div>
 
-              <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:16px;overflow:hidden">
-                <div style="padding:18px 22px 12px;display:flex;align-items:center;gap:11px">
+              <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:16px;padding:22px 24px">
+                <div style="display:flex;align-items:center;gap:11px;margin-bottom:16px">
                   <span class="rp-ic rp-ic-red" style="width:30px;height:30px;font-size:14px">📍</span>
-                  <span style="font-family:Georgia,Cambria,serif;font-size:18px;font-weight:700;flex:1">Les derniers Reeps</span>
+                  <span style="font-family:Georgia,Cambria,serif;font-size:18px;font-weight:700;flex:1">Signalements reçus</span>
                 </div>
-                <sc-for list="{{ publicFeed }}" as="r" hint-placeholder-count="3">
-                  <div style="padding:14px 22px;border-top:1px solid rgba(27,42,65,.07);display:flex;align-items:center;gap:14px">
-                    <span style="width:52px;height:52px;flex:none;display:block">
-                      <image-slot id="{{ r.slot }}" shape="rounded" radius="9" src="{{ r.src }}" placeholder="{{ r.hint }}"></image-slot>
-                    </span>
-                    <span style="flex:1;min-width:0">
-                      <span style="display:block;font-size:14.5px;font-weight:600">{{ r.title }}</span>
-                      <span style="display:block;font-size:12px;color:#8A98A8;margin-top:3px">{{ r.meta }}</span>
-                    </span>
-                    <span style="flex:none;background:{{ r.bg }};color:{{ r.fg }};border-radius:999px;padding:5px 11px;font-size:11.5px;font-weight:700">{{ r.status }}</span>
-                  </div>
-                </sc-for>
+                <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">
+                  <sc-for list="{{ homeCounts }}" as="c" hint-placeholder-count="3">
+                    <div style="background:#F3F6F8;border-radius:12px;padding:14px 14px 13px">
+                      <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700">{{ c.label }}</div>
+                      <div style="font-family:Georgia,Cambria,serif;font-size:32px;font-weight:700;line-height:1.1;margin-top:8px;color:#1B2A41">{{ c.value }}</div>
+                      <div style="font-size:11.5px;color:#5A6B7E;margin-top:3px">{{ c.unit }}</div>
+                    </div>
+                  </sc-for>
+                </div>
               </div>
             </div>
           </div>
@@ -1101,7 +1098,15 @@ class Component extends DCLogic {
         { label: "Pompiers", num: "118" },
         { label: "Ambulance", num: "144" }
       ].map((e) => ({ ...e, tel: "tel:" + e.num })),
-      publicFeed: Store.listPublic(3).map(deco),
+      homeCounts: (() => {
+        const c = Store.publicCounts();
+        const unit = (n) => (n > 1 ? "signalements" : "signalement");
+        return [
+          { label: "Aujourd'hui", value: c.day, unit: unit(c.day) },
+          { label: "Ce mois-ci", value: c.month, unit: unit(c.month) },
+          { label: "Cette année", value: c.year, unit: unit(c.year) }
+        ];
+      })(),
 
       stepDone: s.step === "done",
       wizSteps: [
