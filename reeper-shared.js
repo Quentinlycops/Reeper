@@ -789,6 +789,11 @@
             (all.result || []).forEach(function (e) { if (e && e.id && !_photoCache[e.id]) _photoCache[e.id] = e; });
             _photoIDB = db;
             _photosDone();
+            // Migration immédiate d'un stockage historique (photos en ligne dans localStorage).
+            try {
+              var d0 = window.localStorage.getItem(LS_KEY) ? load() : { reeps: [] };
+              if ((d0.reeps || []).some(function (r) { return !r.photosExt && (r.photos && r.photos.length || r.photoUrl); })) save(d0);
+            } catch (e) {}
             _notifySync(false);   // les écrans se redessinent avec les photos
           };
           all.onerror = function () { _photosDone(); };
