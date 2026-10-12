@@ -829,7 +829,11 @@ class Component extends DCLogic {
     redeemMsg: "",
     contactOpen: false, ctName: "", ctEmail: "", ctSubject: "Question générale", ctMessage: "", ctSent: false, ctError: ""
   };
-  go(view) { this._transition(() => this.setState({ view })); }
+  go(view) {
+    // Se mettre à jour avant de créer un signalement : le numéro attribué ne doit pas entrer en collision avec un Reep créé ailleurs.
+    if (view === "report") Store.syncPull();
+    this._transition(() => this.setState({ view }));
+  }
   _transition(fn) {
     if (!document.startViewTransition) { fn(); return; }
     const t = document.startViewTransition(fn);
@@ -1086,7 +1090,7 @@ class Component extends DCLogic {
 
       goHome: () => this.go("home"),
       goTrack,
-      startReport: () => this.setState({ view: "report", step: "photo", cat: null, leaf: null, path: [], geo: false, geoLat: null, geoLon: null, addrText: "", addrNum: "", addrSuggestions: [], communeGuess: null, communeManual: false, desc: "", photoUrls: [], photoStepError: "", createdPoints: 0 }),
+      startReport: () => { Store.syncPull(); this.setState({ view: "report", step: "photo", cat: null, leaf: null, path: [], geo: false, geoLat: null, geoLon: null, addrText: "", addrNum: "", addrSuggestions: [], communeGuess: null, communeManual: false, desc: "", photoUrls: [], photoStepError: "", createdPoints: 0 }); },
 
       steps3: [
         { num: "01", title: "Photographiez", body: "Une photo de l'anomalie, depuis votre ordinateur ou votre téléphone." },

@@ -2697,7 +2697,7 @@ class Component extends DCLogic {
       isDash: s.screen === "dash", isMap: s.screen === "map", isList: s.screen === "list",
       isTrash: s.screen === "trash", isNewReep: s.screen === "newreep",
       isDetail: s.screen === "detail", isConfig: s.screen === "config",
-      goNewReep: () => this._transition(() => this.setState({ screen: "newreep", nrPhotoDataUrl: null, nrPath: [], nrLeaf: null, nrDesc: "", nrAddrText: "", nrAddrNum: "", nrCommune: null, nrCommuneManual: false, nrLat: null, nrLon: null, nrGeoError: "" })),
+      goNewReep: () => { Store.syncPull(); this._transition(() => this.setState({ screen: "newreep", nrPhotoDataUrl: null, nrPath: [], nrLeaf: null, nrDesc: "", nrAddrText: "", nrAddrNum: "", nrCommune: null, nrCommuneManual: false, nrLat: null, nrLon: null, nrGeoError: "" })); },
       isLegal: s.screen === "legal", goDash: () => this.go("dash"),
 
       convs: ALL_CONVS.map((c, i) => {
