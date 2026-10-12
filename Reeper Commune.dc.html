@@ -462,7 +462,7 @@ select,textarea,input{font-family:inherit}
       <div style="padding:{{ pagePad }};display:flex;flex-direction:column;gap:20px">
         <div>
           <h1 style="margin:0;font-family:Georgia,Cambria,serif;font-size:23px;font-weight:700;letter-spacing:-.3px">Tableau de bord</h1>
-          <div style="font-size:12.5px;color:#8A98A8;margin-top:3px">Semaine du 10 au 16 août 2026</div>
+          <div style="font-size:12.5px;color:#8A98A8;margin-top:3px">{{ weekLabel }}</div>
         </div>
         <div style="display:grid;grid-template-columns:{{ statsCols }};gap:16px">
           <sc-for list="{{ stats }}" as="k" hint-placeholder-count="3">
@@ -2573,6 +2573,14 @@ class Component extends DCLogic {
       ],
 
       isAdmin,
+      weekLabel: (() => {
+        const d = new Date();
+        const mon = new Date(d.getFullYear(), d.getMonth(), d.getDate() - ((d.getDay() + 6) % 7));
+        const sun = new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + 6);
+        const m1 = mon.toLocaleDateString("fr-CH", { month: "long" });
+        const m2 = sun.toLocaleDateString("fr-CH", { month: "long" });
+        return "Semaine du " + mon.getDate() + (mon.getMonth() !== sun.getMonth() ? " " + m1 : "") + " au " + sun.getDate() + " " + m2 + " " + sun.getFullYear();
+      })(),
 
       isStats: s.screen === "stats" && canStats,
       sxScopeLabel: "Commune de " + commune + (sxLockedService ? " · Service " + sxLockedService : ""),
