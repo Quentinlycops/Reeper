@@ -3,6 +3,15 @@
 
   var LS_KEY = "reeper_store_v1";
 
+  // Les photos (très lourdes, en base64) sont conservées dans IndexedDB et non dans localStorage
+  // (limite ~5 Mo par site) : le JSON principal reste petit et l'écriture ne peut plus échouer.
+  var PHOTO_DB_NAME = "reeper-photos";
+  var PHOTO_STORE = "reeps";
+  var _photoCache = {};      // id du Reep -> { id, photoUrl, photos, closePhotoUrl }
+  var _photoIDB = null;      // connexion IndexedDB (null = indisponible : photos gardées dans localStorage)
+  var _photoReady = false;   // lecture initiale d'IndexedDB terminée
+  var _photoWaiters = [];
+
   // Version test : connexion sans mot de passe. Mettre à false pour réactiver
   // la vérification (les mots de passe existants sont conservés tels quels).
   var PASSWORDLESS = true;
@@ -86,7 +95,7 @@
     return {
       id: row.id, title: row.title, path: row.path || [], leaf: row.leaf, cat: row.cat, service: row.service,
       status: row.status, commune: row.commune, place: row.place, address: row.address,
-      lat: row.lat, lon: row.lon, desc: row.description, photoUrl: row.photo_url, photos: row.photos || [],
+      lat: row.lat, lon: row.lon, desc: row.description, photoUrl: row.photo_url || (row.photos && row.photos[0]) || null, photos: row.photos || [],
       closePhotoUrl: row.close_photo_url, closeNote: row.close_note, agentsIn: row.agents_in || [],
       assignedTo: row.assigned_to || [],
       reporterAccount: row.reporter_account, createdAt: row.created_at, closedAt: row.closed_at,
@@ -197,6 +206,7 @@
     { name: "commune_config", pk: "commune", list: "communeConfigs", toRow: commConfigToRow, fromRow: rowToCommConfig },
     { name: "contacts", pk: "id", list: "contacts", toRow: contactToRow, fromRow: rowToContact }
   ];
+  var REEP_FRESH_COLS = "id,title,path,leaf,cat,service,status,commune,place,address,lat,lon,description,photos,close_photo_url,close_note,agents_in,assigned_to,reporter_account,created_at,closed_at,deleted,deleted_at,timeline,points_awarded,abuse,updated_at";
   var REEP_UPDATE_COLS = "id,title,path,leaf,cat,service,status,commune,place,address,lat,lon,description,close_photo_url,close_note,agents_in,assigned_to,reporter_account,created_at,closed_at,deleted,deleted_at,timeline,points_awarded,abuse,updated_at";
 
   function hashStr(s) {
@@ -240,10 +250,17 @@
   var _pushInFlight = false;
   function _runPush(data) {
     _pushInFlight = true;
+    return photosReady().then(function () { return _doPush(data); }, function (e) { _pushInFlight = false; throw e; });
+  }
+  function _doPush(data) {
+    attachPhotos(data);
     var sigNow = sigOf(load());
     var jobs = SYNC_TABLES.map(function (t) {
       var known = sigNow.h[t.name] || {};
-      var changed = (data[t.list] || []).map(t.toRow).filter(function (row) { return known[row[t.pk]] !== rowHash(row); });
+      var list = data[t.list] || [];
+      // Un Reep dont les photos sont indisponibles localement n'est jamais envoyé (cela effacerait celles du cloud).
+      if (t.name === "reeps") list = list.filter(hasPhotoData);
+      var changed = list.map(t.toRow).filter(function (row) { return known[row[t.pk]] !== rowHash(row); });
       if (!changed.length) return Promise.resolve({ t: t, rows: [] });
       return sbUpsert(t.name, changed, t.pk).then(function (ok) { return { t: t, rows: ok ? changed : [] }; });
     });
@@ -330,6 +347,10 @@
 
   function syncPull() {
     if (!SYNC_ON || _pushTimer || _pushInFlight) return Promise.resolve(false);
+    return photosReady().then(_syncPullInner);
+  }
+  function _syncPullInner() {
+    if (_pushTimer || _pushInFlight) return false;
     var local0 = load();
     if (!local0.syncSig) return _fullPull();
     return Promise.all(SYNC_TABLES.map(function (t) { return sbSelect(t.name, "select=" + t.pk + ",updated_at"); })).then(function (lights) {
@@ -353,6 +374,13 @@
           removed: Object.keys(known).filter(function (k) { return !(k in cloud); })
         };
       });
+      // Reeps connus mais dont les photos manquent localement (IndexedDB vide ou autre appareil) : à re-télécharger.
+      plan.forEach(function (p) {
+        if (p.t.name !== "reeps") return;
+        (data.reeps || []).forEach(function (r) {
+          if (!hasPhotoData(r) && (r.id in p.cloud) && p.changed.indexOf(r.id) < 0) p.changed.push(r.id);
+        });
+      });
       var anyChange = plan.some(function (p) { return p.changed.length || p.removed.length; });
       if (!anyChange) return false;
       // Télécharger uniquement les lignes modifiées (Reeps déjà connus : sans les photos d'origine).
@@ -360,10 +388,10 @@
         if (!p.changed.length) return Promise.resolve([]);
         if (p.t.name !== "reeps") return sbSelectIn(p.t.name, "*", p.t.pk, p.changed);
         var haveIds = {};
-        (data.reeps || []).forEach(function (r) { haveIds[r.id] = true; });
+        (data.reeps || []).forEach(function (r) { if (hasPhotoData(r)) haveIds[r.id] = true; });
         var knownIds = p.changed.filter(function (id) { return haveIds[id]; });
         var freshIds = p.changed.filter(function (id) { return !haveIds[id]; });
-        return Promise.all([sbSelectIn("reeps", REEP_UPDATE_COLS, "id", knownIds), sbSelectIn("reeps", "*", "id", freshIds)]).then(function (two) {
+        return Promise.all([sbSelectIn("reeps", REEP_UPDATE_COLS, "id", knownIds), fetchFreshReeps(freshIds)]).then(function (two) {
           if (!two[0] || !two[1]) return null;
           two[0].forEach(function (row) { row.__partial = true; });
           return two[0].concat(two[1]);
@@ -412,6 +440,23 @@
         var hasNew = fresh.reeps.length > oldReepCount || fresh.messages.length > oldMsgCount;
         _notifySync(hasNew);
         return hasNew;
+      });
+    });
+  }
+
+  // Reeps nouveaux : toutes les colonnes sauf photo_url (doublon de photos[0]) ; photo_url n'est
+  // redemandé que pour les anciens Reeps dont le tableau photos est vide.
+  function fetchFreshReeps(ids) {
+    return sbSelectIn("reeps", REEP_FRESH_COLS, "id", ids).then(function (rows) {
+      if (!rows) return null;
+      var bare = rows.filter(function (r) { return !r.photos || !r.photos.length; }).map(function (r) { return r.id; });
+      if (!bare.length) return rows;
+      return sbSelectIn("reeps", "id,photo_url", "id", bare).then(function (extra) {
+        (extra || []).forEach(function (e) {
+          var row = rows.find(function (r) { return r.id === e.id; });
+          if (row) row.photo_url = e.photo_url;
+        });
+        return rows;
       });
     });
   }
@@ -719,6 +764,81 @@
     return mail;
   }
 
+  // --- Photos hors localStorage -----------------------------------------------
+  function _photosDone() {
+    _photoReady = true;
+    var w = _photoWaiters;
+    _photoWaiters = [];
+    w.forEach(function (f) { try { f(); } catch (e) {} });
+  }
+  function photosReady() {
+    return _photoReady ? Promise.resolve() : new Promise(function (res) { _photoWaiters.push(res); });
+  }
+  function photosInit() {
+    try {
+      if (typeof indexedDB === "undefined" || !indexedDB) { _photosDone(); return; }
+      var req = indexedDB.open(PHOTO_DB_NAME, 1);
+      req.onupgradeneeded = function () { try { req.result.createObjectStore(PHOTO_STORE, { keyPath: "id" }); } catch (e) {} };
+      req.onerror = function () { _photosDone(); };
+      req.onblocked = function () { _photosDone(); };
+      req.onsuccess = function () {
+        var db = req.result;
+        try {
+          var all = db.transaction(PHOTO_STORE, "readonly").objectStore(PHOTO_STORE).getAll();
+          all.onsuccess = function () {
+            (all.result || []).forEach(function (e) { if (e && e.id && !_photoCache[e.id]) _photoCache[e.id] = e; });
+            _photoIDB = db;
+            _photosDone();
+            _notifySync(false);   // les écrans se redessinent avec les photos
+          };
+          all.onerror = function () { _photosDone(); };
+        } catch (e) { _photosDone(); }
+      };
+    } catch (e) { _photosDone(); }
+  }
+  function idbPut(entry) {
+    if (!_photoIDB) return;
+    try {
+      var tx = _photoIDB.transaction(PHOTO_STORE, "readwrite");
+      tx.objectStore(PHOTO_STORE).put(entry);
+      tx.onerror = function () { try { console.warn("[reeper] écriture des photos impossible"); } catch (x) {} };
+    } catch (e) {}
+  }
+  function rememberPhotos(r) {
+    if (r.photos === undefined && r.photoUrl === undefined && r.closePhotoUrl === undefined) return;
+    var e = _photoCache[r.id];
+    var photos = r.photos !== undefined ? r.photos : (e ? e.photos : []);
+    var p = r.photoUrl !== undefined ? r.photoUrl : (e ? e.photoUrl : null);
+    var c = r.closePhotoUrl !== undefined ? r.closePhotoUrl : (e ? e.closePhotoUrl : null);
+    if (e && e.photos === photos && e.photoUrl === p && e.closePhotoUrl === c) return;
+    e = { id: r.id, photoUrl: p || null, photos: photos || [], closePhotoUrl: c || null };
+    _photoCache[r.id] = e;
+    idbPut(e);
+  }
+  // Vrai si les photos du Reep sont disponibles (en ligne dans l'objet, ou dans le cache IndexedDB).
+  function hasPhotoData(r) { return !(r.photosExt && !_photoCache[r.id]); }
+  function attachPhotos(data) {
+    (data.reeps || []).forEach(function (r) {
+      if (!r.photosExt) return;
+      var e = _photoCache[r.id];
+      if (e) { r.photoUrl = e.photoUrl; r.photos = e.photos; r.closePhotoUrl = e.closePhotoUrl; }
+    });
+  }
+  var _storageErrShown = false;
+  function _storageError(err) {
+    try { console.warn("[reeper] écriture locale impossible", err); } catch (x) {}
+    if (_storageErrShown) return;
+    try {
+      if (typeof document === "undefined" || !document.body) return;
+      _storageErrShown = true;
+      var d = document.createElement("div");
+      d.style.cssText = "position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:9999;background:#9B1C2B;color:#fff;padding:12px 16px;border-radius:12px;font:600 13px/1.4 system-ui,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.3);max-width:90vw";
+      d.textContent = "Stockage du navigateur saturé : certaines données ne sont pas enregistrées localement. Libérez de l'espace (données du site) ou prévenez l'équipe Reeper.";
+      document.body.appendChild(d);
+      setTimeout(function () { try { d.remove(); } catch (x) {} }, 15000);
+    } catch (x) {}
+  }
+
   function load() {
     var raw = null;
     try { raw = window.localStorage.getItem(LS_KEY); } catch (e) {}
@@ -726,12 +846,24 @@
     try {
       var data = JSON.parse(raw);
       if (!data || !data.reeps) return migrate(seed());
+      attachPhotos(data);
       return migrate(data);
     } catch (e) { return migrate(seed()); }
   }
 
   function save(data) {
-    try { window.localStorage.setItem(LS_KEY, JSON.stringify(data)); } catch (e) {}
+    var out = data;
+    if (_photoIDB && _photoReady) {
+      out = Object.assign({}, data);
+      out.reeps = (data.reeps || []).map(function (r) {
+        var c = Object.assign({}, r);
+        if (hasPhotoData(r)) rememberPhotos(r);
+        delete c.photos; delete c.photoUrl; delete c.closePhotoUrl;
+        c.photosExt = true;
+        return c;
+      });
+    }
+    try { window.localStorage.setItem(LS_KEY, JSON.stringify(out)); } catch (e) { _storageError(e); }
   }
 
   function timelineEntry(label, who, when, note, internal) {
@@ -2215,5 +2347,6 @@
     }
   };
 
+  photosInit();
   window.ReeperStore = Store;
 })();
