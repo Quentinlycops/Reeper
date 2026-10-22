@@ -178,7 +178,7 @@
       phone: c.phone || "", mobile: c.mobile || "", email: c.email || "",
       street: c.street || "", zip: c.zip || "", city: c.city || "", country: c.country || "Suisse",
       website: c.website || "", tags: c.tags || [], notes: c.notes || "", history: c.history || [],
-      created_at: c.createdAt || null, updated_at: Date.now()
+      commune: c.commune || "", created_at: c.createdAt || null, updated_at: Date.now()
     };
   }
   function rowToContact(r) {
@@ -188,7 +188,7 @@
       phone: r.phone || "", mobile: r.mobile || "", email: r.email || "",
       street: r.street || "", zip: r.zip || "", city: r.city || "", country: r.country || "Suisse",
       website: r.website || "", tags: r.tags || [], notes: r.notes || "", history: r.history || [],
-      createdAt: r.created_at || 0
+      commune: r.commune || "", createdAt: r.created_at || 0
     };
   }
 
@@ -1771,16 +1771,22 @@
     },
 
     // --- Gérant: carnet de contacts (personnes et entreprises) -----------------
-    listContacts: function () {
-      return load().contacts.slice().sort(function (a, b) {
+    // Chaque contact appartient à une commune (c.commune) ; commune vide = carnet de l'équipe Reeper.
+    // Une commune ne voit, ne modifie et n'utilise que ses propres contacts : toutes les fonctions
+    // ci-dessous prennent la commune concernée (vide pour l'espace Gérant).
+    listContacts: function (commune) {
+      var scope = String(commune || "");
+      return load().contacts.filter(function (c) { return (c.commune || "") === scope; }).sort(function (a, b) {
         return contactLabel(a).toLowerCase().localeCompare(contactLabel(b).toLowerCase());
       });
     },
-    getContact: function (id) {
-      return load().contacts.find(function (c) { return c.id === id; }) || null;
+    getContact: function (id, commune) {
+      var scope = String(commune || "");
+      return load().contacts.find(function (c) { return c.id === id && (c.commune || "") === scope; }) || null;
     },
     saveContact: function (o) {
       var data = load();
+      var scope = String(o.commune || "");
       var email = String(o.email || "").trim();
       var first = String(o.firstName || "").trim(), last = String(o.lastName || "").trim(), company = String(o.company || "").trim();
       var kind = o.kind === "company" ? "company" : "person";
@@ -1795,17 +1801,21 @@
         tags: (o.tags || []).map(function (t) { return String(t).trim(); }).filter(Boolean), notes: String(o.notes || "").trim()
       };
       var c = o.id ? data.contacts.find(function (x) { return x.id === o.id; }) : null;
+      if (o.id && (!c || (c.commune || "") !== scope)) return { ok: false, error: "Contact introuvable." };
       if (c) Object.assign(c, fields);
       else {
-        c = Object.assign({ id: "ct" + (data.seq = (data.seq || 4900) + 1), history: [], createdAt: now() }, fields);
+        c = Object.assign({ id: "ct" + (data.seq = (data.seq || 4900) + 1), history: [], createdAt: now(), commune: scope }, fields);
         data.contacts.push(c);
       }
       persist(data);
       return { ok: true, contact: c };
     },
-    deleteContact: function (id) {
+    deleteContact: function (id, commune) {
       var data = load();
-      data.contacts = data.contacts.filter(function (c) { return c.id !== id; });
+      var scope = String(commune || "");
+      var c = data.contacts.find(function (x) { return x.id === id; });
+      if (!c || (c.commune || "") !== scope) return false;
+      data.contacts = data.contacts.filter(function (x) { return x.id !== id; });
       persist(data);
       sbDelete("contacts", "id", id);
       return true;
@@ -1817,13 +1827,16 @@
       var i = findIndex(data, id);
       if (i < 0) return { ok: false, error: "Reep introuvable." };
       var r = data.reeps[i];
+      // o.scopeCommune : envoi depuis l'espace d'une commune (le Reep et le contact doivent être de cette commune).
+      var scope = String(o.scopeCommune || "");
+      if (scope && r.commune !== scope) return { ok: false, error: "Ce Reep n'appartient pas à votre commune." };
       var name = "", email = "", account = null, contact = null;
       if (o.kind === "account") {
         account = findAccount(data, o.accountKey);
         if (!account) return { ok: false, error: "Personne introuvable." };
         name = account.displayName; email = account.email || "";
       } else if (o.kind === "contact") {
-        contact = data.contacts.find(function (c) { return c.id === o.contactId; });
+        contact = data.contacts.find(function (c) { return c.id === o.contactId && (c.commune || "") === scope; });
         if (!contact) return { ok: false, error: "Contact introuvable." };
         name = contactLabel(contact); email = contact.email || "";
         if (!email) return { ok: false, error: "Ce contact n'a pas d'adresse e-mail." };
@@ -1839,9 +1852,9 @@
         data.emailLog.push({
           id: "e" + (data.seq = (data.seq || 4900) + 1), from: EMAIL_SENDER, to: email, kind: "reep_forward", when: now(), simulated: true,
           subject: "Reep " + r.id + " — " + r.title,
-          body: "Bonjour,\n\n" + who + " (Reeper) vous transmet le signalement suivant.\n\n" +
+          body: "Bonjour,\n\n" + who + " (" + (scope ? communeLabel(scope) : "Reeper") + ") vous transmet le signalement suivant.\n\n" +
             "Référence : " + r.id + "\nCatégorie : " + r.cat + "\nCommune : " + r.commune + "\nLieu : " + (r.place || r.address || "—") + "\n\n" +
-            "Description : " + desc + "\n" + (note ? "\nMessage : " + note + "\n" : "") + "\nCordialement,\nL'équipe Reeper"
+            "Description : " + desc + "\n" + (note ? "\nMessage : " + note + "\n" : "") + "\nCordialement,\n" + (scope ? communeLabel(scope) + " (via Reeper)" : "L'équipe Reeper")
         });
       }
       r.timeline.push(timelineEntry("Reep transmis à " + name, who, now(), (email ? email : "") + (note ? (email ? " — " : "") + note : ""), true));

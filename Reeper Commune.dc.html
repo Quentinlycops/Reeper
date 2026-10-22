@@ -57,8 +57,8 @@ select,textarea,input{font-family:inherit}
         </span>
         <span style="font-family:Georgia,Cambria,serif;font-size:20px;font-weight:700;color:#1B2A41;letter-spacing:-.3px;line-height:1">Reeper</span>
       </button>
-      <div style="width:1px;height:28px;background:rgba(27,42,65,.12);display:{{ deskOnly }}"></div>
-      <div style="font-size:14px;font-weight:600;color:#1B2A41;display:{{ deskOnly }};white-space:nowrap">{{ communeLabel }}</div>
+      <div style="width:1px;height:28px;background:rgba(27,42,65,.12);display:{{ headLabelDisp }}"></div>
+      <div style="font-size:14px;font-weight:600;color:#1B2A41;display:{{ headLabelDisp }};white-space:nowrap">{{ communeLabel }}</div>
       <div style="flex:1"></div>
       <div style="display:{{ navDisplay }};gap:4px">
         <sc-for list="{{ nav }}" as="n" hint-placeholder-count="4">
@@ -830,8 +830,40 @@ select,textarea,input{font-family:inherit}
           <sc-if value="{{ isCurRefused }}" hint-placeholder-val="{{ false }}">
             <button onClick="{{ reopenReepAction }}" style="border:1px solid rgba(27,42,65,.2);background:#fff;color:#1B2A41;border-radius:9px;padding:10px 16px;font-size:13px;font-weight:700">↺ Rouvrir ce Reep</button>
           </sc-if>
+          <button onClick="{{ openRsSend }}" style="border:1px solid rgba(27,42,65,.14);background:#fff;border-radius:9px;padding:9px 14px;font-size:13px;font-weight:600;color:#1B2A41">✉️ Envoyer à un contact</button>
           <button onClick="{{ openExport }}" style="border:1px solid rgba(27,42,65,.14);background:#fff;border-radius:9px;padding:9px 14px;font-size:13px;font-weight:600;color:#1B2A41">⭳ Exporter le rapport</button>
         </div>
+
+        <sc-if value="{{ rsOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="position:fixed;inset:0;background:rgba(27,42,65,.4);z-index:225;display:flex;align-items:center;justify-content:center;padding:20px" onClick="{{ closeRsSend }}">
+            <div style="background:#fff;border-radius:14px;max-width:500px;width:100%;max-height:90vh;overflow:auto;box-shadow:0 20px 50px rgba(27,42,65,.28);padding:20px 22px" onClick="{{ stopProp }}">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+                <span style="flex:1;font-family:Georgia,Cambria,serif;font-size:17px;font-weight:700">✉️ Envoyer {{ current.id }} à un contact</span>
+                <button onClick="{{ closeRsSend }}" style="border:none;background:none;font-size:18px;color:#8A98A8">×</button>
+              </div>
+              <sc-if value="{{ rsNotDone }}" hint-placeholder-val="{{ true }}">
+                <sc-if value="{{ rsNoContacts }}" hint-placeholder-val="{{ false }}">
+                  <p style="margin:0 0 14px;font-size:13px;line-height:1.55;color:#5A6B7E">Vous n'avez encore aucun contact avec une adresse e-mail. Ajoutez-en un dans l'onglet « Contacts », puis revenez ici.</p>
+                  <button onClick="{{ rsGoContacts }}" style="width:100%;padding:13px;border:none;border-radius:10px;background:#1B2A41;color:#fff;font-size:14px;font-weight:600">Aller aux contacts</button>
+                </sc-if>
+                <sc-if value="{{ rsHasContacts }}" hint-placeholder-val="{{ true }}">
+                  <p style="margin:0 0 14px;font-size:12.5px;line-height:1.55;color:#5A6B7E">Le Reep est transmis par e-mail au contact choisi, avec sa description, sa localisation et votre message. L'envoi est consigné dans l'historique du Reep et du contact.</p>
+                  <select value="{{ rsContact }}" onChange="{{ onRsContact }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;background:#fff;margin-bottom:12px">
+                    <option value="">Choisir un contact…</option>
+                    <sc-for list="{{ rsOptions }}" as="o" hint-placeholder-count="4"><option value="{{ o.key }}">{{ o.label }}</option></sc-for>
+                  </select>
+                  <textarea value="{{ rsNote }}" onChange="{{ onRsNote }}" rows="3" placeholder="Message d'accompagnement (facultatif)…" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:12px 13px;font-size:13.5px;line-height:1.5;resize:none;outline:none"></textarea>
+                  <sc-if value="{{ hasRsError }}" hint-placeholder-val="{{ false }}"><div style="margin-top:10px;font-size:12.5px;color:#D62839">{{ rsError }}</div></sc-if>
+                  <button onClick="{{ doRsSend }}" style="margin-top:14px;width:100%;padding:13px;border:none;border-radius:10px;background:#D62839;color:#fff;font-size:14px;font-weight:600">Envoyer le Reep</button>
+                </sc-if>
+              </sc-if>
+              <sc-if value="{{ rsDoneShow }}" hint-placeholder-val="{{ false }}">
+                <div style="background:#EFF7F1;border-radius:10px;padding:14px 16px;font-size:13px;line-height:1.6;color:#1F5637;margin-top:8px">{{ rsDone }}</div>
+                <button onClick="{{ closeRsSend }}" style="margin-top:14px;width:100%;padding:13px;border:none;border-radius:10px;background:#1B2A41;color:#fff;font-size:14px;font-weight:600">Fermer</button>
+              </sc-if>
+            </div>
+          </div>
+        </sc-if>
 
         <sc-if value="{{ isCurRefused }}" hint-placeholder-val="{{ false }}">
           <div style="background:#FDF2F3;border-radius:12px;padding:15px 18px">
@@ -1780,6 +1812,142 @@ select,textarea,input{font-family:inherit}
       </div>
     </sc-if>
 
+    <sc-if value="{{ isContacts }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:{{ pagePad }};display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
+          <div style="flex:1;min-width:220px">
+            <h1 style="margin:0;font-family:Georgia,Cambria,serif;font-size:23px;font-weight:700;letter-spacing:-.3px">Contacts</h1>
+            <div style="font-size:12.5px;color:#8A98A8;margin-top:3px">Personnes et entreprises avec qui {{ communeLabel }} travaille — {{ kbCount }} enregistré(s). Ces contacts sont propres à votre commune : aucune autre commune ne les voit.</div>
+          </div>
+          <button onClick="{{ openKbNew }}" style="border:none;background:#1B2A41;color:#fff;border-radius:10px;padding:11px 18px;font-size:13.5px;font-weight:700">+ Nouveau contact</button>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+          <input value="{{ kbQuery }}" onChange="{{ onKbQuery }}" placeholder="Rechercher un nom, une entreprise, un e-mail, une étiquette…" style="flex:1;min-width:220px;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:10px 14px;font-size:13.5px;outline:none" />
+          <select value="{{ kbType }}" onChange="{{ onKbType }}" style="border:1px solid rgba(27,42,65,.16);border-radius:9px;padding:9px 13px;font-size:13.5px;background:#fff">
+            <sc-for list="{{ kbTypeOptions }}" as="o" hint-placeholder-count="3"><option value="{{ o }}">{{ o }}</option></sc-for>
+          </select>
+        </div>
+        <div style="background:#fff;border:1px solid rgba(27,42,65,.1);border-radius:12px;overflow:hidden">
+          <div style="display:{{ kbHeadDisp }};grid-template-columns:{{ kbCols }};padding:12px 20px;background:#FAFBFC;border-bottom:1px solid rgba(27,42,65,.08);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700">
+            <span>Nom</span><span>E-mail</span><span>Téléphone</span><span>Localité</span>
+          </div>
+          <sc-for list="{{ kbRows }}" as="r" hint-placeholder-count="4">
+            <button onClick="{{ r.onOpen }}" style="display:grid;grid-template-columns:{{ kbCols }};gap:10px;align-items:center;width:100%;padding:13px 20px;border:none;border-bottom:1px solid rgba(27,42,65,.06);background:#fff;text-align:left;color:#1B2A41" style-hover="background:#FAFBFC">
+              <span style="min-width:0;display:flex;align-items:center;gap:11px">
+                <span style="width:34px;height:34px;border-radius:10px;background:#F3F6F8;display:flex;align-items:center;justify-content:center;font-size:16px;flex:none">{{ r.icon }}</span>
+                <span style="min-width:0">
+                  <span style="display:block;font-size:13.5px;font-weight:600">{{ r.label }}</span>
+                  <span style="display:block;font-size:11.5px;color:#8A98A8;margin-top:2px">{{ r.sub }}</span>
+                </span>
+              </span>
+              <span style="font-size:12.5px;color:#48566B;word-break:break-all">{{ r.email }}</span>
+              <span style="display:{{ kbExtraDisp }};font-size:12.5px;color:#48566B">{{ r.phone }}</span>
+              <span style="display:{{ kbExtraDisp }};font-size:12.5px;color:#48566B">{{ r.city }}</span>
+            </button>
+          </sc-for>
+          <sc-if value="{{ kbEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:34px 20px;text-align:center;font-size:13px;color:#8A98A8">{{ kbEmptyLabel }}</div>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ kbDetailOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="position:fixed;inset:0;background:rgba(27,42,65,.32);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px" onClick="{{ closeKb }}">
+        <div style="background:#fff;border-radius:14px;max-width:600px;width:100%;max-height:90vh;overflow:auto;box-shadow:0 20px 50px rgba(27,42,65,.28)" onClick="{{ stopProp }}">
+          <div style="padding:18px 22px;border-bottom:1px solid rgba(27,42,65,.08);display:flex;align-items:center;gap:12px">
+            <span style="width:40px;height:40px;border-radius:12px;background:#F3F6F8;display:flex;align-items:center;justify-content:center;font-size:19px;flex:none">{{ kbDetail.icon }}</span>
+            <span style="flex:1;min-width:0">
+              <span style="display:block;font-family:Georgia,Cambria,serif;font-size:18px;font-weight:700">{{ kbDetail.label }}</span>
+              <span style="display:block;font-size:12.5px;color:#8A98A8;margin-top:2px">{{ kbDetail.sub }}</span>
+            </span>
+            <button onClick="{{ closeKb }}" style="border:none;background:none;font-size:18px;color:#8A98A8">×</button>
+          </div>
+          <div style="padding:20px 22px;display:flex;flex-direction:column;gap:18px">
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button onClick="{{ openKbSend }}" style="border:none;background:#D62839;color:#fff;border-radius:10px;padding:11px 16px;font-size:13.5px;font-weight:600">✉️ Envoyer un Reep</button>
+              <button onClick="{{ openKbEdit }}" style="border:1px solid rgba(27,42,65,.16);background:#fff;color:#1B2A41;border-radius:10px;padding:11px 16px;font-size:13.5px;font-weight:600">Modifier</button>
+              <button onClick="{{ kbDeleteFn }}" style="border:1px solid rgba(214,40,57,.35);background:#fff;color:#D62839;border-radius:10px;padding:11px 16px;font-size:13.5px;font-weight:600">{{ kbDeleteLabel }}</button>
+            </div>
+            <div style="display:grid;grid-template-columns:150px 1fr;gap:10px 16px;font-size:13.5px">
+              <sc-for list="{{ kbDetail.rows }}" as="r" hint-placeholder-count="6">
+                <span style="color:#8A98A8;font-size:12px;padding-top:2px">{{ r.label }}</span>
+                <span style="color:#1B2A41;white-space:pre-line;word-break:break-word">{{ r.value }}</span>
+              </sc-for>
+            </div>
+            <div>
+              <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A98A8;font-weight:700;margin-bottom:8px">Reeps envoyés</div>
+              <sc-for list="{{ kbHistory }}" as="h" hint-placeholder-count="2">
+                <div style="padding:10px 0;border-top:1px solid rgba(27,42,65,.07)">
+                  <div style="font-size:13px;font-weight:600">{{ h.title }}</div>
+                  <div style="font-size:11.5px;color:#8A98A8;margin-top:2px">{{ h.meta }}</div>
+                </div>
+              </sc-for>
+              <sc-if value="{{ kbNoHistory }}" hint-placeholder-val="{{ false }}"><div style="font-size:12.5px;color:#8A98A8">Aucun Reep envoyé à ce contact pour l'instant.</div></sc-if>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ kbFormOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="position:fixed;inset:0;background:rgba(27,42,65,.4);z-index:225;display:flex;align-items:center;justify-content:center;padding:20px" onClick="{{ closeKbForm }}">
+        <div style="background:#fff;border-radius:14px;max-width:660px;width:100%;max-height:92vh;overflow:auto;box-shadow:0 20px 50px rgba(27,42,65,.28)" onClick="{{ stopProp }}">
+          <div style="padding:18px 22px;border-bottom:1px solid rgba(27,42,65,.08);display:flex;align-items:center;gap:12px">
+            <span style="flex:1;font-family:Georgia,Cambria,serif;font-size:18px;font-weight:700">{{ kbFormTitle }}</span>
+            <button onClick="{{ closeKbForm }}" style="border:none;background:none;font-size:18px;color:#8A98A8">×</button>
+          </div>
+          <div style="padding:20px 22px;display:flex;flex-direction:column;gap:16px">
+            <div style="display:flex;background:#F3F6F8;border-radius:10px;padding:3px;gap:2px">
+              <sc-for list="{{ kbKindTabs }}" as="t" hint-placeholder-count="2">
+                <button onClick="{{ t.onClick }}" style="flex:1;border:none;background:{{ t.bg }};color:{{ t.fg }};border-radius:8px;padding:10px;font-size:13px;font-weight:700">{{ t.label }}</button>
+              </sc-for>
+            </div>
+            <div style="display:grid;grid-template-columns:{{ kbFormCols }};gap:12px">
+              <sc-for list="{{ kbFields }}" as="f" hint-placeholder-count="8">
+                <label style="grid-column:{{ f.span }};display:flex;flex-direction:column;gap:6px;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700">{{ f.label }}
+                  <input value="{{ f.value }}" onChange="{{ f.onChange }}" placeholder="{{ f.placeholder }}" style="border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;outline:none;color:#1B2A41;text-transform:none;letter-spacing:0;font-weight:500" />
+                </label>
+              </sc-for>
+            </div>
+            <label style="display:flex;flex-direction:column;gap:6px;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A98A8;font-weight:700">Notes
+              <textarea value="{{ kbNotes }}" onChange="{{ onKbNotes }}" rows="3" placeholder="Informations utiles : horaires, domaine d'intervention, remarques…" style="border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:13.5px;line-height:1.5;resize:none;outline:none;color:#1B2A41;text-transform:none;letter-spacing:0;font-weight:500"></textarea>
+            </label>
+            <sc-if value="{{ hasKbFormError }}" hint-placeholder-val="{{ false }}"><div style="font-size:12.5px;color:#D62839">{{ kbFormError }}</div></sc-if>
+            <div style="display:flex;gap:10px">
+              <button onClick="{{ saveKb }}" style="flex:1;padding:13px;border:none;border-radius:10px;background:#1B2A41;color:#fff;font-size:14px;font-weight:600">Enregistrer</button>
+              <button onClick="{{ closeKbForm }}" style="padding:13px 18px;border:1px solid rgba(27,42,65,.16);border-radius:10px;background:#fff;color:#48566B;font-size:14px;font-weight:600">Annuler</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ kbSendOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="position:fixed;inset:0;background:rgba(27,42,65,.4);z-index:225;display:flex;align-items:center;justify-content:center;padding:20px" onClick="{{ closeKbSend }}">
+        <div style="background:#fff;border-radius:14px;max-width:500px;width:100%;max-height:90vh;overflow:auto;box-shadow:0 20px 50px rgba(27,42,65,.28);padding:20px 22px" onClick="{{ stopProp }}">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+            <span style="flex:1;font-family:Georgia,Cambria,serif;font-size:17px;font-weight:700">✉️ Envoyer un Reep à {{ kbDetail.label }}</span>
+            <button onClick="{{ closeKbSend }}" style="border:none;background:none;font-size:18px;color:#8A98A8">×</button>
+          </div>
+          <sc-if value="{{ kbSendNotDone }}" hint-placeholder-val="{{ true }}">
+            <p style="margin:0 0 14px;font-size:12.5px;line-height:1.55;color:#5A6B7E">Le Reep choisi est transmis par e-mail à {{ kbDetail.email }}, avec sa description, sa localisation et votre message.</p>
+            <select value="{{ kbSendReep }}" onChange="{{ onKbSendReep }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:11px 13px;font-size:14px;background:#fff;margin-bottom:12px">
+              <option value="">Choisir un Reep…</option>
+              <sc-for list="{{ kbSendOptions }}" as="o" hint-placeholder-count="4"><option value="{{ o.key }}">{{ o.label }}</option></sc-for>
+            </select>
+            <textarea value="{{ kbSendNote }}" onChange="{{ onKbSendNote }}" rows="3" placeholder="Message d'accompagnement (facultatif)…" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:12px 13px;font-size:13.5px;line-height:1.5;resize:none;outline:none"></textarea>
+            <sc-if value="{{ hasKbSendError }}" hint-placeholder-val="{{ false }}"><div style="margin-top:10px;font-size:12.5px;color:#D62839">{{ kbSendError }}</div></sc-if>
+            <button onClick="{{ doKbSend }}" style="margin-top:14px;width:100%;padding:13px;border:none;border-radius:10px;background:#D62839;color:#fff;font-size:14px;font-weight:600">Envoyer le Reep</button>
+          </sc-if>
+          <sc-if value="{{ kbSendDoneShow }}" hint-placeholder-val="{{ false }}">
+            <div style="background:#EFF7F1;border-radius:10px;padding:14px 16px;font-size:13px;line-height:1.6;color:#1F5637;margin-top:8px">{{ kbSendDone }}</div>
+            <button onClick="{{ closeKbSend }}" style="margin-top:14px;width:100%;padding:13px;border:none;border-radius:10px;background:#1B2A41;color:#fff;font-size:14px;font-weight:600">Fermer</button>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+
     <sc-if value="{{ isStats }}" hint-placeholder-val="{{ false }}">
       <div style="padding:{{ pagePad }};display:flex;flex-direction:column;gap:16px">
         <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
@@ -2317,6 +2485,9 @@ class Component extends DCLogic {
     mobileThreadOpen: false, attachMenuOpen: false, groupInfoOpen: false,
     groupSheetOpen: false, groupName: "", groupMemberKeys: [], groupQuery: "",
     contactPickerOpen: false, contactQuery: "", attachContactKey: null, fileNames: [],
+    kbQuery: "", kbType: "Tous", kbSel: null, kbForm: null, kbFormError: "", kbDelConfirm: false,
+    kbSendOpen: false, kbSendReep: "", kbSendNote: "", kbSendError: "", kbSendDone: "",
+    rsOpen: false, rsContact: "", rsNote: "", rsError: "", rsDone: "",
     xfMode: "service", xfCommune: null,
     nrPhotoDataUrl: null, nrPath: [], nrLeaf: null, nrDesc: "", nrAddrText: "", nrAddrNum: "", nrStreetOpen: false, nrCommune: null, nrCommuneManual: false, nrLat: null, nrLon: null, nrGeoLoading: false, nrGeoError: "",
     contactOpen: false, ctName: "", ctEmail: "", ctSubject: "Question générale", ctMessage: "", ctSent: false, ctError: ""
@@ -2498,7 +2669,8 @@ class Component extends DCLogic {
       { label: "Tableau de bord", key: "dash", badge: "" },
       { label: "Carte", key: "map", badge: String(REEPS.length) },
       { label: "Reeps", key: "list", badge: String(stats.byStatus["Nouveau"] || 0) },
-      { label: "Messagerie", key: "msg", badge: msgBadge }
+      { label: "Messagerie", key: "msg", badge: msgBadge },
+      { label: "Contacts", key: "contacts", badge: "" }
     ].concat(canStats ? [{ label: "Statistiques", key: "stats", badge: "" }] : []).concat([
       { label: "Configuration", key: "config", badge: "" }
     ]);
@@ -2535,13 +2707,140 @@ class Component extends DCLogic {
 
     const dev = s.device || "Bureau";
     const mobile = dev === "Mobile", tablet = dev === "Tablette", desk = dev === "Bureau";
-    const SHORT = { "Tableau de bord": "Tableau", "Carte": "Carte", "Reeps": "Liste", "Messagerie": "Messages", "Statistiques": "Stats", "Configuration": "Config" };
+    const SHORT = { "Tableau de bord": "Tableau", "Carte": "Carte", "Reeps": "Liste", "Messagerie": "Messages", "Contacts": "Contacts", "Statistiques": "Stats", "Configuration": "Config" };
     const STATUS_DOT = { Nouveau: "#D62839", "En cours": "#E8A33D", "Planifié (travaux)": "#7A6BC4", Traité: "#3F8F63", Refusé: "#9B1C2B" };
     const markersFor = (list) => JSON.stringify(list.map((d) => ({ id: d.id, lat: d.lat, lon: d.lon, color: STATUS_DOT[d.status] || "#D62839", label: d.title })));
+
+    // --- Contacts de la commune : carnet propre à chaque commune, jamais visible des autres communes ---
+    const kbAll = Store.listContacts(commune);
+    const kbQ = s.kbQuery.trim().toLowerCase();
+    const kbFiltered = kbAll.filter((c) => {
+      if (s.kbType === "Personnes" && c.kind === "company") return false;
+      if (s.kbType === "Entreprises" && c.kind !== "company") return false;
+      if (!kbQ) return true;
+      return [Store.contactLabel(c), c.firstName, c.lastName, c.company, c.email, c.phone, c.mobile, c.city, c.companyNumber, (c.tags || []).join(" ")].join(" ").toLowerCase().indexOf(kbQ) >= 0;
+    });
+    const kbPerson = (c) => ((c.firstName || "") + " " + (c.lastName || "")).trim();
+    const kbCur = s.kbSel ? Store.getContact(s.kbSel, commune) : null;
+    const kbAddr = (c) => [c.street, [c.zip, c.city].filter(Boolean).join(" "), c.country && c.country !== "Suisse" ? c.country : ""].filter(Boolean).join("\n");
+    const kbForm = s.kbForm;
+    const kbSetF = (k) => (e) => this.setState({ kbForm: { ...this.state.kbForm, [k]: e.target.value }, kbFormError: "" });
+    const kbIsCompany = !!kbForm && kbForm.kind === "company";
+    const kbFieldDefs = kbForm ? (kbIsCompany ? [
+      ["company", "Nom de l'entreprise", "Ex. Électricité " + commune + " SA", "1 / -1"],
+      ["companyNumber", "N° d'entreprise (IDE)", "CHE-123.456.789", "auto"],
+      ["website", "Site web", "www.exemple.ch", "auto"],
+      ["firstName", "Prénom du contact", "", "auto"], ["lastName", "Nom du contact", "", "auto"],
+      ["jobTitle", "Fonction du contact", "Ex. Responsable d'exploitation", "1 / -1"]
+    ] : [
+      ["firstName", "Prénom", "", "auto"], ["lastName", "Nom", "", "auto"],
+      ["jobTitle", "Fonction", "Ex. Technicien", "1 / -1"],
+      ["company", "Entreprise", "", "auto"], ["companyNumber", "N° d'entreprise (IDE)", "CHE-123.456.789", "auto"]
+    ]).concat([
+      ["phone", "Téléphone", "022 000 00 00", "auto"], ["mobile", "Mobile", "079 000 00 00", "auto"],
+      ["email", "E-mail", "contact@exemple.ch", "1 / -1"],
+      ["street", "Rue et numéro", "", "1 / -1"], ["zip", "NPA", ((Store.COMMUNES[commune] || {}).zip || [])[0] || "", "auto"], ["city", "Localité", commune, "auto"],
+      ["country", "Pays", "Suisse", "auto"]
+    ]).concat(kbIsCompany ? [] : [["website", "Site web", "www.exemple.ch", "auto"]]).concat([
+      ["tagsText", "Étiquettes (séparées par des virgules)", "Ex. voirie, éclairage, urgence", "1 / -1"]
+    ]) : [];
+    const kbBlank = { kind: "person", firstName: "", lastName: "", company: "", companyNumber: "", jobTitle: "", phone: "", mobile: "", email: "", street: "", zip: "", city: "", country: "Suisse", website: "", notes: "", tagsText: "" };
+    const kbDoneText = (reepId, res) => "✓ Reep " + reepId + " transmis à " + res.name + " (" + res.email + "). L'envoi d'e-mails n'est pas encore actif : le message est enregistré dans l'historique du contact et du Reep (envoi simulé).";
+    const rsContacts = kbAll.filter((c) => c.email);
 
     return {
       communeName: commune,
       communeLabel: Store.communeLabel(commune),
+      // Le nom de la commune est masqué sous 1200 px pour laisser la place aux onglets.
+      headLabelDisp: (desk && window.innerWidth >= 1200) ? "block" : "none",
+
+      isContacts: s.screen === "contacts",
+      kbCount: kbAll.length,
+      kbQuery: s.kbQuery, onKbQuery: (e) => this.setState({ kbQuery: e.target.value }),
+      kbType: s.kbType, onKbType: (e) => this.setState({ kbType: e.target.value }), kbTypeOptions: ["Tous", "Personnes", "Entreprises"],
+      kbCols: mobile ? "1fr" : "1.5fr 1.3fr 1fr 1fr", kbHeadDisp: mobile ? "none" : "grid", kbExtraDisp: mobile ? "none" : "block",
+      kbEmpty: kbFiltered.length === 0,
+      kbEmptyLabel: kbAll.length === 0 ? "Aucun contact pour l'instant. Cliquez sur « Nouveau contact » pour en ajouter un." : "Aucun contact ne correspond à cette recherche.",
+      kbRows: kbFiltered.map((c) => ({
+        icon: c.kind === "company" ? "🏢" : "👤", label: Store.contactLabel(c),
+        sub: c.kind === "company" ? [kbPerson(c), c.jobTitle].filter(Boolean).join(" · ") || "Entreprise" : [c.jobTitle, c.company].filter(Boolean).join(" · ") || "Personne",
+        email: c.email || "—", phone: c.phone || c.mobile || "—", city: [c.zip, c.city].filter(Boolean).join(" ") || "—",
+        onOpen: () => this.setState({ kbSel: c.id, kbDelConfirm: false })
+      })),
+      openKbNew: () => this.setState({ kbForm: { ...kbBlank }, kbFormError: "" }),
+      kbDetailOpen: s.screen === "contacts" && !!kbCur,
+      closeKb: () => this.setState({ kbSel: null, kbDelConfirm: false }),
+      kbDetail: kbCur ? {
+        icon: kbCur.kind === "company" ? "🏢" : "👤", label: Store.contactLabel(kbCur), email: kbCur.email,
+        sub: kbCur.kind === "company" ? "Entreprise" : (kbCur.jobTitle || "Personne"),
+        rows: [
+          ["Entreprise", kbCur.kind === "company" ? "" : kbCur.company], ["Personne de contact", kbCur.kind === "company" ? [kbPerson(kbCur), kbCur.jobTitle].filter(Boolean).join(" — ") : ""],
+          ["N° d'entreprise", kbCur.companyNumber], ["Fonction", kbCur.kind === "company" ? "" : kbCur.jobTitle],
+          ["Téléphone", kbCur.phone], ["Mobile", kbCur.mobile], ["E-mail", kbCur.email], ["Adresse", kbAddr(kbCur)],
+          ["Site web", kbCur.website], ["Étiquettes", (kbCur.tags || []).join(", ")], ["Notes", kbCur.notes]
+        ].filter((r) => r[1]).map((r) => ({ label: r[0], value: r[1] }))
+      } : { icon: "", label: "", email: "", sub: "", rows: [] },
+      kbHistory: kbCur ? (kbCur.history || []).map((h) => ({ title: h.reepId + " — " + h.reepTitle, meta: fmtDateTime(h.when) + " · " + h.by + (h.note ? " · " + h.note : "") })) : [],
+      kbNoHistory: !kbCur || !(kbCur.history || []).length,
+      openKbEdit: () => { if (kbCur) this.setState({ kbForm: { ...kbBlank, ...kbCur, tagsText: (kbCur.tags || []).join(", ") }, kbFormError: "" }); },
+      kbDeleteLabel: s.kbDelConfirm ? "Confirmer la suppression ?" : "Supprimer",
+      kbDeleteFn: () => {
+        if (!kbCur) return;
+        if (!s.kbDelConfirm) { this.setState({ kbDelConfirm: true }); return; }
+        Store.deleteContact(kbCur.id, commune);
+        this.setState({ kbSel: null, kbDelConfirm: false });
+      },
+      kbFormOpen: !!kbForm,
+      kbFormTitle: kbForm && kbForm.id ? "Modifier le contact" : "Nouveau contact",
+      kbFormCols: "repeat(auto-fit,minmax(220px,1fr))",
+      kbKindTabs: [["person", "👤 Personne"], ["company", "🏢 Entreprise"]].map(([kind, label]) => ({
+        label, bg: kbForm && kbForm.kind === kind ? "#fff" : "transparent", fg: kbForm && kbForm.kind === kind ? "#1B2A41" : "#8A98A8",
+        onClick: () => this.setState({ kbForm: { ...this.state.kbForm, kind }, kbFormError: "" })
+      })),
+      kbFields: kbFieldDefs.map(([k, label, placeholder, span]) => ({ label, placeholder, span, value: (kbForm && kbForm[k]) || "", onChange: kbSetF(k) })),
+      kbNotes: (kbForm && kbForm.notes) || "", onKbNotes: kbSetF("notes"),
+      hasKbFormError: !!s.kbFormError, kbFormError: s.kbFormError,
+      closeKbForm: () => this.setState({ kbForm: null, kbFormError: "" }),
+      saveKb: () => {
+        const f = this.state.kbForm;
+        if (!f) return;
+        const res = Store.saveContact({ ...f, commune, tags: (f.tagsText || "").split(",") });
+        if (!res.ok) { this.setState({ kbFormError: res.error }); return; }
+        this.setState({ kbForm: null, kbFormError: "", kbSel: res.contact.id, kbDelConfirm: false });
+      },
+      // Envoi d'un Reep depuis la fiche d'un contact
+      kbSendOpen: s.kbSendOpen && !!kbCur,
+      openKbSend: () => this.setState({ kbSendOpen: true, kbSendReep: "", kbSendNote: "", kbSendError: "", kbSendDone: "" }),
+      closeKbSend: () => this.setState({ kbSendOpen: false }),
+      kbSendReep: s.kbSendReep, onKbSendReep: (e) => this.setState({ kbSendReep: e.target.value, kbSendError: "" }),
+      kbSendOptions: REEPS.map((r) => ({ key: r.id, label: r.id + " — " + r.title + " · " + (r.address || r.place || "") })),
+      kbSendNote: s.kbSendNote, onKbSendNote: (e) => this.setState({ kbSendNote: e.target.value }),
+      hasKbSendError: !!s.kbSendError, kbSendError: s.kbSendError,
+      kbSendNotDone: !s.kbSendDone, kbSendDoneShow: !!s.kbSendDone, kbSendDone: s.kbSendDone,
+      doKbSend: () => {
+        if (!kbCur) return;
+        if (!s.kbSendReep) { this.setState({ kbSendError: "Choisissez le Reep à envoyer." }); return; }
+        const res = Store.forwardReep(s.kbSendReep, { kind: "contact", contactId: kbCur.id, note: s.kbSendNote, who: session.displayName, whoKey: session.key, scopeCommune: commune });
+        if (!res.ok) { this.setState({ kbSendError: res.error }); return; }
+        this.setState({ kbSendError: "", kbSendDone: kbDoneText(s.kbSendReep, res) });
+      },
+      // Envoi du Reep ouvert (fiche d'un Reep) à l'un des contacts de la commune
+      rsOpen: s.rsOpen && s.screen === "detail",
+      openRsSend: () => this.setState({ rsOpen: true, rsContact: "", rsNote: "", rsError: "", rsDone: "" }),
+      closeRsSend: () => this.setState({ rsOpen: false }),
+      rsContact: s.rsContact, onRsContact: (e) => this.setState({ rsContact: e.target.value, rsError: "" }),
+      rsOptions: rsContacts.map((c) => ({ key: c.id, label: Store.contactLabel(c) + " — " + c.email })),
+      rsNoContacts: rsContacts.length === 0, rsHasContacts: rsContacts.length > 0,
+      rsNote: s.rsNote, onRsNote: (e) => this.setState({ rsNote: e.target.value }),
+      hasRsError: !!s.rsError, rsError: s.rsError,
+      rsNotDone: !s.rsDone, rsDoneShow: !!s.rsDone, rsDone: s.rsDone,
+      rsGoContacts: () => this.setState({ rsOpen: false, screen: "contacts", kbSel: null }),
+      doRsSend: () => {
+        if (!s.rsContact) { this.setState({ rsError: "Choisissez le contact destinataire." }); return; }
+        const res = Store.forwardReep(cur.id, { kind: "contact", contactId: s.rsContact, note: s.rsNote, who: session.displayName, whoKey: session.key, scopeCommune: commune });
+        if (!res.ok) { this.setState({ rsError: res.error }); return; }
+        this.setState({ rsError: "", rsDone: kbDoneText(cur.id, res) });
+      },
       agentInitials: session.initials, agentAvBg: session.avBg, agentName, agentRole: session.role,
       devices: ["Bureau", "Tablette", "Mobile"].map((label) => ({
         label, onClick: () => this.setState({ device: label, profileOpen: false }),
@@ -2574,7 +2873,7 @@ class Component extends DCLogic {
       sheetW: desk ? "400px" : "100%",
       nav: navDef.map((n) => {
         const active = s.screen === n.key || (n.key === "list" && s.screen === "detail");
-        return { ...n, short: (tablet || (desk && window.innerWidth < 1320)) ? SHORT[n.label] : n.label, onClick: () => this.go(n.key), bg: active ? "#1B2A41" : "transparent", fg: active ? "#fff" : "#48566B", weight: active ? 600 : 400, badgeFg: active ? "rgba(255,255,255,.65)" : "#A9B5C1" };
+        return { ...n, short: (tablet || (desk && window.innerWidth < 1480)) ? SHORT[n.label] : n.label, onClick: () => this.go(n.key), bg: active ? "#1B2A41" : "transparent", fg: active ? "#fff" : "#48566B", weight: active ? 600 : 400, badgeFg: active ? "rgba(255,255,255,.65)" : "#A9B5C1" };
       }),
       mobileNav: navDef.map((n) => {
         const active = s.screen === n.key || (n.key === "list" && s.screen === "detail");
