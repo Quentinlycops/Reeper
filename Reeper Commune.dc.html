@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="./reeper-theme.css">
+<script src="./reeper-streets.js"></script>
 <script src="./reeper-shared.js"></script>
 <script src="./reeper-map.js"></script>
 <script src="./support.js"></script>
@@ -57,7 +58,7 @@ select,textarea,input{font-family:inherit}
         <span style="font-family:Georgia,Cambria,serif;font-size:20px;font-weight:700;color:#1B2A41;letter-spacing:-.3px;line-height:1">Reeper</span>
       </button>
       <div style="width:1px;height:28px;background:rgba(27,42,65,.12);display:{{ deskOnly }}"></div>
-      <div style="font-size:14px;font-weight:600;color:#1B2A41;display:{{ deskOnly }};white-space:nowrap">Commune de {{ communeName }}</div>
+      <div style="font-size:14px;font-weight:600;color:#1B2A41;display:{{ deskOnly }};white-space:nowrap">{{ communeLabel }}</div>
       <div style="flex:1"></div>
       <div style="display:{{ navDisplay }};gap:4px">
         <sc-for list="{{ nav }}" as="n" hint-placeholder-count="4">
@@ -754,12 +755,29 @@ select,textarea,input{font-family:inherit}
               <sc-if value="{{ hasNRGeoError }}" hint-placeholder-val="{{ false }}">
                 <div style="margin-bottom:9px;font-size:12px;color:#D62839">{{ nrGeoError }}</div>
               </sc-if>
-              <div style="display:flex;gap:10px;margin-bottom:10px">
-                <input value="{{ nrAddrText }}" onChange="{{ onNRAddrText }}" onBlur="{{ onNRAddrBlur }}" placeholder="Rue" style="flex:1;min-width:0;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:12px 13px;font-size:14px;outline:none">
-                <input value="{{ nrAddrNum }}" onChange="{{ onNRAddrNum }}" placeholder="N°" style="width:80px;flex:none;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:12px 13px;font-size:14px;outline:none">
+              <label style="display:block;font-size:11.5px;font-weight:600;color:#5A6B7E;margin-bottom:5px">1. Commune</label>
+              <select value="{{ nrCommune }}" onChange="{{ onNRCommune }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:12px 13px;font-size:14px;background:#fff;outline:none;margin-bottom:12px">
+                <sc-for list="{{ nrCommuneOptions }}" as="o" hint-placeholder-count="4">
+                  <option value="{{ o.value }}">{{ o.label }}</option>
+                </sc-for>
+              </select>
+              <label style="display:block;font-size:11.5px;font-weight:600;color:#5A6B7E;margin-bottom:5px">2. Rue et numéro</label>
+              <div style="display:flex;gap:10px;margin-bottom:6px;align-items:flex-start">
+                <div style="position:relative;flex:1;min-width:0">
+                  <input value="{{ nrAddrText }}" onChange="{{ onNRAddrText }}" onFocus="{{ onNRAddrFocus }}" onBlur="{{ onNRAddrBlur }}" disabled="{{ nrStreetDisabled }}" placeholder="{{ nrStreetPlaceholder }}" autocomplete="off" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:12px 13px;font-size:14px;outline:none;background:{{ nrStreetBg }}">
+                  <sc-if value="{{ nrHasSuggestions }}" hint-placeholder-val="{{ false }}">
+                    <div style="position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid rgba(27,42,65,.16);border-radius:10px;box-shadow:0 10px 26px rgba(27,42,65,.16);overflow:hidden;z-index:10;max-height:280px;overflow-y:auto">
+                      <sc-for list="{{ nrSuggestions }}" as="a" hint-placeholder-count="3">
+                        <button onClick="{{ a.onClick }}" style="width:100%;border:none;border-bottom:1px solid rgba(27,42,65,.07);background:#fff;padding:11px 14px;text-align:left;font-size:13.5px;color:#1B2A41" style-hover="background:#FAFBFC">{{ a.label }}</button>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                </div>
+                <input value="{{ nrAddrNum }}" onChange="{{ onNRAddrNum }}" onBlur="{{ onNRAddrNumBlur }}" disabled="{{ nrStreetDisabled }}" placeholder="N°" style="width:80px;flex:none;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:12px 13px;font-size:14px;outline:none;background:{{ nrStreetBg }}">
               </div>
-              <label style="display:block;font-size:11px;color:#8A98A8;margin-bottom:5px">Commune (modifiable si la détection se trompe)</label>
-              <input value="{{ nrCommune }}" onChange="{{ onNRCommune }}" onBlur="{{ onNRCommuneBlur }}" placeholder="Nom de la commune" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:12px 13px;font-size:14px;outline:none">
+              <sc-if value="{{ nrNoStreetMatch }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size:12px;color:#8A98A8">Cette rue n'est pas dans la liste : vous pouvez tout de même la saisir telle quelle.</div>
+              </sc-if>
               <button onClick="{{ nrValidateAddress }}" style="width:100%;box-sizing:border-box;border:none;background:{{ nrValidateAddressBg }};color:#fff;border-radius:10px;padding:12px 16px;font-size:13px;font-weight:700;margin-top:12px">{{ nrValidateAddressLabel }}</button>
             </div>
 
@@ -1247,7 +1265,7 @@ select,textarea,input{font-family:inherit}
                           </span>
                           <span style="width:1px;height:20px;background:rgba(27,42,65,.12)"></span>
                           <span style="width:24px;height:24px;border-radius:6px;background:{{ accent }};flex:none"></span>
-                          <span style="font-size:12.5px;font-weight:600;color:#1B2A41;white-space:nowrap">Commune de {{ communeName }}</span>
+                          <span style="font-size:12.5px;font-weight:600;color:#1B2A41;white-space:nowrap">{{ communeLabel }}</span>
                         </div>
                         <span style="font-size:11px;color:#A9B5C1">PNG ou SVG, fond transparent recommandé</span>
                       </div>
@@ -1916,7 +1934,7 @@ select,textarea,input{font-family:inherit}
               </span>
               <span style="font-family:Georgia,Cambria,serif;font-size:20px;font-weight:700;color:#1B2A41;letter-spacing:-.3px">Reeper</span>
             </span>
-            <span style="font-size:12px;color:#48566B">Commune de {{ communeName }}</span>
+            <span style="font-size:12px;color:#48566B">{{ communeLabel }}</span>
           </div>
           <div style="font-family:Georgia,Cambria,serif;font-size:19px;font-weight:700;color:#1B2A41;margin-bottom:6px">Rapport statistique des signalements</div>
           <div style="font-size:12.5px;color:#48566B;line-height:1.6;margin-bottom:20px">{{ sxRangeLabel }}<br>{{ sxFilterSummary }}</div>
@@ -2300,7 +2318,7 @@ class Component extends DCLogic {
     groupSheetOpen: false, groupName: "", groupMemberKeys: [], groupQuery: "",
     contactPickerOpen: false, contactQuery: "", attachContactKey: null, fileNames: [],
     xfMode: "service", xfCommune: null,
-    nrPhotoDataUrl: null, nrPath: [], nrLeaf: null, nrDesc: "", nrAddrText: "", nrAddrNum: "", nrCommune: null, nrCommuneManual: false, nrLat: null, nrLon: null, nrGeoLoading: false, nrGeoError: "",
+    nrPhotoDataUrl: null, nrPath: [], nrLeaf: null, nrDesc: "", nrAddrText: "", nrAddrNum: "", nrStreetOpen: false, nrCommune: null, nrCommuneManual: false, nrLat: null, nrLon: null, nrGeoLoading: false, nrGeoError: "",
     contactOpen: false, ctName: "", ctEmail: "", ctSubject: "Question générale", ctMessage: "", ctSent: false, ctError: ""
   };
 
@@ -2371,6 +2389,7 @@ class Component extends DCLogic {
   }
 
   _forwardGeocodeNR(query, skipCommune) {
+    this._nrGeoQ = query;
     const gen = (this._nrGeoGen2 = (this._nrGeoGen2 || 0) + 1);
     const known = !skipCommune && this.state.nrCommune;
     Store.searchAddresses(query, { bias: known || "", limit: 6 }).then((list) => {
@@ -2378,7 +2397,7 @@ class Component extends DCLogic {
       const best = known ? list.find((x) => x.town === known) : (list.find((x) => x.isServed) || list[0]);
       if (!best) { this._forwardGeocodeNRNominatim(query, skipCommune); return; }
       const guess = this.state.nrCommuneManual ? this.state.nrCommune : (Store.communeFromText(best.display) || best.town || this.state.nrCommune);
-      this.setState({ nrLat: best.lat, nrLon: best.lon, nrCommune: guess, nrAddrNum: this.state.nrAddrNum || best.num || "" });
+      this.setState({ nrLat: best.lat, nrLon: best.lon, nrCommune: guess });
       const el = document.querySelector('reeper-map[data-role="nr-map"]');
       if (el && el.panTo) el.panTo(best.lat, best.lon, 17);
     });
@@ -2522,6 +2541,7 @@ class Component extends DCLogic {
 
     return {
       communeName: commune,
+      communeLabel: Store.communeLabel(commune),
       agentInitials: session.initials, agentAvBg: session.avBg, agentName, agentRole: session.role,
       devices: ["Bureau", "Tablette", "Mobile"].map((label) => ({
         label, onClick: () => this.setState({ device: label, profileOpen: false }),
@@ -2583,7 +2603,7 @@ class Component extends DCLogic {
       })(),
 
       isStats: s.screen === "stats" && canStats,
-      sxScopeLabel: "Commune de " + commune + (sxLockedService ? " · Service " + sxLockedService : ""),
+      sxScopeLabel: Store.communeLabel(commune) + (sxLockedService ? " · Service " + sxLockedService : ""),
       sxPeriod: s.sxPeriod, sxPeriodOptions: SX_PERIODS,
       onSxPeriod: (e) => this.setState({ sxPeriod: e.target.value }),
       sxGroup: s.sxGroup, sxGroupOptions: SX_GROUPS,
@@ -2697,7 +2717,7 @@ class Component extends DCLogic {
       isDash: s.screen === "dash", isMap: s.screen === "map", isList: s.screen === "list",
       isTrash: s.screen === "trash", isNewReep: s.screen === "newreep",
       isDetail: s.screen === "detail", isConfig: s.screen === "config",
-      goNewReep: () => { Store.syncPull(); this._transition(() => this.setState({ screen: "newreep", nrPhotoDataUrl: null, nrPath: [], nrLeaf: null, nrDesc: "", nrAddrText: "", nrAddrNum: "", nrCommune: null, nrCommuneManual: false, nrLat: null, nrLon: null, nrGeoError: "" })); },
+      goNewReep: () => { Store.syncPull(); this._transition(() => this.setState({ screen: "newreep", nrPhotoDataUrl: null, nrPath: [], nrLeaf: null, nrDesc: "", nrAddrText: "", nrAddrNum: "", nrStreetOpen: false, nrCommune: commune, nrCommuneManual: false, nrLat: null, nrLon: null, nrGeoError: "" })); },
       isLegal: s.screen === "legal", goDash: () => this.go("dash"),
 
       convs: ALL_CONVS.map((c, i) => {
@@ -2941,24 +2961,58 @@ class Component extends DCLogic {
       onNRPhotoDragOver: (e) => e.preventDefault(),
       onNRPhotoDrop: (e) => { e.preventDefault(); const f = e.dataTransfer.files && e.dataTransfer.files[0]; if (f) this._ingestNRPhoto(f); },
       onNRPhotoFile: (e) => { const f = e.target.files && e.target.files[0]; if (f) this._ingestNRPhoto(f); e.target.value = ""; },
-      nrMapCenter: (s.nrLat != null ? s.nrLat : Store.COMMUNES[commune].center.lat) + "," + (s.nrLon != null ? s.nrLon : Store.COMMUNES[commune].center.lon),
+      nrMapCenter: (() => {
+        const base = (Store.COMMUNES[s.nrCommune] || Store.COMMUNES[commune]).center;
+        return (s.nrLat != null ? s.nrLat : base.lat) + "," + (s.nrLon != null ? s.nrLon : base.lon);
+      })(),
+      // Saisie d'adresse : commune d'abord, puis rue (liste filtrée sur la commune, rues seulement), puis numéro.
       nrAddrText: s.nrAddrText,
-      onNRAddrText: (e) => {
-        const val = e.target.value;
-        this.setState({ nrAddrText: val, nrCommune: s.nrCommuneManual ? s.nrCommune : (Store.communeFromText(val) || s.nrCommune) });
-      },
+      nrStreetDisabled: !s.nrCommune,
+      nrStreetBg: s.nrCommune ? "#fff" : "#F3F6F8",
+      nrStreetPlaceholder: s.nrCommune ? "Saisir une rue" : "Choisissez d'abord la commune",
+      onNRAddrFocus: () => { if (s.nrCommune) this.setState({ nrStreetOpen: true }); },
+      onNRAddrText: (e) => this.setState({ nrAddrText: e.target.value, nrStreetOpen: true }),
       onNRAddrBlur: () => {
-        const q = (s.nrAddrText.trim() + (s.nrAddrNum.trim() ? " " + s.nrAddrNum.trim() : "")).trim();
-        if (q.length > 4) this._forwardGeocodeNR(q);
+        // Laisse le temps à un clic sur une suggestion d'aboutir avant de fermer la liste.
+        setTimeout(() => {
+          this.setState({ nrStreetOpen: false });
+          const st = this.state;
+          const street = (st.nrAddrText || "").trim();
+          if (st.nrCommune && street.length > 2) {
+            const q = street + ((st.nrAddrNum || "").trim() ? " " + st.nrAddrNum.trim() : "");
+            if (q !== this._nrGeoQ) this._forwardGeocodeNR(q);
+          }
+        }, 200);
       },
       nrAddrNum: s.nrAddrNum, onNRAddrNum: (e) => this.setState({ nrAddrNum: e.target.value }),
-      nrCommune: s.nrCommune || "", onNRCommune: (e) => this.setState({ nrCommune: e.target.value, nrCommuneManual: true }),
-      onNRCommuneBlur: () => {
-        const commune = (s.nrCommune || "").trim();
-        const street = (s.nrAddrText || "").trim();
-        if (commune && street && (s.nrLat == null || s.nrLon == null)) {
-          this._forwardGeocodeNR(street + (s.nrAddrNum.trim() ? " " + s.nrAddrNum.trim() : ""));
+      onNRAddrNumBlur: () => {
+        const st = this.state;
+        const street = (st.nrAddrText || "").trim();
+        if (st.nrCommune && street && (st.nrAddrNum || "").trim()) {
+          const q = street + " " + st.nrAddrNum.trim();
+          if (q !== this._nrGeoQ) this._forwardGeocodeNR(q);
         }
+      },
+      nrSuggestions: ((s.nrStreetOpen && s.nrCommune) ? Store.filterStreets(s.nrCommune, s.nrAddrText) : []).map((n) => ({
+        label: n,
+        onClick: () => {
+          this.setState({ nrAddrText: n, nrAddrNum: "", nrStreetOpen: false, nrLat: null, nrLon: null, nrGeoError: "" });
+          this._forwardGeocodeNR(n);
+        }
+      })),
+      nrHasSuggestions: !!(s.nrStreetOpen && s.nrCommune && Store.filterStreets(s.nrCommune, s.nrAddrText).length),
+      nrNoStreetMatch: !!(s.nrCommune && s.nrAddrText.trim() && Store.streetsOf(s.nrCommune).length && Store.filterStreets(s.nrCommune, s.nrAddrText).length === 0),
+      nrCommune: s.nrCommune || "",
+      nrCommuneOptions: [{ value: "", label: "Choisir la commune" }].concat(
+        Store.communeNames().concat(s.nrCommune && Store.communeNames().indexOf(s.nrCommune) < 0 ? [s.nrCommune] : []).map((n) => ({ value: n, label: n }))
+      ),
+      onNRCommune: (e) => {
+        const c = e.target.value;
+        this.setState({ nrCommune: c || null, nrCommuneManual: true, nrAddrText: "", nrAddrNum: "", nrStreetOpen: false, nrLat: null, nrLon: null, nrGeoError: "" });
+        this._nrGeoQ = null;
+        const ctr = Store.COMMUNES[c] && Store.COMMUNES[c].center;
+        const el = document.querySelector('reeper-map[data-role="nr-map"]');
+        if (ctr && el && el.panTo) el.panTo(ctr.lat, ctr.lon, 14);
       },
       nrValidateAddressLabel: (s.nrLat != null && s.nrLon != null) ? "✓ Adresse prise en compte" : "📍 Valider cette adresse",
       nrValidateAddressBg: (s.nrLat != null && s.nrLon != null) ? "#3F8F63" : "#1B2A41",

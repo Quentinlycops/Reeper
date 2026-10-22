@@ -551,7 +551,8 @@
   var COMMUNES = {
     "Nyon": { center: { lat: 46.3833, lon: 6.2394 }, zip: ["1260", "1261", "1263", "1266"] },
     "Rolle": { center: { lat: 46.4574, lon: 6.3403 }, zip: ["1180", "1181", "1182"] },
-    "Gland": { center: { lat: 46.4183, lon: 6.2664 }, zip: ["1196"] }
+    "Gland": { center: { lat: 46.4183, lon: 6.2664 }, zip: ["1196"] },
+    "Aubonne": { center: { lat: 46.4953, lon: 6.3919 }, zip: ["1170"] }
   };
 
   // --- Password hashing (SHA-256, client-side) --------------------------------
@@ -579,7 +580,7 @@
     { key: "gerant_lycops", type: "gerant", username: "qlycops", password: REEPER_DEFAULT_PW_HASH, displayName: "Quentin Lycops", firstName: "Quentin", lastName: "Lycops", email: "q.lycops@reeper.ch", phone: "", address: "", initials: "QL", avBg: "#1B2A41", role: "Gérant", status: "active", primary: true }
   ];
 
-  var COMMUNE_CODES = { "NYON-2026": "Nyon", "ROLLE-2026": "Rolle", "GLAND-2026": "Gland" };
+  var COMMUNE_CODES = { "NYON-2026": "Nyon", "ROLLE-2026": "Rolle", "GLAND-2026": "Gland", "AUBONNE-2026": "Aubonne" };
 
   var AV_COLORS = ["#1B2A41", "#D62839", "#3F8F63", "#5A6B7E", "#31506F", "#A96A16", "#7A6BC4", "#4E8FA8"];
 
@@ -710,7 +711,7 @@
   function defaultCommuneConfig(commune) {
     return {
       commune: commune,
-      general: { name: "Commune de " + commune, address: "", email: "greffe@" + commune.toLowerCase() + ".ch", defaultView: "Carte", adminLang: "Français", accent: "#4E8FA8" },
+      general: { name: communeLabel(commune), address: "", email: "greffe@" + commune.toLowerCase() + ".ch", defaultView: "Carte", adminLang: "Français", accent: "#4E8FA8" },
       catsOff: [], catOverrides: {}, catExtra: [],
       services: SERVICE_NAMES.map(function (n) { return { name: n, emails: [] }; }),
       statusVisible: [], statusExtra: [],
@@ -1012,9 +1013,16 @@
   function communeFromText(text) {
     if (!text) return null;
     var t = text.toLowerCase();
+    // Nom exact d'abord, puis le nom de commune le plus long contenu dans le texte
+    // (« Mont-sur-Rolle » ne doit pas être pris pour « Rolle »).
+    var exact = null, longest = null;
     for (var name in COMMUNES) {
-      if (t.indexOf(name.toLowerCase()) >= 0) return name;
+      var nl = name.toLowerCase();
+      if (t.trim() === nl) exact = name;
+      if (t.indexOf(nl) >= 0 && (!longest || name.length > longest.length)) longest = name;
     }
+    if (exact) return exact;
+    if (longest) return longest;
     for (var name2 in COMMUNES) {
       var zips = COMMUNES[name2].zip;
       for (var i = 0; i < zips.length; i++) if (t.indexOf(zips[i]) >= 0) return name2;
@@ -1088,6 +1096,39 @@
     });
   }
 
+  // --- Rues d'une commune (liste fixe reeper-streets.js : rues seulement, sans numéros) ---------
+  var _diacritics = new RegExp("[" + String.fromCharCode(768) + "-" + String.fromCharCode(879) + "]", "g");
+  function normStreet(s) {
+    return String(s || "").toLowerCase().normalize("NFD").replace(_diacritics, "").replace(/[^a-z0-9]+/g, " ").trim();
+  }
+  function streetsOf(commune) {
+    var all = (typeof window !== "undefined" && window.REEPER_STREETS) || {};
+    return all[commune] || [];
+  }
+  // Toutes les rues de la commune qui correspondent à la saisie (aucune limite de nombre) :
+  // d'abord celles qui commencent par la saisie, puis celles qui contiennent un mot qui commence ainsi, puis le reste.
+  function filterStreets(commune, query) {
+    var list = streetsOf(commune);
+    var q = normStreet(query);
+    if (!q) return list.slice();
+    var first = [], word = [], inside = [];
+    list.forEach(function (name) {
+      var n = normStreet(name);
+      if (n.indexOf(q) === 0) first.push(name);
+      else if (n.indexOf(" " + q) >= 0) word.push(name);
+      else if (n.indexOf(q) >= 0) inside.push(name);
+    });
+    return first.concat(word, inside);
+  }
+  // « Commune de Gland », mais « Commune d'Aubonne » (élision devant une voyelle ou un h).
+  function communeLabel(name) {
+    var n = String(name || "");
+    return "Commune " + (/^[AEIOUYHÀÂÉÈÊÎÔÛ]/i.test(n) ? "d'" : "de ") + n;
+  }
+  function communeNames() {
+    return Object.keys(COMMUNES).sort(function (a, b) { return a.localeCompare(b, "fr"); });
+  }
+
   function reverseGeocode(lat, lon) {
     var url = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=" + lat + "&lon=" + lon + "&zoom=18&addressdetails=1";
     return fetch(url, { headers: { "Accept": "application/json" } }).then(function (r) {
@@ -1148,6 +1189,7 @@
     communeFromText: communeFromText,
     downscaleImage: downscaleImage,
     reverseGeocode: reverseGeocode, searchAddresses: searchAddresses,
+    streetsOf: streetsOf, filterStreets: filterStreets, communeNames: communeNames, communeLabel: communeLabel,
 
     getAccount: function (key) {
       var data = load();

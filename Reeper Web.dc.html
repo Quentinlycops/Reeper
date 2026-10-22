@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="./reeper-theme.css">
+<script src="./reeper-streets.js"></script>
 <script src="./reeper-shared.js"></script>
 <script src="./reeper-map.js"></script>
 <script src="./support.js"></script>
@@ -245,7 +246,7 @@ input,textarea,select{font-family:inherit}
                       <h2 style="margin:0;font-family:Georgia,Cambria,serif;font-size:17.5px;font-weight:700">Adresse</h2>
                       <span style="font-size:10px;font-weight:700;letter-spacing:.04em;color:#D62839;background:#FDF2F3;border-radius:999px;padding:2px 8px">Obligatoire</span>
                     </div>
-                    <p style="margin:3px 0 0;font-size:12.5px;line-height:1.5;color:#5A6B7E;max-width:62ch;text-wrap:pretty">Votre navigateur peut détecter la position, ou vous saisissez l'adresse.</p>
+                    <p style="margin:3px 0 0;font-size:12.5px;line-height:1.5;color:#5A6B7E;max-width:62ch;text-wrap:pretty">Votre navigateur peut détecter la position, ou vous choisissez la commune, puis la rue.</p>
                   </div>
                 </div>
                 <div style="height:260px;position:relative;overflow:hidden;border-top:1px solid rgba(27,42,65,.08);border-bottom:1px solid rgba(27,42,65,.08)">
@@ -256,26 +257,33 @@ input,textarea,select{font-family:inherit}
                   <sc-if value="{{ hasGeoError }}" hint-placeholder-val="{{ false }}">
                     <div style="margin-top:9px;font-size:12px;color:#D62839">{{ geoError }}</div>
                   </sc-if>
-                  <div style="margin-top:14px;display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap">
-                    <div style="position:relative;flex:1;min-width:200px">
-                      <input value="{{ addrText }}" onChange="{{ onAddrText }}" onBlur="{{ onAddrBlur }}" placeholder="Saisir une rue" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:11px;padding:15px 16px;font-size:14.5px;color:#1B2A41;outline:none">
-                      <sc-if value="{{ hasAddrSuggestions }}" hint-placeholder-val="{{ false }}">
-                        <div style="position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid rgba(27,42,65,.16);border-radius:11px;box-shadow:0 10px 26px rgba(27,42,65,.16);overflow:hidden;z-index:10;max-height:220px;overflow-y:auto">
-                          <sc-for list="{{ addrSuggestions }}" as="a" hint-placeholder-count="3">
-                            <button onClick="{{ a.onClick }}" style="width:100%;border:none;border-bottom:1px solid rgba(27,42,65,.07);background:#fff;padding:12px 15px;text-align:left;font-size:13.5px;color:#1B2A41" style-hover="background:#FAFBFC">{{ a.label }}</button>
-                          </sc-for>
-                        </div>
-                      </sc-if>
+                  <div style="margin-top:14px">
+                    <label style="display:block;font-size:11.5px;font-weight:600;color:#5A6B7E;margin-bottom:5px">1. Commune</label>
+                    <select value="{{ communeGuess }}" onChange="{{ onCommuneSelect }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:11px;padding:14px 14px;font-size:14.5px;color:#1B2A41;background:#fff;outline:none">
+                      <sc-for list="{{ communeOptions }}" as="o" hint-placeholder-count="4">
+                        <option value="{{ o.value }}">{{ o.label }}</option>
+                      </sc-for>
+                    </select>
+                  </div>
+                  <div style="margin-top:12px">
+                    <label style="display:block;font-size:11.5px;font-weight:600;color:#5A6B7E;margin-bottom:5px">2. Rue et numéro</label>
+                    <div style="display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap">
+                      <div style="position:relative;flex:1;min-width:200px">
+                        <input value="{{ addrText }}" onChange="{{ onAddrText }}" onFocus="{{ onAddrFocus }}" onBlur="{{ onAddrBlur }}" disabled="{{ streetDisabled }}" placeholder="{{ streetPlaceholder }}" autocomplete="off" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:11px;padding:15px 16px;font-size:14.5px;color:#1B2A41;outline:none;background:{{ streetBg }}">
+                        <sc-if value="{{ hasAddrSuggestions }}" hint-placeholder-val="{{ false }}">
+                          <div style="position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid rgba(27,42,65,.16);border-radius:11px;box-shadow:0 10px 26px rgba(27,42,65,.16);overflow:hidden;z-index:10;max-height:280px;overflow-y:auto">
+                            <sc-for list="{{ addrSuggestions }}" as="a" hint-placeholder-count="3">
+                              <button onClick="{{ a.onClick }}" style="width:100%;border:none;border-bottom:1px solid rgba(27,42,65,.07);background:#fff;padding:12px 15px;text-align:left;font-size:13.5px;color:#1B2A41" style-hover="background:#FAFBFC">{{ a.label }}</button>
+                            </sc-for>
+                          </div>
+                        </sc-if>
+                      </div>
+                      <input value="{{ addrNum }}" onChange="{{ onAddrNum }}" onBlur="{{ onAddrNumBlur }}" disabled="{{ streetDisabled }}" placeholder="N°" style="width:90px;flex:none;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:11px;padding:15px 14px;font-size:14.5px;color:#1B2A41;outline:none;background:{{ streetBg }}">
                     </div>
-                    <input value="{{ addrNum }}" onChange="{{ onAddrNum }}" placeholder="N°" style="width:90px;flex:none;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:11px;padding:15px 14px;font-size:14.5px;color:#1B2A41;outline:none">
+                    <sc-if value="{{ noStreetMatch }}" hint-placeholder-val="{{ false }}">
+                      <div style="margin-top:7px;font-size:12px;color:#8A98A8">Cette rue n'est pas dans la liste : vous pouvez tout de même la saisir telle quelle.</div>
+                    </sc-if>
                   </div>
-                  <div style="margin-top:9px">
-                    <label style="display:block;font-size:11px;color:#8A98A8;margin-bottom:5px">Commune (modifiable si la détection se trompe)</label>
-                    <input value="{{ communeGuess }}" onChange="{{ onCommuneGuess }}" onBlur="{{ onCommuneGuessBlur }}" placeholder="Nom de la commune" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:11px;padding:12px 14px;font-size:13.5px;color:#1B2A41;outline:none">
-                  </div>
-                  <sc-if value="{{ noCommuneGuess }}" hint-placeholder-val="{{ false }}">
-                    <div style="margin-top:7px;font-size:12px;color:#8A98A8">Commune non détectée automatiquement — indiquez-la ci-dessus.</div>
-                  </sc-if>
                   <button onClick="{{ validateAddress }}" style="width:100%;box-sizing:border-box;border:none;background:{{ validateAddressBg }};color:#fff;border-radius:11px;padding:13px 16px;font-size:13.5px;font-weight:700;margin-top:12px">{{ validateAddressLabel }}</button>
                 </div>
               </div>
@@ -823,7 +831,7 @@ class Component extends DCLogic {
     settingsCode: "", settingsMsg: "", settingsMsgIsError: false,
     pwdOld: "", pwdNew1: "", pwdNew2: "", pwdMsg: "", pwdMsgIsError: false,
     photoUrls: [], photoStepError: "",
-    geo: false, geoLat: null, geoLon: null, addrText: "", addrNum: "", addrSuggestions: [], communeGuess: null, communeManual: false, geoLoading: false, geoError: "",
+    geo: false, geoLat: null, geoLon: null, addrText: "", addrNum: "", streetOpen: false, communeGuess: null, communeManual: false, geoLoading: false, geoError: "",
     cat: null, leaf: null, path: [], desc: "",
     createdId: null, createdCommune: null, createdPoints: 0,
     redeemMsg: "",
@@ -887,6 +895,7 @@ class Component extends DCLogic {
   }
 
   _forwardGeocode(query, skipCommune) {
+    this._geoQ = query;
     const gen = (this._geoGen2 = (this._geoGen2 || 0) + 1);
     const known = !skipCommune && this.state.communeGuess;
     Store.searchAddresses(query, { bias: known || "", limit: 6 }).then((list) => {
@@ -894,7 +903,7 @@ class Component extends DCLogic {
       const best = known ? list.find((x) => x.town === known) : (list.find((x) => x.isServed) || list[0]);
       if (!best) { this._forwardGeocodeNominatim(query, skipCommune); return; }
       const guess = this.state.communeManual ? this.state.communeGuess : (Store.communeFromText(best.display) || best.town || this.state.communeGuess);
-      this.setState({ geoLat: best.lat, geoLon: best.lon, geo: true, communeGuess: guess, addrNum: this.state.addrNum || best.num || "" });
+      this.setState({ geoLat: best.lat, geoLon: best.lon, geo: true, communeGuess: guess });
       const el = document.querySelector('reeper-map[data-role="loc-picker"]');
       if (el && el.panTo) el.panTo(best.lat, best.lon, 17);
     });
@@ -925,43 +934,26 @@ class Component extends DCLogic {
       }).catch(() => {});
   }
 
-  _fetchAddrSuggestions(query) {
-    const gen = (this._suggGen = (this._suggGen || 0) + 1);
-    Store.searchAddresses(query, { bias: this.state.communeGuess || "Gland", limit: 12 }).then((list) => {
-      if (gen !== this._suggGen) return;
-      if (list.length) { this.setState({ addrSuggestions: list }); return; }
-      this._fetchAddrSuggestionsNominatim(query, gen);
-    });
-  }
-
-  _fetchAddrSuggestionsNominatim(query, gen) {
-    var url = "https://nominatim.openstreetmap.org/search?format=jsonv2&limit=15&countrycodes=ch&addressdetails=1&accept-language=fr&viewbox=6.05,46.65,6.95,46.20&q=" + encodeURIComponent(query);
-    fetch(url)
-      .then((r) => r.json()).then((list) => {
-        if (gen !== this._suggGen) return;
-        const served = Object.keys(Store.COMMUNES);
-        const mapped = (list || []).map((item) => {
-          const a = item.address || {};
-          const street = a.road || a.pedestrian || a.footway || (item.display_name || "").split(",")[0];
-          const town = a.city || a.town || a.village || a.municipality || "";
-          const isServed = served.indexOf(town) !== -1;
-          return { label: street + (town ? ", " + town : ""), street, town, lat: parseFloat(item.lat), lon: parseFloat(item.lon), display: item.display_name, isServed };
-        });
-        mapped.sort((x, y) => (y.isServed ? 1 : 0) - (x.isServed ? 1 : 0));
-        this.setState({ addrSuggestions: mapped });
-      }).catch(() => {});
-  }
-
   renderVals() {
     const s = this.state;
     const session = Store.getSession();
     const loggedIn = !!(session && session.type === "citizen");
     const path = s.path || [];
-    const romandieDefault = (Store.COMMUNES.Gland && Store.COMMUNES.Gland.center) || { lat: 46.4183, lon: 6.2664 };
+    // Par défaut, la carte est centrée sur Aubonne.
+    const romandieDefault = (Store.COMMUNES.Aubonne && Store.COMMUNES.Aubonne.center) || { lat: 46.4953, lon: 6.3919 };
     const fullAddr = s.addrText.trim() + (s.addrNum.trim() ? " " + s.addrNum.trim() : "");
-    const mapCenterLat = s.geoLat != null ? s.geoLat : romandieDefault.lat;
-    const mapCenterLon = s.geoLon != null ? s.geoLon : romandieDefault.lon;
-    const mapZoom = s.geoLat != null ? 16 : 13;
+    // Sans position précise : centre de la commune choisie, sinon Aubonne.
+    const baseCenter = (s.communeGuess && Store.COMMUNES[s.communeGuess] && Store.COMMUNES[s.communeGuess].center) || romandieDefault;
+    const mapCenterLat = s.geoLat != null ? s.geoLat : baseCenter.lat;
+    const mapCenterLon = s.geoLon != null ? s.geoLon : baseCenter.lon;
+    // Saisie d'adresse : commune d'abord, puis rue (liste filtrée sur la commune, rues seulement), puis numéro.
+    const streetNames = (s.streetOpen && s.communeGuess) ? Store.filterStreets(s.communeGuess, s.addrText) : [];
+    const communeNamesList = Store.communeNames();
+    const communeOptions = [{ value: "", label: "Choisir la commune" }].concat(
+      communeNamesList.concat(s.communeGuess && communeNamesList.indexOf(s.communeGuess) < 0 ? [s.communeGuess] : []).map((n) => ({ value: n, label: n }))
+    );
+    const noStreetMatch = !!(s.communeGuess && s.addrText.trim() && Store.streetsOf(s.communeGuess).length && Store.filterStreets(s.communeGuess, s.addrText).length === 0);
+    const mapZoom = s.geoLat != null ? 16 : 14;
     const rows = Store.getReeps({ includeModeration: true }).filter((d) => loggedIn && d.reporterAccount === session.key).map(deco).map((d, i) => ({
       ...d, onClick: () => this.setState({ sel: i, selPhotoIdx: 0 }),
       ring: "1px solid rgba(27,42,65,.1)",
@@ -1090,7 +1082,7 @@ class Component extends DCLogic {
 
       goHome: () => this.go("home"),
       goTrack,
-      startReport: () => { Store.syncPull(); this.setState({ view: "report", step: "photo", cat: null, leaf: null, path: [], geo: false, geoLat: null, geoLon: null, addrText: "", addrNum: "", addrSuggestions: [], communeGuess: null, communeManual: false, desc: "", photoUrls: [], photoStepError: "", createdPoints: 0 }); },
+      startReport: () => { Store.syncPull(); this.setState({ view: "report", step: "photo", cat: null, leaf: null, path: [], geo: false, geoLat: null, geoLon: null, addrText: "", addrNum: "", streetOpen: false, communeGuess: null, communeManual: false, desc: "", photoUrls: [], photoStepError: "", createdPoints: 0 }); },
 
       steps3: [
         { num: "01", title: "Photographiez", body: "Une photo de l'anomalie, depuis votre ordinateur ou votre téléphone." },
@@ -1162,37 +1154,51 @@ class Component extends DCLogic {
       mapCenter: mapCenterLat + "," + mapCenterLon,
       mapZoom,
       addrText: s.addrText,
-      onAddrText: (e) => {
-        const val = e.target.value;
-        this.setState({ addrText: val, geo: !!val.trim(), communeGuess: s.communeManual ? s.communeGuess : (Store.communeFromText(val) || s.communeGuess) });
-        clearTimeout(this._addrTimer);
-        if (val.trim().length >= 2) this._addrTimer = setTimeout(() => this._fetchAddrSuggestions(val.trim()), 350);
-        else this.setState({ addrSuggestions: [] });
-      },
+      streetDisabled: !s.communeGuess,
+      streetBg: s.communeGuess ? "#fff" : "#F3F6F8",
+      streetPlaceholder: s.communeGuess ? "Saisir une rue" : "Choisissez d'abord la commune",
+      onAddrFocus: () => { if (s.communeGuess) this.setState({ streetOpen: true }); },
+      onAddrText: (e) => this.setState({ addrText: e.target.value, streetOpen: true }),
       onAddrBlur: () => {
-        setTimeout(() => this.setState({ addrSuggestions: [] }), 150);
-        const q = s.addrText.trim();
-        if (q.length > 4 && !s.geo) this._forwardGeocode(q);
+        // Laisse le temps à un clic sur une suggestion d'aboutir avant de fermer la liste.
+        setTimeout(() => {
+          this.setState({ streetOpen: false });
+          const st = this.state;
+          const street = (st.addrText || "").trim();
+          if (st.communeGuess && street.length > 2) {
+            const q = street + ((st.addrNum || "").trim() ? " " + st.addrNum.trim() : "");
+            if (q !== this._geoQ) this._forwardGeocode(q);
+          }
+        }, 200);
       },
       addrNum: s.addrNum,
       onAddrNum: (e) => this.setState({ addrNum: e.target.value }),
-      hasAddrSuggestions: s.addrSuggestions.length > 0,
-      addrSuggestions: s.addrSuggestions.map((a) => ({
-        label: a.label,
+      onAddrNumBlur: () => {
+        const st = this.state;
+        const street = (st.addrText || "").trim();
+        if (st.communeGuess && street && (st.addrNum || "").trim()) {
+          const q = street + " " + st.addrNum.trim();
+          if (q !== this._geoQ) this._forwardGeocode(q);
+        }
+      },
+      hasAddrSuggestions: streetNames.length > 0,
+      addrSuggestions: streetNames.map((n) => ({
+        label: n,
         onClick: () => {
-          this.setState({ addrText: a.street, addrNum: a.num || s.addrNum, geoLat: a.lat, geoLon: a.lon, geo: true, addrSuggestions: [], communeManual: false, communeGuess: Store.communeFromText(a.display) || a.town || s.communeGuess });
-          const el = document.querySelector('reeper-map[data-role="loc-picker"]');
-          if (el && el.panTo) el.panTo(a.lat, a.lon, 17);
+          this.setState({ addrText: n, addrNum: "", streetOpen: false, geoLat: null, geoLon: null, geo: false, geoError: "" });
+          this._forwardGeocode(n);
         }
       })),
-      communeGuess: s.communeGuess || "", noCommuneGuess: !s.communeGuess && s.geo,
-      onCommuneGuess: (e) => this.setState({ communeGuess: e.target.value, communeManual: true }),
-      onCommuneGuessBlur: () => {
-        const commune = (s.communeGuess || "").trim();
-        const street = (s.addrText || "").trim();
-        if (commune && street && (s.geoLat == null || s.geoLon == null)) {
-          this._forwardGeocode(street + (s.addrNum.trim() ? " " + s.addrNum.trim() : ""));
-        }
+      noStreetMatch,
+      communeGuess: s.communeGuess || "",
+      communeOptions,
+      onCommuneSelect: (e) => {
+        const c = e.target.value;
+        this.setState({ communeGuess: c || null, communeManual: true, addrText: "", addrNum: "", streetOpen: false, geoLat: null, geoLon: null, geo: false, geoError: "" });
+        this._geoQ = null;
+        const ctr = Store.COMMUNES[c] && Store.COMMUNES[c].center;
+        const el = document.querySelector('reeper-map[data-role="loc-picker"]');
+        if (ctr && el && el.panTo) el.panTo(ctr.lat, ctr.lon, 14);
       },
       validateAddressLabel: (s.geoLat != null && s.geoLon != null) ? "✓ Adresse prise en compte" : "📍 Valider cette adresse",
       validateAddressBg: (s.geoLat != null && s.geoLon != null) ? "#3F8F63" : "#1B2A41",
