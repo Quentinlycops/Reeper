@@ -1128,6 +1128,18 @@
   function communeNames() {
     return Object.keys(COMMUNES).sort(function (a, b) { return a.localeCompare(b, "fr"); });
   }
+  // Communes proposées au fur et à mesure de la saisie : celles qui commencent par le texte, puis celles qui le contiennent.
+  function searchCommunes(query) {
+    var q = normStreet(query);
+    if (!q) return [];
+    var first = [], rest = [];
+    communeNames().forEach(function (n) {
+      var k = normStreet(n);
+      if (k.indexOf(q) === 0) first.push(n);
+      else if (k.indexOf(q) >= 0) rest.push(n);
+    });
+    return first.concat(rest);
+  }
 
   function reverseGeocode(lat, lon) {
     var url = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=" + lat + "&lon=" + lon + "&zoom=18&addressdetails=1";
@@ -1189,7 +1201,7 @@
     communeFromText: communeFromText,
     downscaleImage: downscaleImage,
     reverseGeocode: reverseGeocode, searchAddresses: searchAddresses,
-    streetsOf: streetsOf, filterStreets: filterStreets, communeNames: communeNames, communeLabel: communeLabel,
+    streetsOf: streetsOf, filterStreets: filterStreets, communeNames: communeNames, searchCommunes: searchCommunes, communeLabel: communeLabel,
 
     getAccount: function (key) {
       var data = load();

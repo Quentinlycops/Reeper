@@ -259,11 +259,19 @@ input,textarea,select{font-family:inherit}
                   </sc-if>
                   <div style="margin-top:14px">
                     <label style="display:block;font-size:11.5px;font-weight:600;color:#5A6B7E;margin-bottom:5px">1. Commune</label>
-                    <select value="{{ communeGuess }}" onChange="{{ onCommuneSelect }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:11px;padding:14px 14px;font-size:14.5px;color:#1B2A41;background:#fff;outline:none">
-                      <sc-for list="{{ communeOptions }}" as="o" hint-placeholder-count="4">
-                        <option value="{{ o.value }}">{{ o.label }}</option>
-                      </sc-for>
-                    </select>
+                    <div style="position:relative">
+                      <input value="{{ communeInput }}" onChange="{{ onCommuneText }}" onKeyDown="{{ onCommuneKeyDown }}" onBlur="{{ onCommuneBlur }}" placeholder="Saisir la commune" autocomplete="off" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:11px;padding:15px 16px;font-size:14.5px;color:#1B2A41;outline:none;background:#fff">
+                      <sc-if value="{{ hasCommuneSuggestions }}" hint-placeholder-val="{{ false }}">
+                        <div style="position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid rgba(27,42,65,.16);border-radius:11px;box-shadow:0 10px 26px rgba(27,42,65,.16);overflow:hidden;z-index:11">
+                          <sc-for list="{{ communeSuggestions }}" as="c" hint-placeholder-count="3">
+                            <button onClick="{{ c.onClick }}" style="width:100%;border:none;border-bottom:1px solid rgba(27,42,65,.07);background:#fff;padding:12px 15px;text-align:left;font-size:13.5px;color:#1B2A41" style-hover="background:#FAFBFC">{{ c.label }}</button>
+                          </sc-for>
+                        </div>
+                      </sc-if>
+                    </div>
+                    <sc-if value="{{ noCommuneMatch }}" hint-placeholder-val="{{ false }}">
+                      <div style="margin-top:7px;font-size:12px;color:#8A98A8">Aucune commune ne correspond : Reeper n'est pas encore disponible dans cette commune.</div>
+                    </sc-if>
                   </div>
                   <div style="margin-top:12px">
                     <label style="display:block;font-size:11.5px;font-weight:600;color:#5A6B7E;margin-bottom:5px">2. Rue et numéro</label>
@@ -831,7 +839,7 @@ class Component extends DCLogic {
     settingsCode: "", settingsMsg: "", settingsMsgIsError: false,
     pwdOld: "", pwdNew1: "", pwdNew2: "", pwdMsg: "", pwdMsgIsError: false,
     photoUrls: [], photoStepError: "",
-    geo: false, geoLat: null, geoLon: null, addrText: "", addrNum: "", streetOpen: false, communeGuess: null, communeManual: false, geoLoading: false, geoError: "",
+    geo: false, geoLat: null, geoLon: null, addrText: "", addrNum: "", streetOpen: false, communeGuess: null, communeText: null, communeManual: false, geoLoading: false, geoError: "",
     cat: null, leaf: null, path: [], desc: "",
     createdId: null, createdCommune: null, createdPoints: 0,
     redeemMsg: "",
@@ -872,7 +880,7 @@ class Component extends DCLogic {
         const { lat, lon } = e.detail;
         this.setState({ geoLat: lat, geoLon: lon, geo: true });
         Store.reverseGeocode(lat, lon).then((res) => {
-          this.setState({ addrText: res.street || res.address, addrNum: res.houseNumber || "", communeManual: false, communeGuess: res.commune || res.town || this.state.communeGuess });
+          this.setState({ addrText: res.street || res.address, addrNum: res.houseNumber || "", communeManual: false, communeText: null, communeGuess: res.commune || res.town || this.state.communeGuess });
         }).catch(() => {});
       });
     }
@@ -892,6 +900,15 @@ class Component extends DCLogic {
   _ingestPhotos(fileList) {
     const files = Array.from(fileList || []);
     files.forEach((f) => this._ingestPhoto(f));
+  }
+
+  // Retient la commune choisie, vide la rue (la liste des rues dépend de la commune) et recentre la carte sur la commune.
+  _pickCommune(name) {
+    this.setState({ communeGuess: name, communeText: null, communeManual: true, addrText: "", addrNum: "", streetOpen: false, geoLat: null, geoLon: null, geo: false, geoError: "" });
+    this._geoQ = null;
+    const ctr = Store.COMMUNES[name] && Store.COMMUNES[name].center;
+    const el = document.querySelector('reeper-map[data-role="loc-picker"]');
+    if (ctr && el && el.panTo) el.panTo(ctr.lat, ctr.lon, 14);
   }
 
   _forwardGeocode(query, skipCommune) {
@@ -948,10 +965,11 @@ class Component extends DCLogic {
     const mapCenterLon = s.geoLon != null ? s.geoLon : baseCenter.lon;
     // Saisie d'adresse : commune d'abord, puis rue (liste filtrée sur la commune, rues seulement), puis numéro.
     const streetNames = (s.streetOpen && s.communeGuess) ? Store.filterStreets(s.communeGuess, s.addrText) : [];
-    const communeNamesList = Store.communeNames();
-    const communeOptions = [{ value: "", label: "Choisir la commune" }].concat(
-      communeNamesList.concat(s.communeGuess && communeNamesList.indexOf(s.communeGuess) < 0 ? [s.communeGuess] : []).map((n) => ({ value: n, label: n }))
-    );
+    // Commune : champ libre, avec propositions au fur et à mesure de la saisie (pas de liste déroulante).
+    const communeEditing = s.communeText != null;
+    const communeInput = communeEditing ? s.communeText : (s.communeGuess || "");
+    const communeMatches = communeEditing ? Store.searchCommunes(s.communeText) : [];
+    const noCommuneMatch = communeEditing && s.communeText.trim() !== "" && communeMatches.length === 0;
     const noStreetMatch = !!(s.communeGuess && s.addrText.trim() && Store.streetsOf(s.communeGuess).length && Store.filterStreets(s.communeGuess, s.addrText).length === 0);
     const mapZoom = s.geoLat != null ? 16 : 14;
     const rows = Store.getReeps({ includeModeration: true }).filter((d) => loggedIn && d.reporterAccount === session.key).map(deco).map((d, i) => ({
@@ -1082,7 +1100,7 @@ class Component extends DCLogic {
 
       goHome: () => this.go("home"),
       goTrack,
-      startReport: () => { Store.syncPull(); this.setState({ view: "report", step: "photo", cat: null, leaf: null, path: [], geo: false, geoLat: null, geoLon: null, addrText: "", addrNum: "", streetOpen: false, communeGuess: null, communeManual: false, desc: "", photoUrls: [], photoStepError: "", createdPoints: 0 }); },
+      startReport: () => { Store.syncPull(); this.setState({ view: "report", step: "photo", cat: null, leaf: null, path: [], geo: false, geoLat: null, geoLon: null, addrText: "", addrNum: "", streetOpen: false, communeGuess: null, communeText: null, communeManual: false, desc: "", photoUrls: [], photoStepError: "", createdPoints: 0 }); },
 
       steps3: [
         { num: "01", title: "Photographiez", body: "Une photo de l'anomalie, depuis votre ordinateur ou votre téléphone." },
@@ -1191,14 +1209,31 @@ class Component extends DCLogic {
       })),
       noStreetMatch,
       communeGuess: s.communeGuess || "",
-      communeOptions,
-      onCommuneSelect: (e) => {
-        const c = e.target.value;
-        this.setState({ communeGuess: c || null, communeManual: true, addrText: "", addrNum: "", streetOpen: false, geoLat: null, geoLon: null, geo: false, geoError: "" });
-        this._geoQ = null;
-        const ctr = Store.COMMUNES[c] && Store.COMMUNES[c].center;
-        const el = document.querySelector('reeper-map[data-role="loc-picker"]');
-        if (ctr && el && el.panTo) el.panTo(ctr.lat, ctr.lon, 14);
+      communeInput,
+      hasCommuneSuggestions: communeMatches.length > 0 && !(communeMatches.length === 1 && communeMatches[0] === s.communeGuess),
+      communeSuggestions: communeMatches.map((n) => ({ label: n, onClick: () => this._pickCommune(n) })),
+      noCommuneMatch,
+      onCommuneText: (e) => {
+        const val = e.target.value;
+        const exact = Store.searchCommunes(val).find((n) => n.toLowerCase() === val.trim().toLowerCase());
+        if (exact) { this._pickCommune(exact); return; }
+        // Texte en cours de saisie : la commune n'est retenue qu'une fois choisie dans les propositions.
+        this.setState({ communeText: val, communeGuess: null, communeManual: true });
+      },
+      onCommuneKeyDown: (e) => {
+        if (e.key !== "Enter") return;
+        const first = Store.searchCommunes(this.state.communeText || "")[0];
+        if (first) { e.preventDefault(); this._pickCommune(first); }
+      },
+      onCommuneBlur: () => {
+        // Laisse le temps à un clic sur une proposition d'aboutir ; une seule proposition possible est retenue d'office.
+        setTimeout(() => {
+          const st = this.state;
+          if (st.communeText == null) return;
+          const list = Store.searchCommunes(st.communeText);
+          if (list.length === 1) this._pickCommune(list[0]);
+          else if (!st.communeText.trim()) this.setState({ communeText: null });
+        }, 200);
       },
       validateAddressLabel: (s.geoLat != null && s.geoLon != null) ? "✓ Adresse prise en compte" : "📍 Valider cette adresse",
       validateAddressBg: (s.geoLat != null && s.geoLon != null) ? "#3F8F63" : "#1B2A41",
@@ -1235,7 +1270,7 @@ class Component extends DCLogic {
             const el = document.querySelector('reeper-map[data-role="loc-picker"]');
             if (el && el.panTo) el.panTo(lat, lon, 17);
             Store.reverseGeocode(lat, lon).then((res) => {
-              this.setState({ addrText: res.street || res.address, addrNum: res.houseNumber || "", communeManual: false, communeGuess: res.commune || res.town || s.communeGuess });
+              this.setState({ addrText: res.street || res.address, addrNum: res.houseNumber || "", communeManual: false, communeText: null, communeGuess: res.commune || res.town || s.communeGuess });
             }).catch(() => {
               this.setState({ addrText: lat.toFixed(5) + ", " + lon.toFixed(5) });
             });

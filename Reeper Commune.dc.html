@@ -756,11 +756,19 @@ select,textarea,input{font-family:inherit}
                 <div style="margin-bottom:9px;font-size:12px;color:#D62839">{{ nrGeoError }}</div>
               </sc-if>
               <label style="display:block;font-size:11.5px;font-weight:600;color:#5A6B7E;margin-bottom:5px">1. Commune</label>
-              <select value="{{ nrCommune }}" onChange="{{ onNRCommune }}" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:12px 13px;font-size:14px;background:#fff;outline:none;margin-bottom:12px">
-                <sc-for list="{{ nrCommuneOptions }}" as="o" hint-placeholder-count="4">
-                  <option value="{{ o.value }}">{{ o.label }}</option>
-                </sc-for>
-              </select>
+              <div style="position:relative;margin-bottom:12px">
+                <input value="{{ nrCommuneInput }}" onChange="{{ onNRCommuneText }}" onKeyDown="{{ onNRCommuneKeyDown }}" onBlur="{{ onNRCommuneBlur }}" placeholder="Saisir la commune" autocomplete="off" style="width:100%;box-sizing:border-box;border:1px solid rgba(27,42,65,.16);border-radius:10px;padding:12px 13px;font-size:14px;background:#fff;outline:none">
+                <sc-if value="{{ nrHasCommuneSuggestions }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid rgba(27,42,65,.16);border-radius:10px;box-shadow:0 10px 26px rgba(27,42,65,.16);overflow:hidden;z-index:11">
+                    <sc-for list="{{ nrCommuneSuggestions }}" as="c" hint-placeholder-count="3">
+                      <button onClick="{{ c.onClick }}" style="width:100%;border:none;border-bottom:1px solid rgba(27,42,65,.07);background:#fff;padding:11px 14px;text-align:left;font-size:13.5px;color:#1B2A41" style-hover="background:#FAFBFC">{{ c.label }}</button>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ nrNoCommuneMatch }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:6px;font-size:12px;color:#8A98A8">Aucune commune ne correspond : Reeper n'est pas encore disponible dans cette commune.</div>
+                </sc-if>
+              </div>
               <label style="display:block;font-size:11.5px;font-weight:600;color:#5A6B7E;margin-bottom:5px">2. Rue et numéro</label>
               <div style="display:flex;gap:10px;margin-bottom:6px;align-items:flex-start">
                 <div style="position:relative;flex:1;min-width:0">
@@ -2489,7 +2497,7 @@ class Component extends DCLogic {
     kbSendOpen: false, kbSendReep: "", kbSendNote: "", kbSendError: "", kbSendDone: "",
     rsOpen: false, rsContact: "", rsNote: "", rsError: "", rsDone: "",
     xfMode: "service", xfCommune: null,
-    nrPhotoDataUrl: null, nrPath: [], nrLeaf: null, nrDesc: "", nrAddrText: "", nrAddrNum: "", nrStreetOpen: false, nrCommune: null, nrCommuneManual: false, nrLat: null, nrLon: null, nrGeoLoading: false, nrGeoError: "",
+    nrPhotoDataUrl: null, nrPath: [], nrLeaf: null, nrDesc: "", nrAddrText: "", nrAddrNum: "", nrStreetOpen: false, nrCommune: null, nrCommuneText: null, nrCommuneManual: false, nrLat: null, nrLon: null, nrGeoLoading: false, nrGeoError: "",
     contactOpen: false, ctName: "", ctEmail: "", ctSubject: "Question générale", ctMessage: "", ctSent: false, ctError: ""
   };
 
@@ -2545,7 +2553,7 @@ class Component extends DCLogic {
         const { lat, lon } = e.detail;
         this.setState({ nrLat: lat, nrLon: lon });
         Store.reverseGeocode(lat, lon).then((res) => {
-          this.setState({ nrAddrText: res.street || res.address, nrAddrNum: res.houseNumber || "", nrCommuneManual: false, nrCommune: res.commune || res.town || this.state.nrCommune });
+          this.setState({ nrAddrText: res.street || res.address, nrAddrNum: res.houseNumber || "", nrCommuneManual: false, nrCommuneText: null, nrCommune: res.commune || res.town || this.state.nrCommune });
         }).catch(() => {});
       });
     }
@@ -2557,6 +2565,15 @@ class Component extends DCLogic {
 
   _ingestNRPhoto(file) {
     Store.downscaleImage(file, 1000, 0.8).then((url) => this.setState({ nrPhotoDataUrl: url })).catch(() => {});
+  }
+
+  // Retient la commune choisie, vide la rue (la liste des rues dépend de la commune) et recentre la carte.
+  _pickNRCommune(name) {
+    this.setState({ nrCommune: name, nrCommuneText: null, nrCommuneManual: true, nrAddrText: "", nrAddrNum: "", nrStreetOpen: false, nrLat: null, nrLon: null, nrGeoError: "" });
+    this._nrGeoQ = null;
+    const ctr = Store.COMMUNES[name] && Store.COMMUNES[name].center;
+    const el = document.querySelector('reeper-map[data-role="nr-map"]');
+    if (ctr && el && el.panTo) el.panTo(ctr.lat, ctr.lon, 14);
   }
 
   _forwardGeocodeNR(query, skipCommune) {
@@ -3016,7 +3033,7 @@ class Component extends DCLogic {
       isDash: s.screen === "dash", isMap: s.screen === "map", isList: s.screen === "list",
       isTrash: s.screen === "trash", isNewReep: s.screen === "newreep",
       isDetail: s.screen === "detail", isConfig: s.screen === "config",
-      goNewReep: () => { Store.syncPull(); this._transition(() => this.setState({ screen: "newreep", nrPhotoDataUrl: null, nrPath: [], nrLeaf: null, nrDesc: "", nrAddrText: "", nrAddrNum: "", nrStreetOpen: false, nrCommune: commune, nrCommuneManual: false, nrLat: null, nrLon: null, nrGeoError: "" })); },
+      goNewReep: () => { Store.syncPull(); this._transition(() => this.setState({ screen: "newreep", nrPhotoDataUrl: null, nrPath: [], nrLeaf: null, nrDesc: "", nrAddrText: "", nrAddrNum: "", nrStreetOpen: false, nrCommune: commune, nrCommuneText: null, nrCommuneManual: false, nrLat: null, nrLon: null, nrGeoError: "" })); },
       isLegal: s.screen === "legal", goDash: () => this.go("dash"),
 
       convs: ALL_CONVS.map((c, i) => {
@@ -3302,16 +3319,31 @@ class Component extends DCLogic {
       nrHasSuggestions: !!(s.nrStreetOpen && s.nrCommune && Store.filterStreets(s.nrCommune, s.nrAddrText).length),
       nrNoStreetMatch: !!(s.nrCommune && s.nrAddrText.trim() && Store.streetsOf(s.nrCommune).length && Store.filterStreets(s.nrCommune, s.nrAddrText).length === 0),
       nrCommune: s.nrCommune || "",
-      nrCommuneOptions: [{ value: "", label: "Choisir la commune" }].concat(
-        Store.communeNames().concat(s.nrCommune && Store.communeNames().indexOf(s.nrCommune) < 0 ? [s.nrCommune] : []).map((n) => ({ value: n, label: n }))
-      ),
-      onNRCommune: (e) => {
-        const c = e.target.value;
-        this.setState({ nrCommune: c || null, nrCommuneManual: true, nrAddrText: "", nrAddrNum: "", nrStreetOpen: false, nrLat: null, nrLon: null, nrGeoError: "" });
-        this._nrGeoQ = null;
-        const ctr = Store.COMMUNES[c] && Store.COMMUNES[c].center;
-        const el = document.querySelector('reeper-map[data-role="nr-map"]');
-        if (ctr && el && el.panTo) el.panTo(ctr.lat, ctr.lon, 14);
+      // Commune : champ libre avec propositions au fur et à mesure de la saisie (pas de liste déroulante).
+      nrCommuneInput: s.nrCommuneText != null ? s.nrCommuneText : (s.nrCommune || ""),
+      nrCommuneSuggestions: (s.nrCommuneText != null ? Store.searchCommunes(s.nrCommuneText) : []).map((n) => ({ label: n, onClick: () => this._pickNRCommune(n) })),
+      nrHasCommuneSuggestions: s.nrCommuneText != null && Store.searchCommunes(s.nrCommuneText).length > 0,
+      nrNoCommuneMatch: s.nrCommuneText != null && s.nrCommuneText.trim() !== "" && Store.searchCommunes(s.nrCommuneText).length === 0,
+      onNRCommuneText: (e) => {
+        const val = e.target.value;
+        const exact = Store.searchCommunes(val).find((n) => n.toLowerCase() === val.trim().toLowerCase());
+        if (exact) { this._pickNRCommune(exact); return; }
+        this.setState({ nrCommuneText: val, nrCommune: null, nrCommuneManual: true });
+      },
+      onNRCommuneKeyDown: (e) => {
+        if (e.key !== "Enter") return;
+        const first = Store.searchCommunes(this.state.nrCommuneText || "")[0];
+        if (first) { e.preventDefault(); this._pickNRCommune(first); }
+      },
+      onNRCommuneBlur: () => {
+        // Laisse le temps à un clic sur une proposition d'aboutir ; une seule proposition possible est retenue d'office.
+        setTimeout(() => {
+          const st = this.state;
+          if (st.nrCommuneText == null) return;
+          const list = Store.searchCommunes(st.nrCommuneText);
+          if (list.length === 1) this._pickNRCommune(list[0]);
+          else if (!st.nrCommuneText.trim()) this.setState({ nrCommuneText: null });
+        }, 200);
       },
       nrValidateAddressLabel: (s.nrLat != null && s.nrLon != null) ? "✓ Adresse prise en compte" : "📍 Valider cette adresse",
       nrValidateAddressBg: (s.nrLat != null && s.nrLon != null) ? "#3F8F63" : "#1B2A41",
@@ -3345,7 +3377,7 @@ class Component extends DCLogic {
             const el = document.querySelector('reeper-map[data-role="nr-map"]');
             if (el && el.panTo) el.panTo(lat, lon, 17);
             Store.reverseGeocode(lat, lon).then((res) => {
-              this.setState({ nrAddrText: res.street || res.address, nrAddrNum: res.houseNumber || "", nrCommuneManual: false, nrCommune: res.commune || res.town || s.nrCommune });
+              this.setState({ nrAddrText: res.street || res.address, nrAddrNum: res.houseNumber || "", nrCommuneManual: false, nrCommuneText: null, nrCommune: res.commune || res.town || s.nrCommune });
             }).catch(() => {
               this.setState({ nrAddrText: lat.toFixed(5) + ", " + lon.toFixed(5) });
             });
